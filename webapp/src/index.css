@@ -50,7 +50,3 @@ button.react-multiple-carousel__arrow.react-multiple-carousel__arrow--right {
 button.react-multiple-carousel__arrow.react-multiple-carousel__arrow--left {
     left: calc(1% + 1px)
 }
-
-/* .react-multiple-carousel__arrow {
-    position: fixed !important;
-} */
