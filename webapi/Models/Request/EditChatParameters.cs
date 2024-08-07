@@ -23,4 +23,10 @@ public class EditChatParameters
     /// the relevance threshold of long term memory and increasing the threshold score of working memory.
     /// </summary>
     public float? MemoryBalance { get; set; }
+
+    /// <summary>
+    /// System description of the chat that is used to generate responses.
+    /// </summary>
+    public string? SpecializationKey { get; set; }
+
 }

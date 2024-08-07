@@ -145,7 +145,8 @@ export const Specializations = [
         key: 'general',
         name: 'General',
         description: 'General',
-        imagefilepath: '',
+        roleInformation: '',
+        imagefilepath: '',        
     },
 ];
 /**

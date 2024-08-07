@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 using CopilotChat.WebApi.Models.Storage;
+using CopilotChat.WebApi.Options;
 using CopilotChat.WebApi.Plugins.Chat.Ext;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -17,14 +18,18 @@ namespace CopilotChat.WebApi.Controllers;
 public class SpecializationController : ControllerBase
 {
     private readonly ILogger<SpecializationController> _logger;
-
+    private readonly PromptsOptions _promptOptions;
     private readonly QAzureOpenAIChatOptions _qAzureOpenAIChatOptions;
 
     public SpecializationController(
     ILogger<SpecializationController> logger,
+
+    IOptions<PromptsOptions> promptsOptions,
+
     IOptions<QAzureOpenAIChatOptions> qAzureOpenAIChatOptions)
     {
         this._logger = logger;
+        this._promptOptions = promptsOptions.Value;
         this._qAzureOpenAIChatOptions = qAzureOpenAIChatOptions.Value;
     }
 
@@ -44,7 +49,8 @@ public class SpecializationController : ControllerBase
         var specializations = new List<SpecializationSession>();
         foreach (var _specialization in this._qAzureOpenAIChatOptions.Specializations)
         {
-            specializations.Add(new SpecializationSession(_specialization.Key, _specialization.Name, _specialization.Description, _specialization.ImageFilepath));
+            var roleInformation = string.IsNullOrEmpty(_specialization.RoleInformation) ? this._promptOptions.SystemDescription : _specialization.RoleInformation;
+            specializations.Add(new SpecializationSession(_specialization.Key, _specialization.Name, _specialization.Description, _specialization.ImageFilepath, roleInformation));
         }
         return this.Ok(specializations);
     }

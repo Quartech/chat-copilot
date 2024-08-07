@@ -25,3 +25,32 @@ body,
     border-radius: 12px;
     visibility: 'hidden';
 }
+
+.custom-dot-list-style button{
+    border: none !important;
+    background: hsl(10, 79%, 77%);
+    border-style: none;
+}
+
+.react-multi-carousel-dot.react-multi-carousel-dot--active button{
+    background: #9c0803 !important;
+    border-style: none !important;
+}
+
+.slider {
+    padding-top: 80px;
+    height: 600px;
+    width: 100%;
+}
+
+button.react-multiple-carousel__arrow.react-multiple-carousel__arrow--right {
+    right: calc(1% + 1px);
+}
+
+button.react-multiple-carousel__arrow.react-multiple-carousel__arrow--left {
+    left: calc(1% + 1px)
+}
+
+/* .react-multiple-carousel__arrow {
+    position: fixed !important;
+} */

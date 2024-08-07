@@ -238,6 +238,32 @@ public class ChatHistoryController : ControllerBase
         return this.NotFound($"No chat session found for chat id '{chatId}'.");
     }
 
+    [HttpPatch]
+    [Route("chats/{chatId:guid}/specialization")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [Authorize(Policy = AuthPolicyName.RequireChatParticipant)]
+    public async Task<IActionResult> EditChatSessionSpecializationAsync(
+        [FromServices] IHubContext<MessageRelayHub> messageRelayHubContext,
+        [FromBody] EditChatSpecializationParameters chatParameters,
+        [FromRoute] Guid chatId)
+    {
+        ChatSession? chat = null;
+        if (await this._sessionRepository.TryFindByIdAsync(chatId.ToString(), callback: v => chat = v))
+        {
+            var specializationDescription = this._qAzureOpenAIChatExtension.getRoleInformation(chatParameters.SpecializationKey);
+            chat!.SystemDescription = specializationDescription != null ? specializationDescription : this._promptOptions.SystemDescription;
+            chat!.specialization = new ChatSpecializationSession(chatId.ToString(), chatParameters.SpecializationKey);
+            await this._sessionRepository.UpsertAsync(chat);
+            await messageRelayHubContext.Clients.Group(chatId.ToString()).SendAsync(ChatEditedClientCall, chat);
+
+            return this.Ok(chat);
+        }
+
+        return this.NotFound($"No chat session found for chat id '{chatId}'.");
+    }
+
     /// <summary>
     /// Gets list of imported documents for a given chat.
     /// </summary>

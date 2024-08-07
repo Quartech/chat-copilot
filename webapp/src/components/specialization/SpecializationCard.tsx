@@ -4,6 +4,12 @@ import { MoreHorizontal20Regular } from '@fluentui/react-icons';
 import { Card, CardHeader, CardPreview } from '@fluentui/react-components';
 import { ISpecialization } from '../../libs/models/Specialization';
 import { useChat } from '../../libs/hooks';
+import { useAppDispatch, useAppSelector } from '../../redux/app/hooks';
+import { RootState } from '../../redux/app/store';
+import {
+    editConversationSpecialization,
+    editConversationSystemDescription,
+} from '../../redux/features/conversations/conversationsSlice';
 
 const useStyles = makeStyles({
     main: {
@@ -18,7 +24,7 @@ const useStyles = makeStyles({
     },
 
     root: {
-        padding: tokens.spacingHorizontalS,
+        padding: tokens.spacingHorizontalXS,
     },
 
     caption: {
@@ -56,18 +62,27 @@ interface SpecializationItemProps {
         @typescript-eslint/no-unsafe-call 
     */
     specialization: ISpecialization;
-    setShowSpecialization: any;
 }
 
-export const SpecializationCard: React.FC<SpecializationItemProps> = ({ specialization, setShowSpecialization }) => {
+export const SpecializationCard: React.FC<SpecializationItemProps> = ({ specialization }) => {
     const styles = useStyles();
     const chat = useChat();
     const cardDivId = React.useId();
     const cardId = React.useId();
     const specializationId = React.useId();
+    const dispatch = useAppDispatch();
+    const { selectedId } = useAppSelector((state: RootState) => state.conversations);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     const onAddChat = () => {
-        void chat.createChat(specialization.key);
-        setShowSpecialization(false);
+        void chat.editChatSpecialization(selectedId, specialization.key).finally(() => {
+            dispatch(editConversationSpecialization({ id: selectedId, newSpecializationKey: specialization.key }));
+            dispatch(
+                editConversationSystemDescription({
+                    id: selectedId,
+                    newSystemDescription: specialization.roleInformation,
+                }),
+            );
+        });
     };
 
     const truncate = (str: string) => {
@@ -81,43 +96,36 @@ export const SpecializationCard: React.FC<SpecializationItemProps> = ({ speciali
 
     return (
         <div className={styles.root} key={cardDivId}>
-                <Card
-                    className={styles.card}
-                    data-testid="addNewBotMenuItem"
-                    onClick={onAddChat}
-                    key={cardId}
-                >
-                    <CardPreview className={styles.grayBackground}>
-                        <img
-                            className={styles.smallRadius}
-                            src={getimagefilepath(specialization.imageFilepath)}
-                            alt="Presentation Preview"
-                        />
-                    </CardPreview>
+            <Card className={styles.card} data-testid="addNewBotMenuItem" onClick={onAddChat} key={cardId}>
+                <CardPreview className={styles.grayBackground}>
+                    <img
+                        className={styles.smallRadius}
+                        src={getimagefilepath(specialization.imageFilepath)}
+                        alt="Presentation Preview"
+                    />
+                </CardPreview>
 
-                    <CardHeader
-                        header={<Text weight="semibold"> {specialization.name}</Text>}
-                        description={
-                            <Caption1 className={styles.caption}>{truncate(specialization.description)}</Caption1>
-                        }
-                        action={
-                            <div
-                                className={
-                                    specialization.description.length > 250 ? styles.showTooltip : styles.hideTooltip
-                                }
-                                key={specializationId}
-                            >
-                                <Tooltip content={specialization.description} relationship="label">
-                                    <Button
-                                        appearance="transparent"
-                                        icon={<MoreHorizontal20Regular />}
-                                        aria-label="More actions"
-                                    ></Button>
-                                </Tooltip>
-                            </div>
-                        }
-                    ></CardHeader>
-                </Card>
-            </div>
+                <CardHeader
+                    header={<Text weight="semibold"> {specialization.name}</Text>}
+                    description={<Caption1 className={styles.caption}>{truncate(specialization.description)}</Caption1>}
+                    action={
+                        <div
+                            className={
+                                specialization.description.length > 250 ? styles.showTooltip : styles.hideTooltip
+                            }
+                            key={specializationId}
+                        >
+                            <Tooltip content={specialization.description} relationship="label">
+                                <Button
+                                    appearance="transparent"
+                                    icon={<MoreHorizontal20Regular />}
+                                    aria-label="More actions"
+                                ></Button>
+                            </Tooltip>
+                        </div>
+                    }
+                ></CardHeader>
+            </Card>
+        </div>
     );
 };

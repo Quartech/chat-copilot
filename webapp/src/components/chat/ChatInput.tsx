@@ -264,7 +264,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
                         onClick={() => {
                             handleSubmit(value);
                         }}
-                        disabled={conversations[selectedId].disabled}
+                        disabled={conversations[selectedId].disabled || conversations[selectedId].specializationKey === ""}
                     />
                 </div>
             </div>

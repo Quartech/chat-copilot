@@ -27,11 +27,17 @@ public class SpecializationSession
     /// </summary>
     public string ImageFilepath { get; set; }
 
-    public SpecializationSession(string Key, string Name, string Description, string ImageFilepath)
+    /// <summary>
+    /// Role Information
+    /// </summary>
+    public string RoleInformation { get; set; }
+
+    public SpecializationSession(string Key, string Name, string Description, string ImageFilepath, string RoleInformation)
     {
         this.Key = Key;
         this.Name = Name;
         this.Description = Description;
         this.ImageFilepath = ImageFilepath;
+        this.RoleInformation = RoleInformation;
     }
 }
