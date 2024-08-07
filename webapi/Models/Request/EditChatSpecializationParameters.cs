@@ -11,5 +11,4 @@ public class EditChatSpecializationParameters
     /// Specialization of the chat that is used to generate responses.
     /// </summary>
     public string SpecializationKey { get; set; } = "general";
-
 }

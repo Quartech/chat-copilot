@@ -28,5 +28,4 @@ public class EditChatParameters
     /// System description of the chat that is used to generate responses.
     /// </summary>
     public string? SpecializationKey { get; set; }
-
 }
