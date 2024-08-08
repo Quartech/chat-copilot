@@ -3,5 +3,6 @@ export interface ISpecialization {
     key: string;
     name: string;
     description: string;
-    imageFilepath?: string;
+    roleInformation:string;
+    imageFilepath?: string;    
 }

@@ -81,6 +81,9 @@ const useClasses = makeStyles({
         verticalAlign: 'text-bottom',
         marginLeft: tokens.spacingHorizontalXS,
     },
+    l1: {
+        width: '30px',
+    },
 });
 
 interface IChatListItemProps {

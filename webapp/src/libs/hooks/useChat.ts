@@ -69,14 +69,13 @@ export const useChat = () => {
         online: true,
         isTyping: false,
     };
-
     const { plugins } = useAppSelector((state: RootState) => state.plugins);
 
     const getChatUserById = (id: string, chatId: string, users: IChatUser[]) => {
         if (id === `${chatId}-bot` || id.toLocaleLowerCase() === 'bot') return Constants.bot.profile;
         return users.find((user) => user.id === id);
     };
-    const defaultSpecialization = 'general';
+    const defaultSpecialization = '';
     const createChat = async (specializationKey = defaultSpecialization) => {
         const chatTitle = `Copilot @ ${new Date().toLocaleString()}`;
         try {
@@ -395,6 +394,19 @@ export const useChat = () => {
         }
     };
 
+    const editChatSpecialization = async (chatId: string, specializationKey : string) => {
+        try {
+            await chatService.editChatSepcializationAsync(
+                chatId,
+                specializationKey,
+                await AuthHelper.getSKaaSAccessToken(instance, inProgress),
+            );
+        } catch (e: any) {
+            const errorMessage = `Error editing chat ${chatId}. Details: ${getErrorDetails(e)}`;
+            dispatch(addAlert({ message: errorMessage, type: AlertType.Error }));
+        }
+    };
+
     const getServiceInfo = async () => {
         try {
             return await chatService.getServiceInfoAsync(await AuthHelper.getSKaaSAccessToken(instance, inProgress));
@@ -458,7 +470,7 @@ export const useChat = () => {
             chatId: chatId,
             processPlan: true,
         });
-    };
+    };    
 
     return {
         getChatUserById,
@@ -472,6 +484,7 @@ export const useChat = () => {
         importDocument,
         joinChat,
         editChat,
+        editChatSpecialization,
         getServiceInfo,
         deleteChat,
         processPlan,

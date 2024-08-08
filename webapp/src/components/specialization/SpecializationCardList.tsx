@@ -3,6 +3,8 @@ import Carousel from 'react-multi-carousel';
 import 'react-multi-carousel/lib/styles.css';
 import { ISpecialization } from '../../libs/models/Specialization';
 import { SpecializationCard } from './SpecializationCard';
+import { makeStyles } from '@fluentui/react-components';
+import '../../index.css';
 
 const responsive = {
     // Define responsive settings for different screen sizes
@@ -23,28 +25,47 @@ const responsive = {
     },
 };
 
+const useClasses = makeStyles({
+    innercontainerclass: {
+        height: '330px',
+    },
+    innertitle: {
+        textAlign: 'center',
+    },
+});
+
 interface SpecializationProps {
     /* eslint-disable 
       @typescript-eslint/no-unsafe-assignment
     */
     specializations: ISpecialization[];
-    setShowSpecialization: any;
 }
 
-export const SpecializationCardList: React.FC<SpecializationProps> = ({ specializations, setShowSpecialization }) => {
+export const SpecializationCardList: React.FC<SpecializationProps> = ({ specializations }) => {
     const specializaionCarouselId = useId();
     const specializaionCardId = useId();
+    const classes = useClasses();
+
     return (
-        <Carousel responsive={responsive} key={specializaionCarouselId}>
-            {specializations.map((_specialization, index) => (
-                <div className="root" key={index}>
-                    <SpecializationCard
-                        key={specializaionCardId + '_' + index.toString()}
-                        specialization={_specialization}
-                        setShowSpecialization={setShowSpecialization}
-                    />
-                </div>
-            ))}
-        </Carousel>
+        <div>
+            <h1 className={classes.innertitle}>Choose Specialization</h1>
+            <Carousel
+                responsive={responsive}
+                key={specializaionCarouselId}
+                showDots={true}
+                swipeable={true}
+                arrows={true}
+                dotListClass="custom-dot-list-style"
+            >
+                {specializations.map((_specialization, index) => (
+                    <div key={index} className={classes.innercontainerclass}>
+                        <SpecializationCard
+                            key={specializaionCardId + '_' + index.toString()}
+                            specialization={_specialization}
+                        />
+                    </div>
+                ))}
+            </Carousel>
+        </div>
     );
 };

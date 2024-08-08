@@ -103,6 +103,27 @@ export class ChatService extends BaseService {
         return result;
     };
 
+    public editChatSepcializationAsync = async (
+        chatId: string,      
+        specializationKey: string,
+        accessToken: string,
+    ): Promise<any> => {
+        const body = {
+            specializationKey
+        };
+
+        const result = await this.getResponseAsync<IChatSession>(
+            {
+                commandPath: `chats/${chatId}/specialization`,
+                method: 'PATCH',
+                body,
+            },
+            accessToken,
+        );
+
+        return result;
+    };
+
     public deleteChatAsync = async (chatId: string, accessToken: string): Promise<object> => {
         const result = await this.getResponseAsync<object>(
             {
