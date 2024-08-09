@@ -39,12 +39,12 @@ public class SpecializationController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public OkObjectResult GetAllSepcializations()
     {
-        //This takes data from appsettings.json. Eventually this will be managed in defined data store.  
-        //Scope: To manage through admin privileges.      
+        //This takes data from appsettings.json. Eventually this will be managed in defined data store.
+        //Scope: To manage through admin privileges.
         var specializations = new List<SpecializationSession>();
         foreach (var _specialization in this._qAzureOpenAIChatOptions.Specializations)
         {
-            specializations.Add(new SpecializationSession(_specialization.Key, _specialization.Name, _specialization.Description, _specialization.ImageFilepath));
+            specializations.Add(new SpecializationSession(_specialization.Key, _specialization.Name, _specialization.Description, _specialization.ImageFilepath, _specialization.IconFilepath));
         }
         return this.Ok(specializations);
     }

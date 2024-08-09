@@ -141,11 +141,12 @@ export const Settings = [
 
 export const Specializations = [
     {
-        // Basic settings 
+        // Basic settings
         key: 'general',
         name: 'General',
         description: 'General',
         imagefilepath: '',
+        iconfilepath: '',
     },
 ];
 /**

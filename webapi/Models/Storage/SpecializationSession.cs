@@ -23,15 +23,27 @@ public class SpecializationSession
     public string Description { get; set; }
 
     /// <summary>
-    /// Image URL for pictorial description of specialization or logo etc.
+    /// Image URL for pictorial description of specialization.
     /// </summary>
     public string ImageFilepath { get; set; }
 
-    public SpecializationSession(string Key, string Name, string Description, string ImageFilepath)
+    /// <summary>
+    /// Image URL for pictorial description of logo.
+    /// </summary>
+    public string IconFilepath { get; set; }
+
+    public SpecializationSession(
+        string Key,
+        string Name,
+        string Description,
+        string ImageFilepath,
+        string IconFilepath
+    )
     {
         this.Key = Key;
         this.Name = Name;
         this.Description = Description;
         this.ImageFilepath = ImageFilepath;
+        this.IconFilepath = IconFilepath;
     }
 }

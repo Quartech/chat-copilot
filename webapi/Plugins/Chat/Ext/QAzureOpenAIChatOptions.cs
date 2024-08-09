@@ -22,6 +22,7 @@ public class QSpecialization
     public string Name { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
     public string ImageFilepath { get; set; } = string.Empty;
+    public string IconFilepath { get; set; } = string.Empty;
     public string RoleInformation { get; set; } = string.Empty;
     public string IndexName { get; set; } = string.Empty;
     public Uri? Endpoint { get; set; } = null;
