@@ -30,7 +30,7 @@ public class SpecializationSession
     public string ImageFilepath { get; set; }
 
     /// <summary>
-    /// Image URL for pictorial description of specialization or logo etc.
+    /// List of group memberships for the user.
     /// </summary>
     public IList<string> GroupMemberships { get; set; }
 
