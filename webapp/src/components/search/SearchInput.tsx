@@ -53,12 +53,12 @@ export const SearchInput: React.FC<SearchInputProps> = ({ onSubmit, defaultSpeci
     const [value, setValue] = useState('');
     const { app } = useAppSelector((state: RootState) => state);
     const filteredSpecializations = specializations.filter((_specialization) => {
-        const hasMembership = app.activeUserInfo?.groups.some((val) => _specialization.groupMemberships.includes(val))
-        if( hasMembership ){
-            return _specialization
+        const hasMembership = app.activeUserInfo?.groups.some((val) => _specialization.groupMemberships.includes(val));
+        if (hasMembership) {
+            return _specialization;
         }
-        return
-    })
+        return;
+    });
 
     const dropdownId = useId();
 

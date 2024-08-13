@@ -38,12 +38,12 @@ export const SpecializationCardList: React.FC<SpecializationProps> = ({ speciali
     const specializaionCardId = useId();
     const { app } = useAppSelector((state: RootState) => state);
     const filteredSpecializations = specializations.filter((_specialization) => {
-        const hasMembership = app.activeUserInfo?.groups.some((val) => _specialization.groupMemberships.includes(val))
-        if( hasMembership ){
-            return _specialization
+        const hasMembership = app.activeUserInfo?.groups.some((val) => _specialization.groupMemberships.includes(val));
+        if (hasMembership) {
+            return _specialization;
         }
-        return
-    })
+        return;
+    });
     return (
         <Carousel responsive={responsive} key={specializaionCarouselId}>
             {filteredSpecializations.map((_specialization, index) => (

@@ -22,7 +22,7 @@ export const DefaultActiveUserInfo: ActiveUserInfo = {
     email: DefaultChatUser.emailAddress,
     username: DefaultChatUser.fullName,
     groups: [],
-    id_token: "",
+    id_token: '',
 };
 
 export interface ActiveUserInfo {
@@ -151,7 +151,7 @@ export const Specializations = [
         name: 'General',
         description: 'General',
         imagefilepath: '',
-        groupMemberships:[],
+        groupMemberships: [],
     },
 ];
 /**
