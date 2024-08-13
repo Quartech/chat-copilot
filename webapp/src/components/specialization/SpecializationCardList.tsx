@@ -39,7 +39,7 @@ export const SpecializationCardList: React.FC<SpecializationProps> = ({ speciali
     const { app } = useAppSelector((state: RootState) => state);
     const filteredSpecializations = specializations.filter((_specialization) => {
         const hasMembership = app.activeUserInfo?.groups.some((val) => _specialization.groupMemberships.includes(val))
-        if(_specialization.groupMemberships.length === 0 || hasMembership ){
+        if( hasMembership ){
             return _specialization
         }
         return
