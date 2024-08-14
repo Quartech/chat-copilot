@@ -35,10 +35,10 @@ export enum ChatMessageType {
  * States for RLHF
  */
 export enum UserFeedback {
-    Unknown,
-    Requested,
-    Positive,
-    Negative,
+    Unknown = 'Unknown',
+    Requested = 'Requested',
+    Positive = 'Positive',
+    Negative = 'Negative',
 }
 
 /**
@@ -64,7 +64,6 @@ export interface IChatMessage {
     authorRole: AuthorRoles;
     debug?: string;
     planState?: PlanState;
-    // TODO: [Issue #42] Persistent RLHF
     userFeedback?: UserFeedback;
     tokenUsage?: TokenUsage;
 }
