@@ -19,10 +19,11 @@ import Header from './components/header/Header';
 import { Loading, Login } from './components/views';
 import { AuthHelper } from './libs/auth/AuthHelper';
 import { useChat, useFile, useSpecialization } from './libs/hooks';
+import { useSettings } from './libs/hooks/useSettings';
 import { useAppDispatch, useAppSelector } from './redux/app/hooks';
 import { RootState } from './redux/app/store';
 import { FeatureKeys } from './redux/features/app/AppState';
-import { setActiveUserInfo, setServiceInfo } from './redux/features/app/appSlice';
+import { setActiveUserInfo, setFeatureFlag, setServiceInfo } from './redux/features/app/appSlice';
 import { semanticKernelDarkTheme, semanticKernelLightTheme } from './styles';
 
 /**
@@ -85,6 +86,7 @@ const App = () => {
     const chat = useChat();
     const file = useFile();
     const specialization = useSpecialization();
+    const settings = useSettings();
 
     const getUserImage = async (accessToken: string, _id: string) => {
         try {
@@ -192,11 +194,42 @@ const App = () => {
                 dispatch(setServiceInfo(serviceInfo));
             }
 
+            await loadSettings();
+
             setAppState(AppState.Chat);
         } catch (err) {
             setAppState(AppState.ErrorLoadingChats);
         }
     };
+
+    /**
+     * Loads the users settings
+     *
+     * @async
+     */
+    async function loadSettings() {
+        const loadedSettings = await settings.getSettings();
+        if (loadedSettings) {
+            dispatch(
+                setFeatureFlag({
+                    key: FeatureKeys.DarkMode,
+                    enabled: loadedSettings.darkMode,
+                }),
+            );
+            dispatch(
+                setFeatureFlag({
+                    enabled: loadedSettings.pluginsPersonas,
+                    key: FeatureKeys.PluginsPlannersAndPersonas,
+                }),
+            );
+            dispatch(
+                setFeatureFlag({
+                    key: FeatureKeys.SimplifiedExperience,
+                    enabled: loadedSettings.simplifiedChat,
+                }),
+            );
+        }
+    }
 
     useEffect(() => {
         if (isMaintenance && appState !== AppState.ProbeForBackend) {

@@ -51,6 +51,17 @@ export const appSlice = createSlice({
                 },
             };
         },
+        // This sets the feature flag based on end user input
+        setFeatureFlag: (state: AppState, action: PayloadAction<{ key: FeatureKeys; enabled: boolean }>) => {
+            const feature = state.features[action.payload.key];
+            state.features = {
+                ...state.features,
+                [action.payload.key]: {
+                    ...feature,
+                    enabled: action.payload.enabled,
+                },
+            };
+        },
         // This controls feature availability based on the state of backend
         toggleFeatureState: (
             state: AppState,
@@ -90,6 +101,8 @@ export const {
     setServiceInfo,
     setMaintenance,
     setAuthConfig,
+    setSpecialization,
+    setFeatureFlag,
 } = appSlice.actions;
 
 export default appSlice.reducer;

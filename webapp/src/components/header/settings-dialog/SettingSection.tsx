@@ -1,6 +1,7 @@
 import { Divider, Switch, Text, makeStyles, shorthands, tokens } from '@fluentui/react-components';
 import { useCallback } from 'react';
 import { AuthHelper } from '../../../libs/auth/AuthHelper';
+import { useSettings } from '../../../libs/hooks/useSettings';
 import { useAppDispatch, useAppSelector } from '../../../redux/app/hooks';
 import { RootState } from '../../../redux/app/store';
 import { FeatureKeys, Setting } from '../../../redux/features/app/AppState';
@@ -28,15 +29,23 @@ export const SettingSection: React.FC<ISettingsSectionProps> = ({ setting, conte
     const classes = useClasses();
     const { features } = useAppSelector((state: RootState) => state.app);
     const dispatch = useAppDispatch();
+    const settings = useSettings();
 
     const onFeatureChange = useCallback(
         (featureKey: FeatureKeys) => {
-            dispatch(toggleFeatureFlag(featureKey));
-            if (featureKey === FeatureKeys.MultiUserChat) {
-                dispatch(toggleMultiUserConversations());
-            }
+            settings
+                .updateSetting('darkMode', !features[featureKey].enabled)
+                .then(() => {
+                    dispatch(toggleFeatureFlag(featureKey));
+                    if (featureKey === FeatureKeys.MultiUserChat) {
+                        dispatch(toggleMultiUserConversations());
+                    }
+                })
+                .catch((e) => {
+                    console.error(e);
+                });
         },
-        [dispatch],
+        [dispatch, features, settings],
     );
 
     return (
