@@ -177,7 +177,16 @@ export const useChat = () => {
         }
     };
 
-    const loadChats = async (specializations: ISpecialization[]) => {
+    /**
+     * Load all chats and messages.
+     *
+     * Note: This loads the chat participants and messages simultaneously.
+     *
+     * @async
+     * @param {ISpecialization[]} specializations
+     * @returns {Promise<boolean>} Indicator for chats load success
+     */
+    const loadChats = async (specializations: ISpecialization[]): Promise<boolean> => {
         try {
             const accessToken = await AuthHelper.getSKaaSAccessToken(instance, inProgress);
             const chatSessions = await chatService.getAllChatsAsync(accessToken);
@@ -195,9 +204,6 @@ export const useChat = () => {
                     ),
                 );
 
-                //TODO: Remove
-                // 453 / 460 / 454 reduction in time
-                // 3042 / 3086 / 2979 = 3036
                 for (let i = 0; i < chatSessions.length; i++) {
                     const chatSession = chatSessions[i];
                     const [chatUsers, chatMessages] = allUsersMessages[i];
@@ -305,6 +311,7 @@ export const useChat = () => {
      * Get bot profile picture from specilization key or fall back to a standard icon.
      *
      * @param {string} specializationKey - Unique identifier of the Specialization
+     * @param {ISpecialization[]} specializations - List of system Specializations
      * @returns {string} Icon image path
      */
     const getBotProfilePicture = (specializationKey: string, specializations: ISpecialization[]): string => {

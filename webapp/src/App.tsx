@@ -72,9 +72,17 @@ const App = () => {
     const file = useFile();
     const specialization = useSpecialization();
 
-    const loadAppStateAsync = async () => {
+    /**
+     * Load chats and set dependant state.
+     *
+     * Note: This prevents the race condition with chats and specializations.
+     * Chats need specializations to be loaded beforehand to use icons for bot avatars.
+     *
+     * @async
+     * @returns {Promise<Promise<void>>}
+     */
+    const loadAppStateAsync = async (): Promise<void> => {
         try {
-            const start = performance.now();
             const specializations = await specialization.getSpecializations();
 
             const [serviceInfo] = await Promise.all([
@@ -92,7 +100,6 @@ const App = () => {
             if (serviceInfo) {
                 dispatch(setServiceInfo(serviceInfo));
             }
-            console.log({ loadTime: performance.now() - start });
         } catch (err) {
             setAppState(AppState.ErrorLoadingChats);
         }

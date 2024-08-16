@@ -12,7 +12,7 @@ import {
     tokens,
 } from '@fluentui/react-components';
 import { Map16Regular, Person16Regular } from '@fluentui/react-icons';
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useAppSelector } from '../../redux/app/hooks';
 import { RootState } from '../../redux/app/store';
 import { FeatureKeys } from '../../redux/features/app/AppState';
@@ -23,8 +23,8 @@ import { ShareBotMenu } from './controls/ShareBotMenu';
 import { DocumentsTab } from './tabs/DocumentsTab';
 import { PersonaTab } from './tabs/PersonaTab';
 import { PlansTab } from './tabs/PlansTab';
-import { useChatSpecilization } from '../../libs/hooks/useChatSpecilization';
 
+// Enum for chat window tabs
 enum ChatWindowTabEnum {
     CHAT = 'CHAT',
     DOCUMENTS = 'DOCUMENTS',
@@ -71,11 +71,18 @@ export const ChatWindow: React.FC = () => {
     const classes = useClasses();
     const { features } = useAppSelector((state: RootState) => state.app);
     const { conversations, selectedId } = useAppSelector((state: RootState) => state.conversations);
-    const specialization = useChatSpecilization();
+    const { specializations } = useAppSelector((state: RootState) => state.app);
     const [selectedTab, setSelectedTab] = React.useState<TabValue>(ChatWindowTabEnum.CHAT);
 
     const showShareBotMenu = features[FeatureKeys.BotAsDocs].enabled || features[FeatureKeys.MultiUserChat].enabled;
     const chatName = conversations[selectedId].title;
+
+    // Memoized current chat specialization
+    const specialization = useMemo(() => {
+        if (!selectedId) return;
+        const specializationKey = conversations[selectedId].specializationKey;
+        return specializations.find((spec) => spec.key === specializationKey);
+    }, [selectedId, conversations, specializations]);
 
     const onTabSelect: SelectTabEventHandler = (_event, data) => {
         setSelectedTab(data.value);
