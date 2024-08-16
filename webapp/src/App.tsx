@@ -179,13 +179,13 @@ const App = () => {
         try {
             const specializations = (await specialization.getSpecializations()) ?? [];
 
+            dispatch(setSpecialization(specializations));
+
             const [serviceInfo] = await Promise.all([
                 chat.getServiceInfo(),
                 file.getContentSafetyStatus(),
                 chat.loadChats(specializations),
             ]);
-
-            dispatch(setSpecialization(specializations));
 
             if (serviceInfo) {
                 dispatch(setServiceInfo(serviceInfo));

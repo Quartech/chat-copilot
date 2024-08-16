@@ -192,15 +192,15 @@ export const useChat = () => {
             if (chatSessions.length > 0) {
                 const loadedConversations: Conversations = {};
 
-                // Fetch all chat participants and messages at once
-                const allUsersMessages = await Promise.all(
-                    chatSessions.map((session) =>
-                        Promise.all([
-                            chatService.getAllChatParticipantsAsync(session.id, accessToken),
-                            chatService.getChatMessagesAsync(session.id, 0, 100, accessToken),
-                        ]),
-                    ),
+                const participantsMessagesPromises = chatSessions.map((chatSession) =>
+                    Promise.all([
+                        chatService.getAllChatParticipantsAsync(chatSession.id, accessToken),
+                        chatService.getChatMessagesAsync(chatSession.id, 0, 100, accessToken),
+                    ]),
                 );
+
+                // Fetch all chat participants and messages at once
+                const allUsersMessages = await Promise.all(participantsMessagesPromises);
 
                 for (let i = 0; i < chatSessions.length; i++) {
                     const chatSession = chatSessions[i];
