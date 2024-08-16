@@ -306,7 +306,7 @@ export const useChat = () => {
     };
 
     /**
-     * Get bot profile picture from specilization key or fall back to a standard icon.
+     * Get bot profile picture from specialization key or fall back to a standard icon.
      *
      * @param {string} specializationKey - Unique identifier of the Specialization
      * @param {ISpecialization[]} specializations - List of system Specializations
