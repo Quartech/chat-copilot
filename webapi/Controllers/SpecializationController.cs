@@ -44,7 +44,7 @@ public class SpecializationController : ControllerBase
         var specializations = new List<SpecializationSession>();
         foreach (var _specialization in this._qAzureOpenAIChatOptions.Specializations)
         {
-            specializations.Add(new SpecializationSession(_specialization.Key, _specialization.Name, _specialization.Description, _specialization.ImageFilepath, _specialization.IconFilepath));
+            specializations.Add(new SpecializationSession(_specialization.Key, _specialization.Name, _specialization.Description, _specialization.ImageFilepath, _specialization.IconFilepath, _specialization.GroupMemberships));
         }
         return this.Ok(specializations);
     }

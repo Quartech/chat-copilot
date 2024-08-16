@@ -1,20 +1,30 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 import { AuthenticatedTemplate, UnauthenticatedTemplate, useIsAuthenticated, useMsal } from '@azure/msal-react';
-import { FluentProvider, Subtitle1, makeStyles, shorthands, tokens } from '@fluentui/react-components';
+import { FluentProvider, makeStyles, shorthands, tokens } from '@fluentui/react-components';
 
+import {
+    AccountInfo,
+    AuthenticationResult,
+    InteractionRequiredAuthError,
+    IPublicClientApplication,
+    PopupRequest,
+} from '@azure/msal-browser';
+import { Client, ResponseType } from '@microsoft/microsoft-graph-client';
+import { jwtDecode } from 'jwt-decode';
 import * as React from 'react';
 import { useEffect } from 'react';
 import Chat from './components/chat/Chat';
+import Header from './components/header/Header';
 import { Loading, Login } from './components/views';
 import { AuthHelper } from './libs/auth/AuthHelper';
 import { useChat, useFile, useSpecialization } from './libs/hooks';
-import { AlertType } from './libs/models/AlertType';
 import { useAppDispatch, useAppSelector } from './redux/app/hooks';
 import { RootState } from './redux/app/store';
 import { FeatureKeys } from './redux/features/app/AppState';
-import { addAlert, setActiveUserInfo, setServiceInfo, setSpecialization } from './redux/features/app/appSlice';
+import { setActiveUserInfo, setServiceInfo, setSpecialization } from './redux/features/app/appSlice';
 import { semanticKernelDarkTheme, semanticKernelLightTheme } from './styles';
+
 /**
  * Changes to support specialization
  */
@@ -58,6 +68,10 @@ export enum AppState {
     SigningOut,
 }
 
+interface JWTPayload {
+    groups: string[];
+}
+
 const App = () => {
     const classes = useClasses();
 
@@ -72,6 +86,86 @@ const App = () => {
     const file = useFile();
     const specialization = useSpecialization();
 
+    const getUserImage = async (accessToken: string, _id: string) => {
+        try {
+            const client = getAuthenticatedClient(accessToken);
+            const response = (await client.api('/me/photo/$value').responseType(ResponseType.RAW).get()) as Response;
+            return await blobToBase64(await response.blob());
+        } catch (e) {
+            return;
+        }
+    };
+
+    const getAuthenticatedClient = (accessToken: string) => {
+        return Client.init({
+            authProvider: (done: (any: any, accessToken: string) => void) => {
+                done(null, accessToken);
+            },
+        });
+    };
+
+    const blobToBase64 = async (blob: Blob): Promise<string> => {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onerror = reject;
+            reader.onload = (_) => {
+                resolve(reader.result as string);
+            };
+            reader.readAsDataURL(blob);
+        });
+    };
+
+    const acquireTokenRequest = async (
+        instance: IPublicClientApplication,
+        account: AccountInfo | null,
+        tokenRequest: PopupRequest,
+    ) => {
+        if (account) {
+            return instance
+                .acquireTokenSilent({
+                    ...tokenRequest,
+                    account: account,
+                })
+                .catch((error) => {
+                    if (error instanceof InteractionRequiredAuthError) {
+                        return instance.acquireTokenPopup(tokenRequest);
+                    }
+                    throw error;
+                });
+        }
+        return null;
+    };
+
+    function loadUser(instance: IPublicClientApplication, account: AccountInfo) {
+        acquireTokenRequest(instance, account, {
+            scopes: ['User.Read'],
+        })
+            .then((result: AuthenticationResult | null) => {
+                if (result) {
+                    getUserImage(result.accessToken, account.username)
+                        .then((image) => {
+                            const decoded: JWTPayload = jwtDecode(account.idToken ?? '');
+                            dispatch(
+                                setActiveUserInfo({
+                                    id: `${account.localAccountId}.${account.tenantId}`,
+                                    email: account.username, // username is the email address
+                                    username: account.name ?? account.username,
+                                    image: image,
+                                    groups: decoded.groups,
+                                    id_token: account.idToken ?? '',
+                                }),
+                            );
+                        })
+                        .catch((e) => {
+                            console.error(e);
+                        });
+                }
+            })
+            .catch((e) => {
+                console.error(e);
+            });
+    }
+
     /**
      * Load chats and set dependant state.
      *
@@ -83,23 +177,21 @@ const App = () => {
      */
     const loadAppStateAsync = async (): Promise<void> => {
         try {
-            const specializations = await specialization.getSpecializations();
+            const specializations = (await specialization.getSpecializations()) ?? [];
 
             const [serviceInfo] = await Promise.all([
                 chat.getServiceInfo(),
                 file.getContentSafetyStatus(),
-                chat.loadChats(specializations ?? []),
+                chat.loadChats(specializations),
             ]);
 
-            setAppState(AppState.Chat);
-
-            if (specializations) {
-                dispatch(setSpecialization(specializations));
-            }
+            dispatch(setSpecialization(specializations));
 
             if (serviceInfo) {
                 dispatch(setServiceInfo(serviceInfo));
             }
+
+            setAppState(AppState.Chat);
         } catch (err) {
             setAppState(AppState.ErrorLoadingChats);
         }
@@ -116,25 +208,7 @@ const App = () => {
             if (!account) {
                 setAppState(AppState.ErrorLoadingUserInfo);
             } else {
-                dispatch(
-                    setActiveUserInfo({
-                        id: `${account.localAccountId}.${account.tenantId}`,
-                        email: account.username, // username is the email address
-                        username: account.name ?? account.username,
-                    }),
-                );
-
-                // Privacy disclaimer for internal Microsoft users
-                if (account.username.split('@')[1] === 'microsoft.com') {
-                    dispatch(
-                        addAlert({
-                            message:
-                                'By using Chat Copilot, you agree to protect sensitive data, not store it in chat, and allow chat history collection for service improvements. This tool is for internal use only.',
-                            type: AlertType.Info,
-                        }),
-                    );
-                }
-
+                loadUser(instance, account);
                 setAppState(AppState.LoadingChats);
             }
         }
@@ -142,7 +216,6 @@ const App = () => {
         if ((isAuthenticated || !AuthHelper.isAuthAAD()) && appState === AppState.LoadingChats) {
             void loadAppStateAsync();
         }
-
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [instance, inProgress, isAuthenticated, appState, isMaintenance]);
 
@@ -156,9 +229,7 @@ const App = () => {
                 <>
                     <UnauthenticatedTemplate>
                         <div className={classes.container}>
-                            <div className={classes.header}>
-                                <Subtitle1 as="h1">Chat Copilot</Subtitle1>
-                            </div>
+                            <Header appState={appState} setAppState={setAppState} showPluginsAndSettings={false} />
                             {appState === AppState.SigningOut && <Loading text="Signing you out..." />}
                             {appState !== AppState.SigningOut && <Login />}
                         </div>

@@ -16,12 +16,10 @@ import {
     ChevronUp20Regular,
     Clipboard20Regular,
     ClipboardTask20Regular,
-    ThumbDislikeFilled,
-    ThumbLikeFilled,
 } from '@fluentui/react-icons';
 import React, { useState } from 'react';
 import { useChat } from '../../../libs/hooks/useChat';
-import { AuthorRoles, ChatMessageType, IChatMessage, UserFeedback } from '../../../libs/models/ChatMessage';
+import { AuthorRoles, ChatMessageType, IChatMessage } from '../../../libs/models/ChatMessage';
 import { useAppSelector } from '../../../redux/app/hooks';
 import { RootState } from '../../../redux/app/store';
 import { DefaultChatUser, FeatureKeys } from '../../../redux/features/app/AppState';
@@ -96,8 +94,6 @@ const useClasses = makeStyles({
         filter: 'blur(5px)',
     },
     controls: {
-        display: 'flex',
-        flexDirection: 'row',
         marginTop: customTokens.spacingVerticalS,
         marginBottom: customTokens.spacingVerticalS,
         ...shorthands.gap(customTokens.spacingHorizontalL),
@@ -122,6 +118,7 @@ export const ChatHistoryItem: React.FC<ChatHistoryItemProps> = ({ message, messa
     const { conversations, selectedId } = useAppSelector((state: RootState) => state.conversations);
     const { activeUserInfo, features } = useAppSelector((state: RootState) => state.app);
     const [showCitationCards, setShowCitationCards] = useState(false);
+    const [showFeedback, setShowFeedback] = useState(false);
 
     const isDefaultUser = message.userId === DefaultChatUser.id;
     const isMe = isDefaultUser || (message.authorRole === AuthorRoles.User && message.userId === activeUserInfo?.id);
@@ -142,11 +139,17 @@ export const ChatHistoryItem: React.FC<ChatHistoryItemProps> = ({ message, messa
         });
     };
 
+    const avatarImage = activeUserInfo?.image
+        ? {
+              src: activeUserInfo.image,
+          }
+        : undefined;
+
     const avatar: AvatarProps = isBot
         ? { image: { src: conversations[selectedId].botProfilePicture } }
         : isDefaultUser
-          ? { idForColor: selectedId, color: 'colorful' }
-          : { name: fullName, color: 'colorful' };
+          ? { idForColor: selectedId, color: 'colorful', image: avatarImage }
+          : { name: fullName, color: 'colorful', image: avatarImage };
 
     let content: JSX.Element;
     if (isBot && message.type === ChatMessageType.Plan) {
@@ -162,13 +165,12 @@ export const ChatHistoryItem: React.FC<ChatHistoryItemProps> = ({ message, messa
     // Currently for demonstration purposes only, no feedback is actually sent to kernel / model
     const showShowRLHFMessage =
         features[FeatureKeys.RLHF].enabled &&
-        message.userFeedback === UserFeedback.Requested &&
         messageIndex === conversations[selectedId].messages.length - 1 &&
-        message.userId === 'Bot';
+        message.userId === 'Bot' &&
+        message.content.length > 0;
 
     const messageCitations = message.citations ?? [];
     const showMessageCitation = messageCitations.length > 0;
-    const showExtra = showMessageCitation || showShowRLHFMessage || showCitationCards;
 
     return (
         <div
@@ -177,6 +179,12 @@ export const ChatHistoryItem: React.FC<ChatHistoryItemProps> = ({ message, messa
             data-testid={`chat-history-item-${messageIndex}`}
             data-username={fullName}
             data-content={utils.formatChatTextContent(message.content)}
+            onMouseEnter={() => {
+                setShowFeedback(true);
+            }}
+            onMouseLeave={() => {
+                setShowFeedback(false);
+            }}
         >
             {
                 <Persona
@@ -206,39 +214,32 @@ export const ChatHistoryItem: React.FC<ChatHistoryItemProps> = ({ message, messa
                         </Tooltip>
                     </div>
                 </div>
-                {content}
-                {showExtra && (
-                    <div className={classes.controls}>
-                        {showMessageCitation && (
-                            <ToggleButton
-                                appearance="subtle"
-                                checked={showCitationCards}
-                                className={classes.citationButton}
-                                icon={showCitationCards ? <ChevronUp20Regular /> : <ChevronDown20Regular />}
-                                iconPosition="after"
-                                onClick={() => {
-                                    setShowCitationCards(!showCitationCards);
-                                }}
-                                size="small"
-                            >
-                                {`${messageCitations.length} ${
-                                    messageCitations.length === 1 ? 'citation' : 'citations'
-                                }`}
-                            </ToggleButton>
-                        )}
-                        {showShowRLHFMessage && (
-                            <div className={classes.rlhf}>{<UserFeedbackActions messageIndex={messageIndex} />}</div>
-                        )}
-                        {showCitationCards && <CitationCards message={message} />}
-                    </div>
-                )}
+                <div className="message-content">{content}</div>
+
+                <div className={classes.controls}>
+                    {showFeedback && showShowRLHFMessage && (
+                        <div className={classes.rlhf}>
+                            {<UserFeedbackActions messageIndex={messageIndex} wasHelpful={message.userFeedback} />}
+                        </div>
+                    )}
+                    {showMessageCitation && (
+                        <ToggleButton
+                            appearance="subtle"
+                            checked={showCitationCards}
+                            className={classes.citationButton}
+                            icon={showCitationCards ? <ChevronUp20Regular /> : <ChevronDown20Regular />}
+                            iconPosition="after"
+                            onClick={() => {
+                                setShowCitationCards(!showCitationCards);
+                            }}
+                            size="small"
+                        >
+                            {`${messageCitations.length} ${messageCitations.length === 1 ? 'citation' : 'citations'}`}
+                        </ToggleButton>
+                    )}
+                    {showCitationCards && <CitationCards message={message} />}
+                </div>
             </div>
-            {features[FeatureKeys.RLHF].enabled && message.userFeedback === UserFeedback.Positive && (
-                <ThumbLikeFilled color="gray" />
-            )}
-            {features[FeatureKeys.RLHF].enabled && message.userFeedback === UserFeedback.Negative && (
-                <ThumbDislikeFilled color="gray" />
-            )}
         </div>
     );
 };

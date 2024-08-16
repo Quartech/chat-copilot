@@ -4,8 +4,8 @@ import { AuthConfig } from '../../../libs/auth/AuthHelper';
 import { AlertType } from '../../../libs/models/AlertType';
 import { IChatUser } from '../../../libs/models/ChatUser';
 import { ServiceInfo } from '../../../libs/models/ServiceInfo';
-import { TokenUsage } from '../../../libs/models/TokenUsage';
 import { ISpecialization } from '../../../libs/models/Specialization';
+import { TokenUsage } from '../../../libs/models/TokenUsage';
 
 // This is the default user information when authentication is set to 'None'.
 // It must match what is defined in PassthroughAuthenticationHandler.cs on the backend.
@@ -21,12 +21,17 @@ export const DefaultActiveUserInfo: ActiveUserInfo = {
     id: DefaultChatUser.id,
     email: DefaultChatUser.emailAddress,
     username: DefaultChatUser.fullName,
+    groups: [],
+    id_token: '',
 };
 
 export interface ActiveUserInfo {
     id: string;
     email: string;
     username: string;
+    image?: string;
+    groups: string[];
+    id_token: string;
 }
 
 export interface Alert {
@@ -108,7 +113,7 @@ export const Features = {
         description: 'Enable multi-user chat sessions. Not available when authorization is disabled.',
     },
     [FeatureKeys.RLHF]: {
-        enabled: false,
+        enabled: true,
         label: 'Reinforcement Learning from Human Feedback',
         description: 'Enable users to vote on model-generated responses. For demonstration purposes only.',
         // TODO: [Issue #42] Send and store feedback in backend
@@ -139,14 +144,17 @@ export const Settings = [
     },
 ];
 
+export const DEFAULT_SPECIALIZATION_KEY = 'general';
+
 export const Specializations = [
     {
         // Basic settings
-        key: 'general',
+        key: DEFAULT_SPECIALIZATION_KEY,
         name: 'General',
         description: 'General',
         imagefilepath: '',
         iconfilepath: '',
+        groupMemberships: [],
     },
 ];
 /**

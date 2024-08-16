@@ -2,8 +2,11 @@
 
 import { useMsal } from '@azure/msal-react';
 import { Constants } from '../../Constants';
+import botIcon1 from '../../assets/bot-icons/bot-icon-1.png';
+import { getErrorDetails } from '../../components/utils/TextUtils';
 import { useAppDispatch, useAppSelector } from '../../redux/app/hooks';
 import { RootState } from '../../redux/app/store';
+import { DEFAULT_SPECIALIZATION_KEY, FeatureKeys } from '../../redux/features/app/AppState';
 import { addAlert, toggleFeatureState, updateTokenUsage } from '../../redux/features/app/appSlice';
 import { ChatState } from '../../redux/features/conversations/ChatState';
 import { Conversations } from '../../redux/features/conversations/ConversationsState';
@@ -22,19 +25,14 @@ import { ChatArchive } from '../models/ChatArchive';
 import { AuthorRoles, ChatMessageType, IChatMessage } from '../models/ChatMessage';
 import { IChatSession, ICreateChatSessionResponse } from '../models/ChatSession';
 import { IChatUser } from '../models/ChatUser';
+import { PlanState } from '../models/Plan';
+import { ISpecialization } from '../models/Specialization';
 import { TokenUsage } from '../models/TokenUsage';
 import { IAskVariables } from '../semantic-kernel/model/Ask';
+import { ContextVariable } from '../semantic-kernel/model/AskResult';
 import { ChatArchiveService } from '../services/ChatArchiveService';
 import { ChatService } from '../services/ChatService';
 import { DocumentImportService } from '../services/DocumentImportService';
-import botIcon1 from '../../assets/bot-icons/bot-icon-1.png';
-import { getErrorDetails } from '../../components/utils/TextUtils';
-import { FeatureKeys } from '../../redux/features/app/AppState';
-import { PlanState } from '../models/Plan';
-import { ContextVariable } from '../semantic-kernel/model/AskResult';
-import { ISpecialization } from '../models/Specialization';
-
-const DEFAULT_SPECIALIZATION_KEY = 'general';
 
 export interface GetResponseOptions {
     messageType: ChatMessageType;
