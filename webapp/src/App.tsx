@@ -15,9 +15,9 @@ import { RootState } from './redux/app/store';
 import { FeatureKeys } from './redux/features/app/AppState';
 import { addAlert, setActiveUserInfo, setServiceInfo, setSpecialization } from './redux/features/app/appSlice';
 import { semanticKernelDarkTheme, semanticKernelLightTheme } from './styles';
-/** 
- * Changes to support specialization 
-*/
+/**
+ * Changes to support specialization
+ */
 export const useClasses = makeStyles({
     container: {
         display: 'flex',
@@ -72,6 +72,32 @@ const App = () => {
     const file = useFile();
     const specialization = useSpecialization();
 
+    const loadAppStateAsync = async () => {
+        try {
+            const start = performance.now();
+            const specializations = await specialization.getSpecializations();
+
+            const [serviceInfo] = await Promise.all([
+                chat.getServiceInfo(),
+                file.getContentSafetyStatus(),
+                chat.loadChats(specializations ?? []),
+            ]);
+
+            setAppState(AppState.Chat);
+
+            if (specializations) {
+                dispatch(setSpecialization(specializations));
+            }
+
+            if (serviceInfo) {
+                dispatch(setServiceInfo(serviceInfo));
+            }
+            console.log({ loadTime: performance.now() - start });
+        } catch (err) {
+            setAppState(AppState.ErrorLoadingChats);
+        }
+    };
+
     useEffect(() => {
         if (isMaintenance && appState !== AppState.ProbeForBackend) {
             setAppState(AppState.ProbeForBackend);
@@ -107,33 +133,7 @@ const App = () => {
         }
 
         if ((isAuthenticated || !AuthHelper.isAuthAAD()) && appState === AppState.LoadingChats) {
-            void Promise.all([
-                // Load all chats from memory
-                chat
-                    .loadChats()
-                    .then(() => {
-                        setAppState(AppState.Chat);
-                    })
-                    .catch(() => {
-                        setAppState(AppState.ErrorLoadingChats);
-                    }),
-
-                // Check if content safety is enabled
-                file.getContentSafetyStatus(),
-
-                // Load service information
-                chat.getServiceInfo().then((serviceInfo) => {
-                    if (serviceInfo) {
-                        dispatch(setServiceInfo(serviceInfo));
-                    }
-                }),
-                //Get all specializations
-                specialization.getSpecializations().then((specializations) => {
-                    if (specializations) {
-                        dispatch(setSpecialization(specializations));
-                    }
-                }),
-            ]);
+            void loadAppStateAsync();
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps

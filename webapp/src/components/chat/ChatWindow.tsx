@@ -12,7 +12,7 @@ import {
     tokens,
 } from '@fluentui/react-components';
 import { Map16Regular, Person16Regular } from '@fluentui/react-icons';
-import React, { useMemo } from 'react';
+import React from 'react';
 import { useAppSelector } from '../../redux/app/hooks';
 import { RootState } from '../../redux/app/store';
 import { FeatureKeys } from '../../redux/features/app/AppState';
@@ -23,6 +23,7 @@ import { ShareBotMenu } from './controls/ShareBotMenu';
 import { DocumentsTab } from './tabs/DocumentsTab';
 import { PersonaTab } from './tabs/PersonaTab';
 import { PlansTab } from './tabs/PlansTab';
+import { useChatSpecilization } from '../../libs/hooks/useChatSpecilization';
 
 enum ChatWindowTabEnum {
     CHAT = 'CHAT',
@@ -70,18 +71,11 @@ export const ChatWindow: React.FC = () => {
     const classes = useClasses();
     const { features } = useAppSelector((state: RootState) => state.app);
     const { conversations, selectedId } = useAppSelector((state: RootState) => state.conversations);
-    const { specializations } = useAppSelector((state: RootState) => state.app);
+    const specialization = useChatSpecilization();
     const [selectedTab, setSelectedTab] = React.useState<TabValue>(ChatWindowTabEnum.CHAT);
 
     const showShareBotMenu = features[FeatureKeys.BotAsDocs].enabled || features[FeatureKeys.MultiUserChat].enabled;
     const chatName = conversations[selectedId].title;
-
-    // Retrieve the specilization from the current conversation specilization key
-    const specialization = useMemo(() => {
-        if (!selectedId) return;
-        const specializationKey = conversations[selectedId].specializationKey;
-        return specializations.find((spec) => spec.key === specializationKey);
-    }, [selectedId, conversations, specializations]);
 
     const onTabSelect: SelectTabEventHandler = (_event, data) => {
         setSelectedTab(data.value);
@@ -95,7 +89,7 @@ export const ChatWindow: React.FC = () => {
                         key={'Semantic Kernel Bot'}
                         size="medium"
                         avatar={{
-                            image: { src: specialization?.iconFilepath ?? conversations[selectedId].botProfilePicture },
+                            image: { src: conversations[selectedId].botProfilePicture },
                         }}
                         presence={{ status: 'available' }}
                     />
