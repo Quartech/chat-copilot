@@ -84,3 +84,16 @@ resource "azurerm_key_vault_access_policy" "vaultaccess" {
 
 
 
+##################
+# Cosmos DB
+##################
+
+module "azure_cosmosdb" {
+  source                    = "./modules/azure-cosmosdb"
+  cosmosdb_account_location = var.location
+  resource_group_name       = azurerm_resource_group.kv.name
+  location                  = var.location
+  cosmosdb_sql_containers   = var.cosmosdb_sql_containers
+  throughput                = var.throughput
+  tags                      = var.tags
+}

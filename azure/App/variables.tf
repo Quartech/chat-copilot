@@ -53,6 +53,34 @@ variable "location" {
   description = "Azure region where the resource group will be created"
 }
 
+##################
+# Cosmos DB #
+##################
+variable "cosmosdb_sql_containers" {
+  type = list(object({
+    name               = string
+    partition_key_path = string
+  }))
+  default = [
+    { name = "chatsessions", partition_key_path = "/id" },
+    { name = "chatmessages", partition_key_path = "/chatId" }
+  ]
+}
+
+variable "throughput" {
+  type        = number
+  default     = 800
+  description = "Cosmos db database throughput"
+  validation {
+    condition     = var.throughput >= 400 && var.throughput <= 1000000
+    error_message = "Cosmos db manual throughput should be equal to or greater than 400 and less than or equal to 1000000."
+  }
+  validation {
+    condition     = var.throughput % 100 == 0
+    error_message = "Cosmos db throughput should be in increments of 100."
+  }
+}
+
 
 ###################
 # SQL Server #
@@ -62,10 +90,10 @@ variable "location" {
 #   description = "The names of the Azure SQL Database to be created for each environment"
 # }
 
-variable "sku_name" {
-  type    = string
-  default = "S0"
-}
+# variable "sku_name" {
+#   type    = string
+#   default = "S0"
+# }
 
 ###################
 # Existing Resources Needed #

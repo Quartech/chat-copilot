@@ -6,9 +6,16 @@ region_code = "cnc"
 
 project_code = "copilot"
 
-kubernetes_cluster_name = "aks-pegasus-cnc-shared"
+kubernetes_cluster_name        = "aks-pegasus-cnc-shared"
 kubernetes_resource_group_name = "rg-pegasus-cnc-shared-aks"
 
 environment = "dev"
 
 //database_names = ["UserManagement", "SupervisorNotes", "SystemAdministration", "PersonsSearch"]
+cosmosdb_sql_containers = [
+  { name = "chatsessions", partition_key_path = "/id" },
+  { name = "chatmessages", partition_key_path = "/chatId" },
+  { name = "chatmemorysources", partition_key_path = "/chatId" },
+  { name = "chatparticipants", partition_key_path = "/chatId" }
+]
+
