@@ -233,7 +233,7 @@ public static class CopilotChatServiceExtensions
                 chatSpecializationSessionStorageContext = new CosmosDbContext<ChatSpecializationSession>(
                     chatStoreConfig.Cosmos.ConnectionString, chatStoreConfig.Cosmos.Database, chatStoreConfig.Cosmos.ChatSpecializationSessionsContainer);
                 specializationSourceStorageContext = new CosmosDbContext<SpecializationSource>(
-                    chatStoreConfig.Cosmos.ConnectionString, chatStoreConfig.Cosmos.Database, chatStoreConfig.Cosmos.SpecializationAdminContainer);
+                    chatStoreConfig.Cosmos.ConnectionString, chatStoreConfig.Cosmos.Database, chatStoreConfig.Cosmos.SpecializationSourceContainer);
 #pragma warning restore CA2000 // Dispose objects before losing scope
                 break;
             }

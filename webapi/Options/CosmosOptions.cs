@@ -56,5 +56,5 @@ public class CosmosOptions
     /// Gets or sets the Cosmos container for specialization sources.
     /// </summary>
     [Required, NotEmptyOrWhitespace]
-    public string SpecializationAdminContainer { get; set; } = string.Empty;
+    public string SpecializationSourceContainer { get; set; } = string.Empty;
 }
