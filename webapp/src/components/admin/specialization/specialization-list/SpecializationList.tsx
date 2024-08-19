@@ -1,5 +1,3 @@
-/* eslint-disable react/jsx-no-undef */
-
 import { Button, makeStyles, shorthands, tokens } from '@fluentui/react-components';
 import { FC } from 'react';
 import { Breakpoints } from '../../../../styles';
