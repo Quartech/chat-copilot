@@ -25,8 +25,6 @@ export const SpecializationListItemActions: React.FC<ISpecializationListItemActi
     const specialization = useSpecialization();
     const classes = useClasses();
     const [activeMode, setActiveMode] = useState(false);
-    console.log(specializationId);
-    console.log(name);
 
     const onSwitchSpecialization = (checked: boolean) => {
         setActiveMode(checked);

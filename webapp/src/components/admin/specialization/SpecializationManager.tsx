@@ -90,7 +90,6 @@ export const SpecializationManager: React.FC = () => {
             setEditMode(false);
             resetSpecialization();
         }
-        console.log(editMode);
     }, [editMode, selectedKey, specializations]);
 
     const onDeleteChat = () => {
