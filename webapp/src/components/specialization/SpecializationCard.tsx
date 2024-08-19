@@ -111,7 +111,9 @@ export const SpecializationCard: React.FC<SpecializationItemProps> = ({ speciali
                     action={
                         <div
                             className={
-                                (specialization.description.length > 250 || specialization.key == 'general') ? styles.showTooltip : styles.hideTooltip
+                                specialization.description.length > 250 || specialization.key == 'general'
+                                    ? styles.showTooltip
+                                    : styles.hideTooltip
                             }
                             key={specializationId}
                         >

@@ -23,14 +23,12 @@ const useClasses = makeStyles({
 
 interface IDeleteSpecializationProps {
     specializationId: string;
-    name: string
+    name: string;
 }
 
 export const DeleteSpecializationDialog: React.FC<IDeleteSpecializationProps> = ({ specializationId, name }) => {
     const classes = useClasses();
     const specialization = useSpecialization();
-
-    
 
     const onDeleteChat = () => {
         void specialization.deleteSpecialization(specializationId);

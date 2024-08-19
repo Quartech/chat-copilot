@@ -31,7 +31,7 @@ export interface RootState {
     plugins: PluginsState;
     users: UsersState;
     search: SearchState;
-    admin: AdminState
+    admin: AdminState;
 }
 
 export const getSelectedChatID = (): string => {

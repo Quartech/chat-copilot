@@ -1,6 +1,6 @@
 /* eslint-disable react/jsx-no-undef */
 
-import {  Button, makeStyles, shorthands, tokens } from '@fluentui/react-components';
+import { Button, makeStyles, shorthands, tokens } from '@fluentui/react-components';
 import { FC } from 'react';
 import { Breakpoints } from '../../../../styles';
 import { Add20 } from '../../../shared/BundledIcons';
@@ -46,7 +46,6 @@ const useClasses = makeStyles({
             justifyContent: 'center',
         }),
     },
-    
 });
 
 export const SpecializationList: FC = () => {
@@ -55,23 +54,24 @@ export const SpecializationList: FC = () => {
 
     const onAddSpecializationClick = () => {
         dispatch(setSelectedKey(''));
-    }
-
+    };
 
     return (
         <>
             <div className={classes.root}>
                 <div className={classes.header}>
-                    <Button data-testid="createNewSpecializationButton" 
-                    icon={<Add20 />} 
-                    appearance="transparent" 
-                    onClick={() => {
-                        onAddSpecializationClick();
-                    }}/> </div>
-                    <div aria-label={'specialization list'} className={classes.list}>
-                        <SpecializationListSection header="All" />
-                    </div>
-               
+                    <Button
+                        data-testid="createNewSpecializationButton"
+                        icon={<Add20 />}
+                        appearance="transparent"
+                        onClick={() => {
+                            onAddSpecializationClick();
+                        }}
+                    />{' '}
+                </div>
+                <div aria-label={'specialization list'} className={classes.list}>
+                    <SpecializationListSection header="All" />
+                </div>
             </div>
         </>
     );

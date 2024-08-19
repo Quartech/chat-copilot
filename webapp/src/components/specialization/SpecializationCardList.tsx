@@ -29,18 +29,17 @@ const responsive = {
 const useClasses = makeStyles({
     innercontainerclass: {
         height: '330px',
-        position:'relative',
-        display: 'block'
+        position: 'relative',
+        display: 'block',
     },
     innertitle: {
         textAlign: 'center',
     },
     carouselroot: {
-        position:'relative',
+        position: 'relative',
         //marginRight: 'calc(100% - 1024px)',
         display: 'block',
-        'width':'700px',
-        
+        width: '700px',
     },
 });
 
@@ -61,7 +60,7 @@ export const SpecializationCardList: React.FC<SpecializationProps> = ({ speciali
             return _specialization.groupMemberships.includes(val);
         });
         // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-        if ((hasMembership && _specialization.isActive)|| _specialization.key == 'general' ) {
+        if ((hasMembership && _specialization.isActive) || _specialization.key == 'general') {
             return _specialization;
         }
         return;

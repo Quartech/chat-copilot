@@ -39,13 +39,13 @@ export class SpecializationService extends BaseService {
             description,
             roleInformation,
             indexName,
-            imageFilePath
-        };    
+            imageFilePath,
+        };
         const result = await this.getResponseAsync<ISpecialization>(
             {
                 commandPath: 'specializations',
                 method: 'POST',
-                body
+                body,
             },
             accessToken,
         );
@@ -53,7 +53,7 @@ export class SpecializationService extends BaseService {
     };
 
     public updateSpecializationAsync = async (
-        specializationId:string,
+        specializationId: string,
         key: string,
         name: string,
         description: string,
@@ -68,13 +68,13 @@ export class SpecializationService extends BaseService {
             description,
             roleInformation,
             indexName,
-            imageFilePath
-        };    
+            imageFilePath,
+        };
         const result = await this.getResponseAsync<ISpecialization>(
             {
                 commandPath: `specializations/${specializationId}`,
                 method: 'PATCH',
-                body
+                body,
             },
             accessToken,
         );
@@ -82,18 +82,18 @@ export class SpecializationService extends BaseService {
     };
 
     public onOffSpecializationAsync = async (
-        specializationId:string,
+        specializationId: string,
         isActive: boolean,
         accessToken: string,
     ): Promise<ISpecialization> => {
         const body: ISpecializationToggleRequest = {
-            isActive
-        };    
+            isActive,
+        };
         const result = await this.getResponseAsync<ISpecialization>(
             {
                 commandPath: `specializations/${specializationId}`,
                 method: 'PATCH',
-                body
+                body,
             },
             accessToken,
         );
@@ -111,6 +111,4 @@ export class SpecializationService extends BaseService {
 
         return result;
     };
-
-
 }

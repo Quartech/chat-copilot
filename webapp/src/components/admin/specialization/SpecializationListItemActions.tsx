@@ -30,22 +30,22 @@ export const SpecializationListItemActions: React.FC<ISpecializationListItemActi
 
     const onSwitchSpecialization = (checked: boolean) => {
         setActiveMode(checked);
-        void specialization.toggleSpecialization(specializationId, activeMode);        
+        void specialization.toggleSpecialization(specializationId, activeMode);
     };
 
     return (
         <div className={classes.root}>
             <>
-            <Switch
-          color="#0000"
-          width={40}
-          height={20}
-          checked={specializationMode}
-          onChange={(_event, data) => {
-            onSwitchSpecialization(data.checked);
-        }}
-        className="react-switch"
-        />
+                <Switch
+                    color="#0000"
+                    width={40}
+                    height={20}
+                    checked={specializationMode}
+                    onChange={(_event, data) => {
+                        onSwitchSpecialization(data.checked);
+                    }}
+                    className="react-switch"
+                />
             </>
         </div>
     );

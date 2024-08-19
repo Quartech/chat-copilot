@@ -1,8 +1,4 @@
-
-import {
-    makeStyles,
-    tokens,
-} from '@fluentui/react-components';
+import { makeStyles, tokens } from '@fluentui/react-components';
 
 import React from 'react';
 
@@ -20,10 +16,10 @@ const useClasses = makeStyles({
 
 export const AdminWindow: React.FC = () => {
     const classes = useClasses();
-    
+
     return (
         <div className={classes.root}>
-            <SpecializationManager/>
+            <SpecializationManager />
         </div>
     );
 };

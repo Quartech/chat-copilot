@@ -371,7 +371,9 @@ export const useChat = () => {
                     userDataLoaded: false,
                     disabled: false,
                     hidden: false,
-                    specializationKey: result.specialization ? result.specialization.specializationKey : defaultSpecialization,
+                    specializationKey: result.specialization
+                        ? result.specialization.specializationKey
+                        : defaultSpecialization,
                 };
 
                 dispatch(addConversation(newChat));
@@ -399,7 +401,7 @@ export const useChat = () => {
         }
     };
 
-    const editChatSpecialization = async (chatId: string, specializationKey : string) => {
+    const editChatSpecialization = async (chatId: string, specializationKey: string) => {
         try {
             await chatService.editChatSepcializationAsync(
                 chatId,

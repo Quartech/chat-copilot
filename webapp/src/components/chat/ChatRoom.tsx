@@ -45,7 +45,7 @@ const useClasses = makeStyles({
         display: 'block',
         lineHeight: tokens.lineHeightBase100,
         justifyContent: 'center',
-        position:'relative'
+        position: 'relative',
     },
 });
 
@@ -129,8 +129,7 @@ export const ChatRoom: React.FC = () => {
             {showSpecialization && (
                 <div className={classes.carouselroot}>
                     <div className={classes.carouselwrapper}>
-                       <SpecializationCardList specializations={specializations} />
-                    
+                        <SpecializationCardList specializations={specializations} />
                     </div>
                 </div>
             )}

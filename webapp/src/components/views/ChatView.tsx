@@ -25,10 +25,10 @@ export const ChatView: FC = () => {
 
     return (
         <div className={classes.container}>
-            <ChatType/>
-            {isAdminSelected && <AdminWindow/>}  
-            {selected && <SearchWindow/>}     
-            {selectedId !== '' && !selected && !isAdminSelected && <ChatWindow />}  
+            <ChatType />
+            {isAdminSelected && <AdminWindow />}
+            {selected && <SearchWindow />}
+            {selectedId !== '' && !selected && !isAdminSelected && <ChatWindow />}
         </div>
     );
 };

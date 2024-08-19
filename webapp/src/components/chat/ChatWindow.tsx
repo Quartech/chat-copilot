@@ -130,7 +130,7 @@ export const ChatWindow: React.FC = () => {
                                     title="Persona Tab"
                                 >
                                     Persona
-                                </Tab> */}                                
+                                </Tab> */}
                             </>
                         )}
                     </TabList>

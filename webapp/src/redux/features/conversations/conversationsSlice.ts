@@ -28,7 +28,10 @@ export const conversationsSlice = createSlice({
             state.conversations[id].title = newTitle;
             frontLoadChat(state, id);
         },
-        editConversationSpecialization: (state: ConversationsState, action: PayloadAction<ConversationSpecializationChange>) => {
+        editConversationSpecialization: (
+            state: ConversationsState,
+            action: PayloadAction<ConversationSpecializationChange>,
+        ) => {
             const id = action.payload.id;
             state.conversations[id].specializationKey = action.payload.newSpecializationKey;
             frontLoadChat(state, id);
@@ -254,7 +257,7 @@ export const {
     deleteConversation,
     disableConversation,
     updatePluginState,
-    editConversationSpecialization
+    editConversationSpecialization,
 } = conversationsSlice.actions;
 
 export default conversationsSlice.reducer;

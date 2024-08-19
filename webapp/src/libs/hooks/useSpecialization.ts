@@ -6,7 +6,13 @@ import { SpecializationService } from '../services/SpecializationService';
 import { AuthHelper } from '../auth/AuthHelper';
 import { AlertType } from '../models/AlertType';
 import { getErrorDetails } from '../../components/utils/TextUtils';
-import { addSpecialization, removeSpecialization, editSpecialization, setSpecializations, setSpecializationIndexes } from '../../redux/features/admin/adminSlice';
+import {
+    addSpecialization,
+    removeSpecialization,
+    editSpecialization,
+    setSpecializations,
+    setSpecializationIndexes,
+} from '../../redux/features/admin/adminSlice';
 import { ISpecialization } from '../models/Specialization';
 
 export const useSpecialization = () => {
@@ -100,18 +106,11 @@ export const useSpecialization = () => {
         }
     };
 
-    const toggleSpecialization = async (
-        id: string,
-        isActive: boolean,
-    ) => {
+    const toggleSpecialization = async (id: string, isActive: boolean) => {
         try {
             const accessToken = await AuthHelper.getSKaaSAccessToken(instance, inProgress);
             await specializationService
-                .onOffSpecializationAsync(
-                    id,
-                    isActive,
-                    accessToken,
-                )
+                .onOffSpecializationAsync(id, isActive, accessToken)
                 .then((result: ISpecialization) => {
                     dispatch(editSpecialization(result));
                 });
@@ -120,7 +119,6 @@ export const useSpecialization = () => {
             dispatch(addAlert({ message: errorMessage, type: AlertType.Error }));
         }
     };
-
 
     const deleteSpecialization = async (specializationId: string) => {
         await specializationService

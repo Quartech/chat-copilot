@@ -42,18 +42,21 @@ export const ChatType: FC = () => {
 
     useEffect(() => {
         if (selectedTab === 'search') {
-            
-            if(selectedId && conversations[selectedId].specializationKey && conversations[selectedId].specializationKey != "general") {
+            if (
+                selectedId &&
+                conversations[selectedId].specializationKey &&
+                conversations[selectedId].specializationKey != 'general'
+            ) {
                 const chatSpecializationKey: string = conversations[selectedId].specializationKey;
                 dispatch(setSearchSelected({ selected: true, specializationKey: chatSpecializationKey }));
             } else {
                 dispatch(setSearchSelected({ selected: true, specializationKey: '' }));
             }
             dispatch(setAdminSelected(false));
-        }  else if (selectedTab === 'admin') {
+        } else if (selectedTab === 'admin') {
             dispatch(setAdminSelected(true));
             dispatch(setSearchSelected({ selected: false, specializationKey: '' }));
-        }   else {
+        } else {
             dispatch(setSearchSelected({ selected: false, specializationKey: '' }));
             dispatch(setAdminSelected(false));
         }
@@ -68,20 +71,13 @@ export const ChatType: FC = () => {
                 <Tab data-testid="searchTab" id="search" value="search" aria-label="Search Tab" title="Search Tab">
                     Search
                 </Tab>
-                <Tab
-                    data-testid="adminTab"
-                    id="admin"
-                    value="admin"
-                    aria-label="admin Tab"
-                    title="Admin Tab"
-                >
+                <Tab data-testid="adminTab" id="admin" value="admin" aria-label="admin Tab" title="Admin Tab">
                     Admin
                 </Tab>
             </TabList>
             {selectedTab === 'chat' && <ChatList />}
             {selectedTab === 'search' && <SearchList />}
             {selectedTab === 'admin' && <SpecializationList />}
-            
         </div>
     );
 };

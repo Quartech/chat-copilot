@@ -53,9 +53,7 @@ export const SpecializationDialog: React.FC = ({}) => {
                     </DialogTitle>
                     <DialogTrigger action="close" disableButtonEnhancement>
                         <DialogContent>
-                            <SpecializationCardList
-                                    specializations={specializations}
-                                />
+                            <SpecializationCardList specializations={specializations} />
                         </DialogContent>
                     </DialogTrigger>
                 </DialogBody>

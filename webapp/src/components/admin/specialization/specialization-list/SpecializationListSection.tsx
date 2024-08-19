@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable react/jsx-key */
-import { makeStyles,  shorthands,  Text, tokens } from '@fluentui/react-components';
+import { makeStyles, shorthands, Text, tokens } from '@fluentui/react-components';
 import { RootState } from '../../../../redux/app/store';
 import { Breakpoints } from '../../../../styles';
 import { SpecializationListItem } from './SpecializationListItem';
@@ -38,17 +38,20 @@ export const SpecializationListSection: React.FC<IChatListSectionProps> = ({ hea
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-return
     const { selectedKey } = useAppSelector((state: RootState) => state.admin);
 
-
     return specializations.length > 0 ? (
         <div className={classes.root}>
             <Text className={classes.header}>{header}</Text>
             {specializations.map((specialization) => {
-                 
-                    const isSelected = specialization.key === selectedKey;
-                    return specialization.key != 'general' ? (
-                    <SpecializationListItem specializationId={specialization.id} specializationKey={specialization.key} name={specialization.name} specializationMode={specialization.isActive} isSelected={isSelected}/>
-                    ) : null;
-                
+                const isSelected = specialization.key === selectedKey;
+                return specialization.key != 'general' ? (
+                    <SpecializationListItem
+                        specializationId={specialization.id}
+                        specializationKey={specialization.key}
+                        name={specialization.name}
+                        specializationMode={specialization.isActive}
+                        isSelected={isSelected}
+                    />
+                ) : null;
             })}
         </div>
     ) : null;

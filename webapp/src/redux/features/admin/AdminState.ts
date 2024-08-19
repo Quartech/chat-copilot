@@ -1,4 +1,4 @@
-import { ISpecialization } from "../../../libs/models/Specialization";
+import { ISpecialization } from '../../../libs/models/Specialization';
 
 export type Specializations = Record<string, AdminState>;
 
@@ -10,15 +10,15 @@ export interface AdminState {
 }
 export const Specializations = [
     {
-        // Basic settings 
+        // Basic settings
         id: '',
         key: 'general',
         name: 'General',
         description: 'General',
         roleInformation: '',
-        indexName:'',
-        imageFilePath: '',      
-        isActive: true,  
+        indexName: '',
+        imageFilePath: '',
+        isActive: true,
         groupMemberships: [],
         strictness: 3,
         documentCount: 20,
@@ -28,5 +28,5 @@ export const initialState: AdminState = {
     isAdminSelected: false,
     specializations: Specializations,
     specializationIndexes: [],
-    selectedKey: ''
-}
+    selectedKey: '',
+};
