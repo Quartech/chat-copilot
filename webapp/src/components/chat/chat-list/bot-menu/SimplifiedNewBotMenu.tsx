@@ -20,7 +20,6 @@ import { RootState } from '../../../../redux/app/store';
 import { FeatureKeys } from '../../../../redux/features/app/AppState';
 import { Add20 } from '../../../shared/BundledIcons';
 import { InvitationJoinDialog } from '../../invitation-dialog/InvitationJoinDialog';
-//import { SpecializationDialog } from '../dialogs/SpecializationDialog';
 
 interface SimplifiedNewBotMenuProps {
     onFileUpload: () => void;

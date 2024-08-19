@@ -115,12 +115,6 @@ export const SpecializationManager: React.FC = () => {
                 }}
             />
             <label>Index Name</label>
-            {/* <Input
-                value={indexName}
-                onChange={(_event, data) => {
-                    setIndexName(data.value);
-                }}
-            /> */}
             <Dropdown
                 aria-labelledby={dropdownId}
                 placeholder="Select Index"

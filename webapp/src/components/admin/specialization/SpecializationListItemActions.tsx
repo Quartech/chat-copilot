@@ -2,7 +2,6 @@ import { makeStyles, Switch } from '@fluentui/react-components';
 import React, { useState } from 'react';
 import { Breakpoints } from '../../../styles';
 import { useSpecialization } from '../../../libs/hooks';
-//import { DeleteSpecializationDialog } from './specialization-list/dialogs/DeleteSpecializationDialog';
 
 const useClasses = makeStyles({
     root: {

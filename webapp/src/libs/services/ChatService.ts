@@ -19,7 +19,6 @@ export class ChatService extends BaseService {
     public createChatAsync = async (title: string, accessToken: string): Promise<ICreateChatSessionResponse> => {
         const body = {
             title,
-            //specializationKey,
         };
 
         const result = await this.getResponseAsync<ICreateChatSessionResponse>(
