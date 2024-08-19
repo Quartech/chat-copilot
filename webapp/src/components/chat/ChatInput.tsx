@@ -221,8 +221,6 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
                 />
             </div>
             <div className={classes.controls}>
-                {/*Changes to support uploading files for general specialization only. */}
-                {conversations[selectedId].specializationKey === 'general' && (
                     <div className={classes.functional}>
                         {/* Hidden input for file upload. Only accept .txt and .pdf files for now. */}
                         <input
@@ -248,7 +246,6 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
                         />
                         {importingDocuments && importingDocuments.length > 0 && <Spinner size="tiny" />}
                     </div>
-                )}
                 <div className={classes.essentials}>
                     {recognizer && (
                         <Button
