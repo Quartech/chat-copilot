@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Quartech. All rights reserved.
 
 using System;
 using System.Text.Json.Serialization;
@@ -6,6 +6,9 @@ using CopilotChat.WebApi.Storage;
 
 namespace CopilotChat.WebApi.Models.Storage;
 
+/// <summary>
+/// The ChatUsers settings
+/// </summary>
 public class ChatUserSettings
 {
     /// <summary>
@@ -40,7 +43,15 @@ public class ChatUser : IStorageEntity
     /// </summary>
     public string UserId { get; set; }
 
+    /// <summary>
+    /// The users settings
+    /// </summary>
     public ChatUserSettings settings { get; set; }
+
+    /// <summary>
+    /// Timestamp of the Chat user creation
+    /// </summary>
+    public DateTimeOffset CreatedOn { get; set; }
 
     /// <summary>
     /// The partition key for the source.
@@ -52,6 +63,7 @@ public class ChatUser : IStorageEntity
     {
         this.Id = Guid.NewGuid().ToString();
         this.UserId = userId;
+        this.CreatedOn = DateTimeOffset.Now;
         this.settings = new ChatUserSettings
         {
             darkMode = false,

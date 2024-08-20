@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Quartech. All rights reserved.
 
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -7,12 +7,12 @@ using CopilotChat.WebApi.Models.Storage;
 namespace CopilotChat.WebApi.Storage;
 
 /// <summary>
-/// A repository for chat sessions.
+/// A repository for chat users.
 /// </summary>
 public class ChatUserRepository : Repository<ChatUser>
 {
     /// <summary>
-    /// Initializes a new instance of the ChatParticipantRepository class.
+    /// Initializes a new instance of the ChatUserRepository class.
     /// </summary>
     /// <param name="storageContext">The storage context.</param>
     public ChatUserRepository(IStorageContext<ChatUser> storageContext)
@@ -21,11 +21,10 @@ public class ChatUserRepository : Repository<ChatUser>
     }
 
     /// <summary>
-    /// Finds chat participants by user id.
-    /// A user can be part of multiple chats, thus a user can have multiple chat participants.
+    /// Finds user by user id.
     /// </summary>
     /// <param name="userId">The user id.</param>
-    /// <returns>A list of chat participants of the same user id in different chat sessions.</returns>
+    /// <returns>A list of the user found.</returns>
     public Task<IEnumerable<ChatUser>> FindByUserIdAsync(string userId)
     {
         return base.StorageContext.QueryEntitiesAsync(e => e.UserId == userId);

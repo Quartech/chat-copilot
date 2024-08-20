@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Quartech. All rights reserved.
 
 using System.Linq;
 using System.Net.Http;
@@ -17,13 +17,13 @@ namespace CopilotChat.WebApi.Controllers;
 /// Controller responsible for handling loading and updating chat users settings
 /// </summary>
 [ApiController]
-public class SettingsController : ControllerBase
+public class UserSettingsController : ControllerBase
 {
-    private readonly ILogger<ChatController> _logger;
+    private readonly ILogger<UserSettingsController> _logger;
     private readonly IHttpClientFactory _httpClientFactory;
 
-    public SettingsController(
-        ILogger<ChatController> logger,
+    public UserSettingsController(
+        ILogger<UserSettingsController> logger,
         IHttpClientFactory httpClientFactory)
     {
         this._logger = logger;
@@ -36,7 +36,7 @@ public class SettingsController : ControllerBase
     /// <param name="chatUserRepository">The injected chat user repository</param>
     /// <param name="authInfo">Auth info for the current request.</param>
     /// <returns>Results containing the response from the model.</returns>
-    [Route("settings")]
+    [Route("user-settings")]
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -47,7 +47,7 @@ public class SettingsController : ControllerBase
         [FromServices] ChatUserRepository chatUserRepository,
         [FromServices] IAuthInfo authInfo)
     {
-        this._logger.LogDebug("Settings request message received.");
+        this._logger.LogDebug("Settings request received.");
 
         var userId = authInfo.UserId;
         System.Collections.Generic.IEnumerable<ChatUser> users = await chatUserRepository.FindByUserIdAsync(authInfo.UserId);
@@ -67,7 +67,7 @@ public class SettingsController : ControllerBase
     /// <param name="chatUserRepository">The injected chat user repository</param>
     /// <param name="authInfo">Auth info for the current request.</param>
     /// <returns>Results containing the response from the model.</returns>
-    [Route("settings")]
+    [Route("user-settings")]
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -79,12 +79,12 @@ public class SettingsController : ControllerBase
         [FromServices] IAuthInfo authInfo,
         [FromBody] UpdateSettings request)
     {
-        this._logger.LogDebug("Settings request message received.");
+        this._logger.LogDebug("Settings update received.");
 
         System.Collections.Generic.IEnumerable<ChatUser> users = await chatUserRepository.FindByUserIdAsync(authInfo.UserId);
         if (!users.Any())
         {
-            return this.BadRequest("Chat session does not exist.");
+            return this.BadRequest("Chat user does not exist.");
         };
 
         var user = users.First();

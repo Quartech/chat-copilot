@@ -101,7 +101,6 @@ export const {
     setServiceInfo,
     setMaintenance,
     setAuthConfig,
-    setSpecialization,
     setFeatureFlag,
 } = appSlice.actions;
 

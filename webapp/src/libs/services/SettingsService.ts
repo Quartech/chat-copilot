@@ -5,7 +5,7 @@ export class SettingService extends BaseService {
     public getUserSettingsAsync = async (accessToken: string): Promise<IUserSettings> => {
         return await this.getResponseAsync<IUserSettings>(
             {
-                commandPath: 'settings',
+                commandPath: 'user-settings',
                 method: 'GET',
             },
             accessToken,
@@ -15,7 +15,7 @@ export class SettingService extends BaseService {
     public saveUserSettings = async (accessToken: string, body: any): Promise<IUserSettings> => {
         return await this.getResponseAsync<IUserSettings>(
             {
-                commandPath: 'settings',
+                commandPath: 'user-settings',
                 method: 'POST',
                 body,
             },
