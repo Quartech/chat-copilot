@@ -35,8 +35,6 @@ export enum ChatMessageType {
  * States for RLHF
  */
 export enum UserFeedback {
-    Unknown = 'Unknown',
-    Requested = 'Requested',
     Positive = 'Positive',
     Negative = 'Negative',
 }

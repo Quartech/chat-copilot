@@ -16,9 +16,14 @@ namespace CopilotChat.WebApi.Models.Storage;
 [JsonConverter(typeof(JsonStringEnumConverter))]
 public enum UserFeedback
 {
-    Unknown,
-    Requested,
+    /// <summary>
+    /// Positive feedback
+    /// </summary>
     Positive,
+
+    /// <summary>
+    /// Negative feedback
+    /// </summary>
     Negative,
 }
 
