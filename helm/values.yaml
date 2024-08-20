@@ -356,6 +356,11 @@ webapi:
         secretKeyRef:
           name: q-copilot-webapi-secret
           key: QAzureOpenAIChatConfig-Specializations-5-VectorizationSource-APIKey
+    - name: "ChatStore__Cosmos__ConnectionString"
+      valueFrom:
+        secretKeyRef:
+          name: q-copilot-webapi-secret
+          key: ChatStore-Cosmos-ConnectionString
     - name: "APP_NAME"
       value: "webapi"
 
@@ -419,6 +424,7 @@ webapi:
         QAzureOpenAIChatConfig-Specializations-4-VectorizationSource-APIKey,
         QAzureOpenAIChatConfig-Specializations-5-ApiKey,
         QAzureOpenAIChatConfig-Specializations-5-VectorizationSource-APIKey,
+        ChatStore-Cosmos-ConnectionString,
       ]
 
   ingress:

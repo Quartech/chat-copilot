@@ -1,11 +1,11 @@
 resource "azurerm_cosmosdb_account" "main" {
-  name                      = var.name
-  location                  = var.location
-  resource_group_name       = var.resource_group_name
-  offer_type                = "Standard"
-  kind                      = "GlobalDocumentDB"
-  enable_automatic_failover = false
-  enable_free_tier          = true
+  name                       = var.name
+  location                   = var.location
+  resource_group_name        = var.resource_group_name
+  offer_type                 = "Standard"
+  kind                       = "GlobalDocumentDB"
+  automatic_failover_enabled = false
+  free_tier_enabled          = false
   geo_location {
     location          = var.location
     failover_priority = 0
@@ -15,9 +15,6 @@ resource "azurerm_cosmosdb_account" "main" {
     max_interval_in_seconds = 300
     max_staleness_prefix    = 100000
   }
-  depends_on = [
-    azurerm_resource_group.example
-  ]
 }
 
 resource "azurerm_cosmosdb_sql_database" "main" {
@@ -28,12 +25,12 @@ resource "azurerm_cosmosdb_sql_database" "main" {
 }
 
 resource "azurerm_cosmosdb_sql_container" "azurerm_cosmosdb_sql_containers" {
-  for_each              = toset(var.cosmosdb_sql_containers)
+  for_each              = { for record in var.cosmosdb_sql_containers : record.name => record }
   name                  = each.key
   resource_group_name   = var.resource_group_name
   account_name          = azurerm_cosmosdb_account.main.name
   database_name         = azurerm_cosmosdb_sql_database.main.name
   partition_key_paths   = [each.value.partition_key_path]
   partition_key_version = 2
-  throughput            = var.throughput
+  //throughput            = var.throughput
 }

@@ -108,3 +108,13 @@ variable "kubernetes_resource_group_name" {
   type        = string
   description = "Existing AKS Cluster Resource Group Name where the App will be deployed"
 }
+
+variable "kubernetes_azure_subscription_id" {
+  type        = string
+  description = "Existing AKS Cluster Azure Subscription ID"
+}
+
+variable "kubernetes_azure_tenant_id" {
+  type        = string
+  description = "Existing AKS Cluster Azure Tenant ID"
+}

@@ -3,6 +3,8 @@ data "azurerm_client_config" "current" {}
 data "azurerm_kubernetes_cluster" "aks" {
   name                = var.kubernetes_cluster_name
   resource_group_name = var.kubernetes_resource_group_name
+
+  provider = azurerm.kubernetes
 }
 
 ##################
@@ -19,6 +21,7 @@ resource "azurerm_resource_group" "sql" {
 resource "azurerm_resource_group" "kv" {
   name     = "rg-${local.standard_name}-kv"
   location = var.location
+  provider = azurerm.kubernetes
 }
 
 resource "azurerm_resource_group" "cosmos" {
@@ -53,6 +56,8 @@ module "kubernetes_namespace" {
   environment  = var.environment
   project_code = var.project_code
 
+  providers = { azurerm = azurerm.kubernetes, kubernetes = kubernetes }
+
 }
 
 
@@ -67,6 +72,8 @@ module "azure_keyvault" {
   enabled_for_template_deployment = false
 
   tags = var.tags
+
+  providers = { azurerm = azurerm.kubernetes }
 }
 
 resource "azurerm_key_vault_access_policy" "vaultaccess" {
@@ -77,12 +84,13 @@ resource "azurerm_key_vault_access_policy" "vaultaccess" {
   secret_permissions = [
     "Get", "List"
   ]
+  provider = azurerm.kubernetes
 }
 
 ##################
 # Azure App Registration
 ##################
-
+/*
 resource "azuread_application_registration" "example" {
   display_name     = "Example Application"
   description      = "My example application"
@@ -224,7 +232,7 @@ resource "azuread_application" "frontend" {
     }
   }
 }
-
+*/
 
 
 ##################
