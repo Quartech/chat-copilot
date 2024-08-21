@@ -90,10 +90,7 @@ public class QAzureOpenAIChatExtension
     /// <summary>
     /// Retrieve the Azure configuration.
     /// </summary>
-    public AzureConfig GetAzureConfig()
-    {
-        return this._qAzureOpenAIChatOptions.AzureConfig;
-    }
+    public AzureConfig AzureConfig => this._qAzureOpenAIChatOptions.AzureConfig;
 
     /// <summary>
     /// Retrieve all configured specialization indexess.
