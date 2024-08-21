@@ -39,54 +39,65 @@ export const SpecializationManager: React.FC = () => {
     const [editMode, setEditMode] = useState(false);
 
     const [id, setId] = useState('');
-    const [key, setKey] = useState('');
+    const [label, setLabel] = useState('');
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
     const [roleInformation, setRoleInformation] = useState('');
     const [indexName, setIndexName] = useState('');
     const [imageFilePath, setImageFilePath] = useState('');
+    const [membershipId, setMembershipId] = useState<string[]>([]);
 
     const dropdownId = useId();
-    const { specializations, specializationIndexes, selectedKey } = useAppSelector((state: RootState) => state.admin);
+    const { specializations, specializationIndexes, selectedId } = useAppSelector((state: RootState) => state.admin);
 
     const onSaveSpecialization = () => {
         if (editMode) {
-            void specialization.updateSpecialization(
-                id,
-                key,
+            void specialization.updateSpecialization(id, {
+                label,
                 name,
                 description,
                 roleInformation,
                 indexName,
                 imageFilePath,
-            );
+                groupMemberships: [],
+            });
             resetSpecialization();
         } else {
-            void specialization.createSpecialization(key, name, description, roleInformation, indexName, imageFilePath);
+            void specialization.createSpecialization({
+                label,
+                name,
+                description,
+                roleInformation,
+                indexName,
+                imageFilePath,
+                groupMemberships: [],
+            });
             resetSpecialization();
         }
     };
 
     const resetSpecialization = () => {
         setId('');
-        setKey('');
+        setLabel('');
         setName('');
         setDescription('');
         setRoleInformation('');
+        setMembershipId([]);
         setImageFilePath('');
         setIndexName('');
     };
 
     useEffect(() => {
-        if (selectedKey != '') {
+        if (selectedId != '') {
             setEditMode(true);
-            const specializationObj = specializations.find((specialization) => specialization.key === selectedKey);
+            const specializationObj = specializations.find((specialization) => specialization.id === selectedId);
             if (specializationObj) {
                 setId(specializationObj.id);
-                setKey(specializationObj.key);
+                setLabel(specializationObj.label);
                 setName(specializationObj.name);
                 setDescription(specializationObj.description);
                 setRoleInformation(specializationObj.roleInformation);
+                setMembershipId(specializationObj.groupMemberships);
                 setImageFilePath(specializationObj.imageFilePath);
                 setIndexName(specializationObj.indexName ?? '');
             }
@@ -94,7 +105,7 @@ export const SpecializationManager: React.FC = () => {
             setEditMode(false);
             resetSpecialization();
         }
-    }, [editMode, selectedKey, specializations]);
+    }, [editMode, selectedId, specializations]);
 
     const onDeleteChat = () => {
         void specialization.deleteSpecialization(id);
@@ -103,25 +114,14 @@ export const SpecializationManager: React.FC = () => {
 
     const [isValid, setIsValid] = useState(false);
     useEffect(() => {
-        const isValid = !!key && !!name && !!roleInformation;
+        const isValid = !!label && !!name && !!roleInformation;
         setIsValid(isValid);
         return () => {};
-    }, [specializations, selectedKey, key, name, roleInformation]);
+    }, [specializations, selectedId, label, name, roleInformation]);
 
     return (
         <div className={classes.root}>
             <div className={classes.horizontal}></div>
-            <label htmlFor="key">
-                Key<span className={classes.required}>*</span>
-            </label>
-            <Input
-                id="key"
-                required
-                value={key}
-                onChange={(_event, data) => {
-                    setKey(data.value);
-                }}
-            />
             <label htmlFor="name">
                 Name<span className={classes.required}>*</span>
             </label>
@@ -133,7 +133,18 @@ export const SpecializationManager: React.FC = () => {
                     setName(data.value);
                 }}
             />
-            <label htmlFor="index-name">Index</label>
+            <label htmlFor="label">
+                Label<span className={classes.required}>*</span>
+            </label>
+            <Input
+                id="label"
+                required
+                value={label}
+                onChange={(_event, data) => {
+                    setLabel(data.value);
+                }}
+            />
+            <label htmlFor="index-name">Enrichment Index</label>
             <Dropdown
                 clearable
                 id="index-name"
@@ -171,6 +182,17 @@ export const SpecializationManager: React.FC = () => {
                 rows={Rows}
                 onChange={(_event, data) => {
                     setRoleInformation(data.value);
+                }}
+            />
+            <label htmlFor="membership">
+                Entra Membership IDs<span className={classes.required}>*</span>
+            </label>
+            <Input
+                id="membership"
+                required
+                value={membershipId.join(', ')}
+                onChange={(_event, data) => {
+                    setMembershipId(data.value.split(', '));
                 }}
             />
             <label htmlFor="image-url">Image URL</label>

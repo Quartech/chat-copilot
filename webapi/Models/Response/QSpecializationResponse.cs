@@ -18,10 +18,10 @@ public class QSpecializationResponse
     public string Id { get; set; } = string.Empty;
 
     /// <summary>
-    /// Key of the specialization
+    /// Label of the specialization
     /// </summary>
-    [JsonPropertyName("key")]
-    public string Key { get; set; } = string.Empty;
+    [JsonPropertyName("label")]
+    public string Label { get; set; } = string.Empty;
 
     /// <summary>
     /// Name of the specialization
@@ -67,10 +67,10 @@ public class QSpecializationResponse
     /// <summary>
     /// Creates new instance from SpecializationSource.
     /// </summary>
-    public QSpecializationResponse(SpecializationSource specializationSource)
+    public QSpecializationResponse(Specialization specializationSource)
     {
         this.Id = specializationSource.Id;
-        this.Key = specializationSource.Key;
+        this.Label = specializationSource.Label;
         this.Name = specializationSource.Name;
         this.Description = specializationSource.Description;
         this.RoleInformation = specializationSource.RoleInformation;
@@ -89,7 +89,7 @@ public class QSpecializationResponse
     public QSpecializationResponse(Dictionary<string, string> specializationProps)
     {
         this.Id = specializationProps["id"];
-        this.Key = specializationProps["key"];
+        this.Label = specializationProps["label"];
         this.Name = specializationProps["name"];
         this.Description = specializationProps["description"];
         this.RoleInformation = specializationProps["roleInformation"];

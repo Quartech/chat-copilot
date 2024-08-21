@@ -14,9 +14,9 @@ namespace CopilotChat.WebApi.Services;
 /// </summary>
 public class QSpecializationService : IQSpecializationService
 {
-    private SpecializationSourceRepository _specializationSourceRepository;
+    private SpecializationRepository _specializationSourceRepository;
 
-    public QSpecializationService(SpecializationSourceRepository specializationSourceRepository)
+    public QSpecializationService(SpecializationRepository specializationSourceRepository)
     {
         this._specializationSourceRepository = specializationSourceRepository;
     }
@@ -25,7 +25,7 @@ public class QSpecializationService : IQSpecializationService
     /// Retrieve all specializations.
     /// </summary>
     /// <returns>The task result contains all specializations</returns>
-    public Task<IEnumerable<SpecializationSource>> GetAllSpecializations()
+    public Task<IEnumerable<Specialization>> GetAllSpecializations()
     {
         return this._specializationSourceRepository.GetAllSpecializationsAsync();
     }
@@ -35,9 +35,9 @@ public class QSpecializationService : IQSpecializationService
     /// </summary>
     /// <param name="key">Specialization key</param>
     /// <returns>Returns the specialization source</returns>
-    public SpecializationSource GetSpecializationSource(string key)
+    public Task<Specialization> GetSpecializationAsync(string id)
     {
-        return this._specializationSourceRepository.GetSpecializationAsync(key);
+        return this._specializationSourceRepository.GetSpecializationAsync(id);
     }
 
     /// <summary>
@@ -45,9 +45,9 @@ public class QSpecializationService : IQSpecializationService
     /// </summary>
     /// <param name="qSpecializationParameters">Specialization parameters</param>
     /// <returns>The task result contains the specialization source</returns>
-    public async Task<SpecializationSource> SaveSpecialization(QSpecializationParameters qSpecializationParameters)
+    public async Task<Specialization> SaveSpecialization(QSpecializationParameters qSpecializationParameters)
     {
-        SpecializationSource specializationSource = new(qSpecializationParameters.key, qSpecializationParameters.Name, qSpecializationParameters.Description, qSpecializationParameters.RoleInformation, qSpecializationParameters.IndexName, qSpecializationParameters.ImageFilePath!);
+        Specialization specializationSource = new(qSpecializationParameters.label, qSpecializationParameters.Name, qSpecializationParameters.Description, qSpecializationParameters.RoleInformation, qSpecializationParameters.IndexName, qSpecializationParameters.ImageFilePath!, qSpecializationParameters.GroupMemberships);
         await this._specializationSourceRepository.CreateAsync(specializationSource);
         return specializationSource;
     }
@@ -58,9 +58,9 @@ public class QSpecializationService : IQSpecializationService
     /// <param name="specializationId">Unique identifier of the specialization</param>
     /// <param name="qSpecializationParameters">Specialization parameters</param>
     /// <returns>The task result contains the specialization source</returns>
-    public async Task<SpecializationSource?> UpdateSpecialization(Guid specializationId, QSpecializationParameters qSpecializationParameters)
+    public async Task<Specialization?> UpdateSpecialization(Guid specializationId, QSpecializationParameters qSpecializationParameters)
     {
-        SpecializationSource? specializationToUpdate = null;
+        Specialization? specializationToUpdate = null;
         if (await this._specializationSourceRepository.TryFindByIdAsync(specializationId.ToString(), callback: v => specializationToUpdate = v))
         {
             specializationToUpdate!.IsActive = qSpecializationParameters.isActive;
@@ -85,7 +85,7 @@ public class QSpecializationService : IQSpecializationService
     {
         try
         {
-            SpecializationSource? specializationToDelete = await this._specializationSourceRepository.FindByIdAsync(specializationId.ToString());
+            Specialization? specializationToDelete = await this._specializationSourceRepository.FindByIdAsync(specializationId.ToString());
             await this._specializationSourceRepository.DeleteAsync(specializationToDelete);
             return true;
         }

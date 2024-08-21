@@ -62,7 +62,7 @@ export const SpecializationCardList: React.FC<SpecializationProps> = ({ speciali
             }) ?? false;
         if (
             ((hasMembership || _specialization.groupMemberships.length === 0) && _specialization.isActive) ||
-            _specialization.key == 'general'
+            _specialization.id == 'general'
         ) {
             return _specialization;
         }
