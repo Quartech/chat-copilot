@@ -4,7 +4,7 @@ cert:
     - host: q-copilot-test.api.pegasus.quartechlab.com
 
 image:
-  tag: "latest"
+  tag: "test"
 
 secretProviderClass:
   # Retrieved from Terraform Output
@@ -36,7 +36,7 @@ be:
 
 webapp:
   image:
-    tag: "latest"
+    tag: "test"
   ingress:
     hosts:
       - host: q-copilot-test.pegasus.quartechlab.com
@@ -53,7 +53,7 @@ webapp:
 
 webapi:
   image:
-    tag: "latest"
+    tag: "test"
 
   volumeMounts:
     - name: appsettings-volume
