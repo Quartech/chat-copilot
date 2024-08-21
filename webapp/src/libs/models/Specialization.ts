@@ -4,7 +4,7 @@ export interface ISpecialization {
     name: string;
     description: string;
     roleInformation: string;
-    indexName: string;
+    indexName?: string;
     imageFilePath: string;
     isActive: boolean;
     groupMemberships: string[];

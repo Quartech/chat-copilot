@@ -37,13 +37,13 @@ public class QSpecializationParameters
     /// IndexName of the specialization
     /// </summary>
     [JsonPropertyName("indexName")]
-    public string IndexName { get; set; } = string.Empty;
+    public string? IndexName { get; set; } = string.Empty;
 
     /// <summary>
     /// Image FilePath of the specialization.
     /// </summary>
     [JsonPropertyName("imageFilePath")]
-    public string ImageFilePath { get; set; } = string.Empty;
+    public string? ImageFilePath { get; set; } = string.Empty;
 
     /// <summary>
     /// Enable/Disable flag of the specialization.

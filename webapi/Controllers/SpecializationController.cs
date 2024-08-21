@@ -63,7 +63,12 @@ public class SpecializationController : ControllerBase
         foreach (SpecializationSource _specializationsource in specializations)
         {
             QSpecializationResponse qSpecializationResponse = new(_specializationsource);
-            qSpecializationResponse.GroupMemberships = this._qAzureOpenAIChatExtension.GetSpecializationIndexByKey(_specializationsource.Key)!.GroupMemberships;
+
+            var specializationIndex = this._qAzureOpenAIChatExtension.GetSpecializationIndexByKey(_specializationsource.Key);
+            if (specializationIndex != null)
+            {
+                qSpecializationResponse.GroupMemberships = specializationIndex.GroupMemberships;
+            }
             specializationResponses.Add(qSpecializationResponse);
         }
         var defaultSpecializationProps = this.GetDefaultSpecializationKeys();
@@ -111,7 +116,11 @@ public class SpecializationController : ControllerBase
         if (_specializationsource != null)
         {
             QSpecializationResponse qSpecializationResponse = new(_specializationsource);
-            qSpecializationResponse.GroupMemberships = this._qAzureOpenAIChatExtension.GetSpecializationIndexByKey(_specializationsource.Key)!.GroupMemberships;
+            var specializationIndex = this._qAzureOpenAIChatExtension.GetSpecializationIndexByKey(_specializationsource.Key);
+            if (specializationIndex != null)
+            {
+                qSpecializationResponse.GroupMemberships = specializationIndex.GroupMemberships;
+            }
             return this.Ok(qSpecializationResponse);
         }
         return this.StatusCode(500, $"Failed to create specialization for key '{qSpecializationParameters.key}'.");

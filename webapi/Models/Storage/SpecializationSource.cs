@@ -39,7 +39,7 @@ public class SpecializationSource : IStorageEntity
     /// <summary>
     /// Index Name
     /// </summary>
-    public string IndexName { get; set; }
+    public string? IndexName { get; set; }
 
     /// <summary>
     /// Image URL for pictorial description of specialization or logo etc.
@@ -87,7 +87,7 @@ public class SpecializationSource : IStorageEntity
     /// </summary>>
     public int DocumentCount { get; set; } = 20;
 
-    public SpecializationSource(string Key, string Name, string Description, string RoleInformation, string IndexName, string ImageFilePath)
+    public SpecializationSource(string Key, string Name, string Description, string RoleInformation, string? IndexName, string ImageFilePath)
     {
         this.Id = Guid.NewGuid().ToString();
         this.Key = Key;

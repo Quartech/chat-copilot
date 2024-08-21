@@ -45,7 +45,7 @@ public class QSpecializationResponse
     /// IndexName of the specialization
     /// </summary>
     [JsonPropertyName("indexName")]
-    public string IndexName { get; set; } = string.Empty;
+    public string? IndexName { get; set; } = string.Empty;
 
     /// <summary>
     /// Image FilePath of the specialization.
@@ -74,9 +74,13 @@ public class QSpecializationResponse
         this.Name = specializationSource.Name;
         this.Description = specializationSource.Description;
         this.RoleInformation = specializationSource.RoleInformation;
-        this.IndexName = specializationSource.IndexName;
         this.ImageFilePath = specializationSource.ImageFilePath;
         this.isActive = specializationSource.IsActive;
+
+        if (specializationSource.IndexName != null)
+        {
+            this.IndexName = specializationSource.IndexName;
+        }
     }
 
     /// <summary>
@@ -90,6 +94,10 @@ public class QSpecializationResponse
         this.Description = specializationProps["description"];
         this.RoleInformation = specializationProps["roleInformation"];
         this.ImageFilePath = specializationProps["imageFilePath"];
+        if (specializationProps.TryGetValue("indexName", out string? value))
+        {
+            this.IndexName = value;
+        }
         this.isActive = true;
     }
 }

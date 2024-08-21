@@ -47,7 +47,7 @@ public class QSpecializationService : IQSpecializationService
     /// <returns>The task result contains the specialization source</returns>
     public async Task<SpecializationSource> SaveSpecialization(QSpecializationParameters qSpecializationParameters)
     {
-        SpecializationSource specializationSource = new(qSpecializationParameters.key, qSpecializationParameters.Name, qSpecializationParameters.Description, qSpecializationParameters.RoleInformation, qSpecializationParameters.IndexName, qSpecializationParameters.ImageFilePath);
+        SpecializationSource specializationSource = new(qSpecializationParameters.key, qSpecializationParameters.Name, qSpecializationParameters.Description, qSpecializationParameters.RoleInformation, qSpecializationParameters.IndexName, qSpecializationParameters.ImageFilePath!);
         await this._specializationSourceRepository.CreateAsync(specializationSource);
         return specializationSource;
     }
@@ -63,12 +63,13 @@ public class QSpecializationService : IQSpecializationService
         SpecializationSource? specializationToUpdate = null;
         if (await this._specializationSourceRepository.TryFindByIdAsync(specializationId.ToString(), callback: v => specializationToUpdate = v))
         {
+            specializationToUpdate!.IsActive = qSpecializationParameters.isActive;
             specializationToUpdate!.Name = !string.IsNullOrEmpty(qSpecializationParameters.Name) ? qSpecializationParameters.Name : specializationToUpdate!.Name;
             specializationToUpdate!.Description = !string.IsNullOrEmpty(qSpecializationParameters.Description) ? qSpecializationParameters.Description : specializationToUpdate!.Description;
             specializationToUpdate!.RoleInformation = !string.IsNullOrEmpty(qSpecializationParameters.RoleInformation) ? qSpecializationParameters.RoleInformation : specializationToUpdate!.RoleInformation;
-            specializationToUpdate!.IndexName = !string.IsNullOrEmpty(qSpecializationParameters.IndexName) ? qSpecializationParameters.IndexName : specializationToUpdate!.IndexName;
-            specializationToUpdate!.ImageFilePath = !string.IsNullOrEmpty(qSpecializationParameters.ImageFilePath) ? qSpecializationParameters.ImageFilePath : specializationToUpdate!.ImageFilePath;
-            specializationToUpdate!.IsActive = qSpecializationParameters.isActive;
+            specializationToUpdate!.IndexName = qSpecializationParameters.IndexName != null ? qSpecializationParameters.IndexName : specializationToUpdate!.IndexName;
+            specializationToUpdate!.ImageFilePath = qSpecializationParameters.ImageFilePath != null ? qSpecializationParameters.ImageFilePath : specializationToUpdate!.ImageFilePath;
+
             await this._specializationSourceRepository.UpsertAsync(specializationToUpdate);
             return specializationToUpdate;
         }

@@ -36,16 +36,17 @@ export const SpecializationManager: React.FC = () => {
     const specialization = useSpecialization();
     const classes = useClasses();
 
+    const [editMode, setEditMode] = useState(false);
+
     const [id, setId] = useState('');
     const [key, setKey] = useState('');
     const [name, setName] = useState('');
-    const [indexName, setIndexName] = useState('');
     const [description, setDescription] = useState('');
     const [roleInformation, setRoleInformation] = useState('');
+    const [indexName, setIndexName] = useState('');
     const [imageFilePath, setImageFilePath] = useState('');
-    const [editMode, setEditMode] = useState(false);
+
     const dropdownId = useId();
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-return
     const { specializations, specializationIndexes, selectedKey } = useAppSelector((state: RootState) => state.admin);
 
     const onSaveSpecialization = () => {
@@ -87,7 +88,7 @@ export const SpecializationManager: React.FC = () => {
                 setDescription(specializationObj.description);
                 setRoleInformation(specializationObj.roleInformation);
                 setImageFilePath(specializationObj.imageFilePath);
-                setIndexName(specializationObj.indexName);
+                setIndexName(specializationObj.indexName ?? '');
             }
         } else {
             setEditMode(false);
@@ -102,10 +103,10 @@ export const SpecializationManager: React.FC = () => {
 
     const [isValid, setIsValid] = useState(false);
     useEffect(() => {
-        const isValid = !!key && !!name && !!indexName && !!roleInformation && !!imageFilePath;
+        const isValid = !!key && !!name && !!roleInformation;
         setIsValid(isValid);
         return () => {};
-    }, [specializations, selectedKey, key, name, indexName, roleInformation, imageFilePath]);
+    }, [specializations, selectedKey, key, name, roleInformation]);
 
     return (
         <div className={classes.root}>
@@ -132,25 +133,18 @@ export const SpecializationManager: React.FC = () => {
                     setName(data.value);
                 }}
             />
-            <label htmlFor="index-name">
-                Index Name<span className={classes.required}>*</span>
-            </label>
+            <label htmlFor="index-name">Index</label>
             <Dropdown
+                clearable
                 id="index-name"
                 aria-labelledby={dropdownId}
-                placeholder="Select Index"
+                onOptionSelect={(_control, data) => {
+                    setIndexName(data.optionValue ?? '');
+                }}
                 value={indexName}
-                selectedOptions={[indexName]}
             >
                 {specializationIndexes.map((specializationIndex) => (
-                    <Option
-                        key={specializationIndex}
-                        onClick={() => {
-                            setIndexName(specializationIndex);
-                        }}
-                    >
-                        {specializationIndex}
-                    </Option>
+                    <Option key={specializationIndex}>{specializationIndex}</Option>
                 ))}
             </Dropdown>
             <label htmlFor="description">
@@ -179,12 +173,9 @@ export const SpecializationManager: React.FC = () => {
                     setRoleInformation(data.value);
                 }}
             />
-            <label htmlFor="image-url">
-                Image URL<span className={classes.required}>*</span>
-            </label>
+            <label htmlFor="image-url">Image URL</label>
             <Input
                 id="image-url"
-                required
                 value={imageFilePath}
                 onChange={(_event, data) => {
                     setImageFilePath(data.value);
