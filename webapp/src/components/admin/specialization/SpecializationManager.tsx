@@ -1,6 +1,6 @@
 import React, { useEffect, useId, useState } from 'react';
 
-import { Button, Dropdown, Option, Input, makeStyles, shorthands, Textarea, tokens } from '@fluentui/react-components';
+import { Button, Dropdown, Input, makeStyles, Option, shorthands, Textarea, tokens } from '@fluentui/react-components';
 import { useSpecialization } from '../../../libs/hooks';
 import { useAppSelector } from '../../../redux/app/hooks';
 import { RootState } from '../../../redux/app/store';
@@ -24,6 +24,9 @@ const useClasses = makeStyles({
     },
     dialog: {
         maxWidth: '25%',
+    },
+    required: {
+        color: '#990000',
     },
 });
 
@@ -64,6 +67,7 @@ export const SpecializationManager: React.FC = () => {
     };
 
     const resetSpecialization = () => {
+        setId('');
         setKey('');
         setName('');
         setDescription('');
@@ -75,7 +79,6 @@ export const SpecializationManager: React.FC = () => {
     useEffect(() => {
         if (selectedKey != '') {
             setEditMode(true);
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const specializationObj = specializations.find((specialization) => specialization.key === selectedKey);
             if (specializationObj) {
                 setId(specializationObj.id);
@@ -97,25 +100,43 @@ export const SpecializationManager: React.FC = () => {
         resetSpecialization();
     };
 
+    const [isValid, setIsValid] = useState(false);
+    useEffect(() => {
+        const isValid = !!key && !!name && !!indexName && !!roleInformation && !!imageFilePath;
+        setIsValid(isValid);
+        return () => {};
+    }, [specializations, selectedKey, key, name, indexName, roleInformation, imageFilePath]);
+
     return (
         <div className={classes.root}>
             <div className={classes.horizontal}></div>
-            <label>Key</label>
+            <label htmlFor="key">
+                Key<span className={classes.required}>*</span>
+            </label>
             <Input
+                id="key"
+                required
                 value={key}
                 onChange={(_event, data) => {
                     setKey(data.value);
                 }}
             />
-            <label>Name</label>
+            <label htmlFor="name">
+                Name<span className={classes.required}>*</span>
+            </label>
             <Input
+                id="name"
+                required
                 value={name}
                 onChange={(_event, data) => {
                     setName(data.value);
                 }}
             />
-            <label>Index Name</label>
+            <label htmlFor="index-name">
+                Index Name<span className={classes.required}>*</span>
+            </label>
             <Dropdown
+                id="index-name"
                 aria-labelledby={dropdownId}
                 placeholder="Select Index"
                 value={indexName}
@@ -132,8 +153,12 @@ export const SpecializationManager: React.FC = () => {
                     </Option>
                 ))}
             </Dropdown>
-            <label>Short Description</label>
+            <label htmlFor="description">
+                Short Description<span className={classes.required}>*</span>
+            </label>
             <Textarea
+                id="description"
+                required
                 resize="vertical"
                 value={description}
                 rows={2}
@@ -141,8 +166,12 @@ export const SpecializationManager: React.FC = () => {
                     setDescription(data.value);
                 }}
             />
-            <label>Role Information</label>
+            <label htmlFor="context">
+                Chat Context<span className={classes.required}>*</span>
+            </label>
             <Textarea
+                id="context"
+                required
                 resize="vertical"
                 value={roleInformation}
                 rows={Rows}
@@ -150,19 +179,23 @@ export const SpecializationManager: React.FC = () => {
                     setRoleInformation(data.value);
                 }}
             />
-            <label>Image URL</label>
+            <label htmlFor="image-url">
+                Image URL<span className={classes.required}>*</span>
+            </label>
             <Input
+                id="image-url"
+                required
                 value={imageFilePath}
                 onChange={(_event, data) => {
                     setImageFilePath(data.value);
                 }}
             />
             <div className={classes.controls}>
-                <Button appearance="secondary" onClick={onDeleteChat}>
+                <Button appearance="secondary" disabled={!id} onClick={onDeleteChat}>
                     Delete
                 </Button>
 
-                <Button appearance="primary" onClick={onSaveSpecialization}>
+                <Button appearance="primary" disabled={!isValid} onClick={onSaveSpecialization}>
                     Save
                 </Button>
             </div>
