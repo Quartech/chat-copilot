@@ -300,62 +300,62 @@ webapi:
       valueFrom:
         secretKeyRef:
           name: q-copilot-webapi-secret
-          key: QAzureOpenAIChatConfig-Specializations-0-ApiKey
+          key: KernelMemory-Services-AzureAISearch-APIKey
     - name: "QAzureOpenAIChatConfig__SpecializationIndexes__0__VectorizationSource__APIKey"
       valueFrom:
         secretKeyRef:
           name: q-copilot-webapi-secret
-          key: QAzureOpenAIChatConfig-Specializations-0-VectorizationSource-APIKey
+          key: KernelMemory-Services-AzureOpenAIEmbedding-APIKey
     - name: "QAzureOpenAIChatConfig__SpecializationIndexes__1__ApiKey"
       valueFrom:
         secretKeyRef:
           name: q-copilot-webapi-secret
-          key: QAzureOpenAIChatConfig-Specializations-1-ApiKey
+          key: KernelMemory-Services-AzureAISearch-APIKey
     - name: "QAzureOpenAIChatConfig__SpecializationIndexes__1__VectorizationSource__APIKey"
       valueFrom:
         secretKeyRef:
           name: q-copilot-webapi-secret
-          key: QAzureOpenAIChatConfig-Specializations-1-VectorizationSource-APIKey
+          key: KernelMemory-Services-AzureOpenAIEmbedding-APIKey
     - name: "QAzureOpenAIChatConfig__SpecializationIndexes__2__ApiKey"
       valueFrom:
         secretKeyRef:
           name: q-copilot-webapi-secret
-          key: QAzureOpenAIChatConfig-Specializations-2-ApiKey
+          key: KernelMemory-Services-AzureAISearch-APIKey
     - name: "QAzureOpenAIChatConfig__SpecializationIndexes__2__VectorizationSource__APIKey"
       valueFrom:
         secretKeyRef:
           name: q-copilot-webapi-secret
-          key: QAzureOpenAIChatConfig-Specializations-2-VectorizationSource-APIKey
+          key: KernelMemory-Services-AzureOpenAIEmbedding-APIKey
     - name: "QAzureOpenAIChatConfig__SpecializationIndexes__3__ApiKey"
       valueFrom:
         secretKeyRef:
           name: q-copilot-webapi-secret
-          key: QAzureOpenAIChatConfig-Specializations-3-ApiKey
+          key: KernelMemory-Services-AzureAISearch-APIKey
     - name: "QAzureOpenAIChatConfig__SpecializationIndexes__3__VectorizationSource__APIKey"
       valueFrom:
         secretKeyRef:
           name: q-copilot-webapi-secret
-          key: QAzureOpenAIChatConfig-Specializations-3-VectorizationSource-APIKey
+          key: KernelMemory-Services-AzureOpenAIEmbedding-APIKey
     - name: "QAzureOpenAIChatConfig__SpecializationIndexes__4__ApiKey"
       valueFrom:
         secretKeyRef:
           name: q-copilot-webapi-secret
-          key: QAzureOpenAIChatConfig-Specializations-4-ApiKey
+          key: KernelMemory-Services-AzureAISearch-APIKey
     - name: "QAzureOpenAIChatConfig__SpecializationIndexes__4__VectorizationSource__APIKey"
       valueFrom:
         secretKeyRef:
           name: q-copilot-webapi-secret
-          key: QAzureOpenAIChatConfig-Specializations-4-VectorizationSource-APIKey
+          key: KernelMemory-Services-AzureOpenAIEmbedding-APIKey
     - name: "QAzureOpenAIChatConfig__SpecializationIndexes__5__ApiKey"
       valueFrom:
         secretKeyRef:
           name: q-copilot-webapi-secret
-          key: QAzureOpenAIChatConfig-Specializations-5-ApiKey
+          key: KernelMemory-Services-AzureAISearch-APIKey
     - name: "QAzureOpenAIChatConfig__SpecializationIndexes__5__VectorizationSource__APIKey"
       valueFrom:
         secretKeyRef:
           name: q-copilot-webapi-secret
-          key: QAzureOpenAIChatConfig-Specializations-5-VectorizationSource-APIKey
+          key: KernelMemory-Services-AzureOpenAIEmbedding-APIKey
     - name: "ChatStore__Cosmos__ConnectionString"
       valueFrom:
         secretKeyRef:
@@ -412,18 +412,6 @@ webapi:
         KernelMemory-Services-AzureOpenAI-APIKey,
         KernelMemory-Services-AzureAISearch-APIKey,
         KernelMemory-Services-AzureBlobs-ConnectionString,
-        QAzureOpenAIChatConfig-Specializations-0-ApiKey,
-        QAzureOpenAIChatConfig-Specializations-0-VectorizationSource-APIKey,
-        QAzureOpenAIChatConfig-Specializations-1-ApiKey,
-        QAzureOpenAIChatConfig-Specializations-1-VectorizationSource-APIKey,
-        QAzureOpenAIChatConfig-Specializations-2-ApiKey,
-        QAzureOpenAIChatConfig-Specializations-2-VectorizationSource-APIKey,
-        QAzureOpenAIChatConfig-Specializations-3-ApiKey,
-        QAzureOpenAIChatConfig-Specializations-3-VectorizationSource-APIKey,
-        QAzureOpenAIChatConfig-Specializations-4-ApiKey,
-        QAzureOpenAIChatConfig-Specializations-4-VectorizationSource-APIKey,
-        QAzureOpenAIChatConfig-Specializations-5-ApiKey,
-        QAzureOpenAIChatConfig-Specializations-5-VectorizationSource-APIKey,
         ChatStore-Cosmos-ConnectionString,
       ]
 
