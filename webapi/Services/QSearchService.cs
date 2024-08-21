@@ -97,14 +97,14 @@ public class QSearchService : IQSearchService
     private string GetApiKey(string specializationKey)
     {
 #pragma warning disable CS8602 // Dereference of a possibly null reference.
-        return this._qAzureOpenAIChatExtension.GetSpecializationIndexByKey(specializationKey).APIKey;
+        return this._qAzureOpenAIChatExtension.GetAzureConfig().APIKey;
 #pragma warning restore CS8602 // Dereference of a possibly null reference.
     }
 
     private string GetEndpoint(string specializationKey)
     {
 #pragma warning disable CS8602 // Dereference of a possibly null reference.
-        return this._qAzureOpenAIChatExtension.GetSpecializationIndexByKey(specializationKey).Endpoint.ToString();
+        return this._qAzureOpenAIChatExtension.GetAzureConfig().Endpoint.ToString();
 #pragma warning restore CS8602 // Dereference of a possibly null reference.
     }
 
