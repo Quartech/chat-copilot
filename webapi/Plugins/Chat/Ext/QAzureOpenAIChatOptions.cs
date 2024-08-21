@@ -28,9 +28,9 @@ public class QAzureOpenAIChatOptions
 /// </summary>
 public class AzureConfig
 {
-    #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
     public Uri? Endpoint { get; set; } = null;
-    #pragma warning restore CS8618
+#pragma warning restore CS8618
     public string APIKey { get; set; } = string.Empty;
     public VectorizationSourceOption VectorizationSource { get; set; } = new VectorizationSourceOption();
 }
