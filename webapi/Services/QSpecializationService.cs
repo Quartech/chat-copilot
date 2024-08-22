@@ -47,7 +47,7 @@ public class QSpecializationService : IQSpecializationService
     /// <returns>The task result contains the specialization source</returns>
     public async Task<SpecializationSource> SaveSpecialization(QSpecializationParameters qSpecializationParameters)
     {
-        SpecializationSource specializationSource = new(qSpecializationParameters.key, qSpecializationParameters.Name, qSpecializationParameters.Description, qSpecializationParameters.RoleInformation, qSpecializationParameters.IndexName, qSpecializationParameters.ImageFilePath);
+        SpecializationSource specializationSource = new(qSpecializationParameters.key, qSpecializationParameters.Name, qSpecializationParameters.Description, qSpecializationParameters.RoleInformation, qSpecializationParameters.IndexName, qSpecializationParameters.ImageFilePath, qSpecializationParameters.IconFilePath));
         await this._specializationSourceRepository.CreateAsync(specializationSource);
         return specializationSource;
     }
