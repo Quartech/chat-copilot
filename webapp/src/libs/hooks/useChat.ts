@@ -61,7 +61,7 @@ export const useChat = () => {
         id: userId,
         fullName,
         emailAddress,
-        photo: undefined, // TODO: [Issue #45] Make call to Graph /me endpoint to load photo
+        photo: undefined,
         online: true,
         isTyping: false,
     };
@@ -70,8 +70,8 @@ export const useChat = () => {
         if (id === `${chatId}-bot` || id.toLocaleLowerCase() === 'bot') return Constants.bot.profile;
         return users.find((user) => user.id === id);
     };
-    const defaultSpecialization = '';
-    const createChat = async (specializationKey = defaultSpecialization) => {
+    const defaultSpecializationId = '';
+    const createChat = async (specializationId = defaultSpecializationId) => {
         const chatTitle = `Copilot @ ${new Date().toLocaleString()}`;
         try {
             await chatService
@@ -85,13 +85,13 @@ export const useChat = () => {
                         messages: [result.initialBotMessage],
                         enabledHostedPlugins: result.chatSession.enabledPlugins,
                         users: [loggedInUser],
-                        botProfilePicture: getBotProfilePicture(specializationKey, specializationsState),
+                        botProfilePicture: getBotProfilePicture(specializationId, specializationsState),
                         input: '',
                         botResponseStatus: undefined,
                         userDataLoaded: false,
                         disabled: false,
                         hidden: false,
-                        specializationKey: specializationKey,
+                        specializationId,
                     };
 
                     dispatch(addConversation(newChat));
@@ -132,7 +132,7 @@ export const useChat = () => {
                 },
                 {
                     key: 'specialization',
-                    value: conversations[chatId].specializationKey,
+                    value: conversations[chatId].specializationId ?? defaultSpecializationId,
                 },
             ],
         };
@@ -202,8 +202,6 @@ export const useChat = () => {
                     const chatSession = chatSessions[i];
                     const [chatUsers, chatMessages] = allUsersMessages[i];
 
-                    const specializationKey = getSpecializationKey(chatSession);
-
                     loadedConversations[chatSession.id] = {
                         id: chatSession.id,
                         title: chatSession.title,
@@ -212,13 +210,13 @@ export const useChat = () => {
                         users: chatUsers,
                         messages: chatMessages,
                         enabledHostedPlugins: chatSession.enabledPlugins,
-                        botProfilePicture: getBotProfilePicture(specializationKey, specializations),
+                        botProfilePicture: getBotProfilePicture(chatSession.specializationId, specializations),
                         input: '',
                         botResponseStatus: undefined,
                         userDataLoaded: false,
                         disabled: false,
                         hidden: !features[FeatureKeys.MultiUserChat].enabled && chatUsers.length > 1,
-                        specializationKey: specializationKey,
+                        specializationId: chatSession.specializationId,
                     };
                 }
 
@@ -262,8 +260,6 @@ export const useChat = () => {
             await botService.uploadAsync(bot, accessToken).then(async (chatSession: IChatSession) => {
                 const chatMessages = await chatService.getChatMessagesAsync(chatSession.id, 0, 100, accessToken);
 
-                const specializationKey = getSpecializationKey(chatSession);
-
                 const newChat: ChatState = {
                     id: chatSession.id,
                     title: chatSession.title,
@@ -272,13 +268,13 @@ export const useChat = () => {
                     users: [loggedInUser],
                     messages: chatMessages,
                     enabledHostedPlugins: chatSession.enabledPlugins,
-                    botProfilePicture: getBotProfilePicture(specializationKey, specializationsState),
+                    botProfilePicture: getBotProfilePicture(chatSession.specializationId, specializationsState),
                     input: '',
                     botResponseStatus: undefined,
                     userDataLoaded: false,
                     disabled: false,
                     hidden: false,
-                    specializationKey: specializationKey,
+                    specializationId: chatSession.specializationId,
                 };
 
                 dispatch(addConversation(newChat));
@@ -290,26 +286,14 @@ export const useChat = () => {
     };
 
     /**
-     * Get the specialization key from the chat session.
-     *
-     * Note: Will fallback to the default specialization key if specialization not available.
-     *
-     * @param {IChatSession} chatSession
-     * @returns {string} Specialization Key
-     */
-    const getSpecializationKey = (chatSession: IChatSession) => {
-        return chatSession.specialization?.specializationKey ?? defaultSpecialization;
-    };
-
-    /**
      * Get bot profile picture from specialization key or fall back to a standard icon.
      *
      * @param {string} specializationKey - Unique identifier of the Specialization
      * @param {ISpecialization[]} specializations - List of system Specializations
      * @returns {string} Icon image path
      */
-    const getBotProfilePicture = (specializationKey: string, specializations: ISpecialization[]): string => {
-        return specializations.find((spec) => spec.key === specializationKey)?.iconFilePath ?? botIcon1;
+    const getBotProfilePicture = (specializationId?: string, specializations: ISpecialization[]): string => {
+        return specializations.find((spec) => spec.id === specializationId)?.iconFilePath ?? botIcon1;
     };
 
     const getChatMemorySources = async (chatId: string) => {
@@ -390,8 +374,6 @@ export const useChat = () => {
                 // Get chat users
                 const chatUsers = await chatService.getAllChatParticipantsAsync(result.id, accessToken);
 
-                const specializationKey = getSpecializationKey(result);
-
                 const newChat: ChatState = {
                     id: result.id,
                     title: result.title,
@@ -400,13 +382,13 @@ export const useChat = () => {
                     messages: chatMessages,
                     enabledHostedPlugins: result.enabledPlugins,
                     users: chatUsers,
-                    botProfilePicture: getBotProfilePicture(specializationKey, specializationsState),
+                    botProfilePicture: getBotProfilePicture(result.specializationId, specializationsState),
                     input: '',
                     botResponseStatus: undefined,
                     userDataLoaded: false,
                     disabled: false,
                     hidden: false,
-                    specializationKey: specializationKey,
+                    specializationId: result.specializationId,
                 };
 
                 dispatch(addConversation(newChat));
@@ -434,11 +416,11 @@ export const useChat = () => {
         }
     };
 
-    const editChatSpecialization = async (chatId: string, specializationKey: string) => {
+    const editChatSpecialization = async (chatId: string, specializationId: string) => {
         try {
             await chatService.editChatSepcializationAsync(
                 chatId,
-                specializationKey,
+                specializationId,
                 await AuthHelper.getSKaaSAccessToken(instance, inProgress),
             );
         } catch (e: any) {

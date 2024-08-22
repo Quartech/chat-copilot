@@ -1,15 +1,16 @@
 ﻿// Copyright (c) Quartech. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using CopilotChat.WebApi.Storage;
 
 namespace CopilotChat.WebApi.Models.Storage;
 
 /// <summary>
-/// Information about the specialization source
+/// Information about the specialization
 /// </summary>
-public class SpecializationSource : IStorageEntity
+public class Specialization : IStorageEntity
 {
     /// <summary>
     /// ID that is persistent and unique.
@@ -17,9 +18,9 @@ public class SpecializationSource : IStorageEntity
     public string Id { get; set; }
 
     /// <summary>
-    /// Short unique representation of specialization.
+    /// Short representation of specialization.
     /// </summary>
-    public string Key { get; set; }
+    public string Label { get; set; }
 
     /// <summary>
     /// Name of the specialization.
@@ -37,9 +38,14 @@ public class SpecializationSource : IStorageEntity
     public string RoleInformation { get; set; }
 
     /// <summary>
+    /// List of group memberships for the user.
+    /// </summary>
+    public IList<string> GroupMemberships { get; set; } = new List<string>();
+
+    /// <summary>
     /// Index Name
     /// </summary>
-    public string IndexName { get; set; }
+    public string? IndexName { get; set; }
 
     /// <summary>
     /// Image URL for pictorial description of specialization.
@@ -92,24 +98,17 @@ public class SpecializationSource : IStorageEntity
     /// </summary>>
     public int DocumentCount { get; set; } = 20;
 
-    public SpecializationSource(
-        string Key,
-        string Name,
-        string Description,
-        string RoleInformation,
-        string IndexName,
-        string ImageFilePath,
-        string IconFilePath
-    )
+    public Specialization(string Label, string Name, string Description, string RoleInformation, string? IndexName, string ImageFilePath, string IconFilePath, IList<string> GroupMemberships)
     {
         this.Id = Guid.NewGuid().ToString();
-        this.Key = Key;
+        this.Label = Label;
         this.Name = Name;
         this.Description = Description;
         this.RoleInformation = RoleInformation;
         this.IndexName = IndexName;
         this.ImageFilePath = ImageFilePath;
         this.IconFilePath = IconFilePath;
+        this.GroupMemberships = GroupMemberships;
         this.CreatedOn = DateTimeOffset.Now;
         this.IsActive = true;
     }

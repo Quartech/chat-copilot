@@ -80,8 +80,8 @@ export const ChatWindow: React.FC = () => {
     // Memoized current chat specialization
     const specialization = useMemo(() => {
         if (!selectedId) return;
-        const specializationKey = conversations[selectedId].specializationKey;
-        return specializations.find((spec) => spec.key === specializationKey);
+        const specializationKey = conversations[selectedId].specializationId;
+        return specializations.find((spec) => spec.id === specializationKey);
     }, [selectedId, conversations, specializations]);
 
     const onTabSelect: SelectTabEventHandler = (_event, data) => {
