@@ -164,10 +164,7 @@ export const ChatHistoryItem: React.FC<ChatHistoryItemProps> = ({ message, messa
     // TODO: [Issue #42] Persistent RLHF, hook up to model
     // Currently for demonstration purposes only, no feedback is actually sent to kernel / model
     const showShowRLHFMessage =
-        features[FeatureKeys.RLHF].enabled &&
-        messageIndex === conversations[selectedId].messages.length - 1 &&
-        message.userId === 'Bot' &&
-        message.content.length > 0;
+        features[FeatureKeys.RLHF].enabled && message.userId === 'Bot' && message.content.length > 0;
 
     const messageCitations = message.citations ?? [];
     const showMessageCitation = messageCitations.length > 0;
@@ -217,11 +214,6 @@ export const ChatHistoryItem: React.FC<ChatHistoryItemProps> = ({ message, messa
                 <div className="message-content">{content}</div>
 
                 <div className={classes.controls}>
-                    {showFeedback && showShowRLHFMessage && (
-                        <div className={classes.rlhf}>
-                            {<UserFeedbackActions messageIndex={messageIndex} wasHelpful={message.userFeedback} />}
-                        </div>
-                    )}
                     {showMessageCitation && (
                         <ToggleButton
                             appearance="subtle"
@@ -236,6 +228,11 @@ export const ChatHistoryItem: React.FC<ChatHistoryItemProps> = ({ message, messa
                         >
                             {`${messageCitations.length} ${messageCitations.length === 1 ? 'citation' : 'citations'}`}
                         </ToggleButton>
+                    )}
+                    {showFeedback && showShowRLHFMessage && message.id && (
+                        <div className={classes.rlhf}>
+                            {<UserFeedbackActions messageId={message.id} wasHelpful={message.userFeedback} />}
+                        </div>
                     )}
                     {showCitationCards && <CitationCards message={message} />}
                 </div>

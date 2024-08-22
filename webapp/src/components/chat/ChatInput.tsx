@@ -83,6 +83,8 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
     const { instance, inProgress } = useMsal();
     const dispatch = useAppDispatch();
     const { conversations, selectedId } = useAppSelector((state: RootState) => state.conversations);
+    const { specializations } = useAppSelector((state: RootState) => state.admin);
+
     const { activeUserInfo } = useAppSelector((state: RootState) => state.app);
     const fileHandler = useFile();
 
@@ -161,6 +163,24 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
         void fileHandler.handleImport(selectedId, documentFileRef, false, undefined, e.dataTransfer.files);
     };
 
+    const isSpecializationDisabled = () => {
+        if (conversations[selectedId].specializationKey === '') {
+            return true;
+        } else {
+            const specialization = specializations.find(
+                (spec) => spec.key === conversations[selectedId].specializationKey,
+            );
+            if (
+                specialization &&
+                specialization.key == conversations[selectedId].specializationKey &&
+                specialization.isActive
+            ) {
+                return false;
+            }
+        }
+        return true;
+    };
+
     return (
         <div className={classes.root}>
             <div className={classes.typingIndicator}>
@@ -221,34 +241,30 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
                 />
             </div>
             <div className={classes.controls}>
-                {/*Changes to support uploading files for general specialization only. */}
-                {conversations[selectedId].specializationKey === 'general' && (
-                    <div className={classes.functional}>
-                        {/* Hidden input for file upload. Only accept .txt and .pdf files for now. */}
-                        <input
-                            type="file"
-                            ref={documentFileRef}
-                            style={{ display: 'none' }}
-                            accept={Constants.app.importTypes}
-                            multiple={true}
-                            onChange={() => {
-                                void fileHandler.handleImport(selectedId, documentFileRef);
-                            }}
-                        />
-                        <Button
-                            disabled={
-                                conversations[selectedId].disabled ||
-                                (importingDocuments && importingDocuments.length > 0)
-                            }
-                            appearance="transparent"
-                            icon={<AttachRegular />}
-                            onClick={() => documentFileRef.current?.click()}
-                            title="Attach file"
-                            aria-label="Attach file button"
-                        />
-                        {importingDocuments && importingDocuments.length > 0 && <Spinner size="tiny" />}
-                    </div>
-                )}
+                <div className={classes.functional}>
+                    {/* Hidden input for file upload. Only accept .txt and .pdf files for now. */}
+                    <input
+                        type="file"
+                        ref={documentFileRef}
+                        style={{ display: 'none' }}
+                        accept={Constants.app.importTypes}
+                        multiple={true}
+                        onChange={() => {
+                            void fileHandler.handleImport(selectedId, documentFileRef);
+                        }}
+                    />
+                    <Button
+                        disabled={
+                            conversations[selectedId].disabled || (importingDocuments && importingDocuments.length > 0)
+                        }
+                        appearance="transparent"
+                        icon={<AttachRegular />}
+                        onClick={() => documentFileRef.current?.click()}
+                        title="Attach file"
+                        aria-label="Attach file button"
+                    />
+                    {importingDocuments && importingDocuments.length > 0 && <Spinner size="tiny" />}
+                </div>
                 <div className={classes.essentials}>
                     {recognizer && (
                         <Button
@@ -266,7 +282,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
                         onClick={() => {
                             handleSubmit(value);
                         }}
-                        disabled={conversations[selectedId].disabled}
+                        disabled={conversations[selectedId].disabled || isSpecializationDisabled()}
                     />
                 </div>
             </div>

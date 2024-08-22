@@ -100,6 +100,7 @@ public class ChatPlugin
         IKernelMemory memoryClient,
         ChatMessageRepository chatMessageRepository,
         ChatSessionRepository chatSessionRepository,
+        SpecializationSourceRepository specializationSourceRepository,
         IHubContext<MessageRelayHub> messageRelayHubContext,
         IOptions<PromptsOptions> promptOptions,
         IOptions<DocumentMemoryOptions> documentImportOptions,
@@ -118,7 +119,7 @@ public class ChatPlugin
         this._promptOptions = promptOptions.Value.Copy();
 
         this._semanticMemoryRetriever = new SemanticMemoryRetriever(promptOptions, chatSessionRepository, memoryClient, logger);
-        this._qAzureOpenAIChatExtension = new QAzureOpenAIChatExtension(qAzureOpenAIChatOptions.Value);
+        this._qAzureOpenAIChatExtension = new QAzureOpenAIChatExtension(qAzureOpenAIChatOptions.Value, specializationSourceRepository);
         this._contentSafety = contentSafety;
         this._isUserIntentExtractionEnabled = isUserIntentExtractionEnabled; // Initialize feature flag
     }
@@ -307,7 +308,7 @@ public class ChatPlugin
         chatMemoryTokenBudget = (int)(chatMemoryTokenBudget * this._promptOptions.MemoriesResponseContextWeight);
 
         // Start querying relevant semantic and document memories
-        var memoryQueryTask = this._semanticMemoryRetriever.QueryMemoriesAsync(systemInstructions, chatId, chatMemoryTokenBudget);
+        var memoryQueryTask = this._semanticMemoryRetriever.QueryMemoriesAsync(this._promptOptions.DocumentMemoryName, chatId, chatMemoryTokenBudget);
 
         // Start extracting chat history
         var chatHistoryTask = this.GetAllowedChatHistoryAsync(chatId, maxRequestTokenBudget - tokensUsed, metaPrompt, cancellationToken);
@@ -319,7 +320,7 @@ public class ChatPlugin
             metaPrompt.AddSystemMessage(memoryText);
             tokensUsed += TokenUtils.GetContextMessageTokenCount(AuthorRole.System, memoryText);
         }
-
+        chatContext["knowledgeBase"] = memoryText;
         var allowedChatHistory = await chatHistoryTask;
         // Store token usage of prompt template
         chatContext[TokenUtils.GetFunctionKey("SystemMetaPrompt")] = TokenUtils.GetContextMessagesTokenCount(metaPrompt).ToString(CultureInfo.CurrentCulture);
@@ -372,7 +373,7 @@ public class ChatPlugin
         CancellationToken cancellationToken)
     {
         CopilotChatMessage chatMessage = await AsyncUtils.SafeInvokeAsync(
-            () => this.StreamResponseToClientAsync(chatId, userId, (string)chatContext[this._qAzureOpenAIChatExtension.contextKey]!, promptView, cancellationToken, citations), nameof(StreamResponseToClientAsync));
+            () => this.StreamResponseToClientAsync(chatId, userId, (string)chatContext[this._qAzureOpenAIChatExtension.ContextKey]!, promptView, chatContext, cancellationToken, citations), nameof(StreamResponseToClientAsync));
 
         // Save the message into chat history
         this._logger.LogInformation("Saving message to chat history");
@@ -422,7 +423,7 @@ public class ChatPlugin
             );
 
         audienceContext["tokenLimit"] = historyTokenBudget.ToString(new NumberFormatInfo());
-        var specializationKey = context[this._qAzureOpenAIChatExtension.contextKey] ?? this._qAzureOpenAIChatExtension.defaultSpecialization;
+        var specializationKey = context[this._qAzureOpenAIChatExtension.ContextKey] ?? this._qAzureOpenAIChatExtension.DefaultSpecialization;
         var completionFunction = this._kernel.CreateFunctionFromPrompt(
             this._promptOptions.SystemAudienceExtraction,
             this.CreateIntentCompletionSettings((string)specializationKey),
@@ -469,7 +470,7 @@ public class ChatPlugin
 
         intentContext["tokenLimit"] = tokenBudget.ToString(new NumberFormatInfo());
         intentContext["knowledgeCutoff"] = this._promptOptions.KnowledgeCutoffDate;
-        var specializationKey = context[this._qAzureOpenAIChatExtension.contextKey] ?? this._qAzureOpenAIChatExtension.defaultSpecialization;
+        var specializationKey = context[this._qAzureOpenAIChatExtension.ContextKey] ?? this._qAzureOpenAIChatExtension.DefaultSpecialization;
         var completionFunction = this._kernel.CreateFunctionFromPrompt(
             this._promptOptions.SystemIntentExtraction,
             this.CreateIntentCompletionSettings((string)specializationKey),
@@ -686,14 +687,23 @@ public class ChatPlugin
         string userId,
         string specializationkey,
         BotResponsePrompt prompt,
+        KernelArguments chatContext,
         CancellationToken cancellationToken,
         IEnumerable<CitationSource>? citations = null)
     {
         // Create the stream
+        // Serialize the chatContext to JSON
+        string serializedContext = JsonSerializer.Serialize(chatContext);
+
+        // Combine the context with the main prompt
+        string combinedPrompt = $"{prompt.MetaPromptTemplate}\n\nContext: {serializedContext}";
+        var chatHistory = new ChatHistory();
+        chatHistory.AddUserMessage(combinedPrompt);
+
         var chatCompletion = this._kernel.GetRequiredService<IChatCompletionService>();
         var stream =
             chatCompletion.GetStreamingChatMessageContentsAsync(
-                prompt.MetaPromptTemplate,
+                chatHistory,
                 this.CreateChatRequestSettings(specializationkey),
                 this._kernel,
                 cancellationToken);

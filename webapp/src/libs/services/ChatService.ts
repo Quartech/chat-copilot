@@ -16,14 +16,9 @@ import { BaseService } from './BaseService';
  * Changes to take specialization key in chat creation.
  */
 export class ChatService extends BaseService {
-    public createChatAsync = async (
-        title: string,
-        specializationKey: string,
-        accessToken: string,
-    ): Promise<ICreateChatSessionResponse> => {
+    public createChatAsync = async (title: string, accessToken: string): Promise<ICreateChatSessionResponse> => {
         const body = {
             title,
-            specializationKey,
         };
 
         const result = await this.getResponseAsync<ICreateChatSessionResponse>(
@@ -107,11 +102,52 @@ export class ChatService extends BaseService {
         return result;
     };
 
+    public editChatSepcializationAsync = async (
+        chatId: string,
+        specializationKey: string,
+        accessToken: string,
+    ): Promise<any> => {
+        const body = {
+            specializationKey,
+        };
+
+        const result = await this.getResponseAsync<IChatSession>(
+            {
+                commandPath: `chats/${chatId}/specialization`,
+                method: 'PATCH',
+                body,
+            },
+            accessToken,
+        );
+
+        return result;
+    };
+
     public deleteChatAsync = async (chatId: string, accessToken: string): Promise<object> => {
         const result = await this.getResponseAsync<object>(
             {
                 commandPath: `chats/${chatId}`,
                 method: 'DELETE',
+            },
+            accessToken,
+        );
+
+        return result;
+    };
+
+    public rateMessageAync = async (
+        chatId: string,
+        messageId: string,
+        positive: boolean,
+        accessToken: string,
+    ): Promise<object> => {
+        const result = await this.getResponseAsync<object>(
+            {
+                commandPath: `chats/${chatId}/messages/${messageId}`,
+                method: 'POST',
+                body: {
+                    positive,
+                },
             },
             accessToken,
         );

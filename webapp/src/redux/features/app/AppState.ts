@@ -4,7 +4,6 @@ import { AuthConfig } from '../../../libs/auth/AuthHelper';
 import { AlertType } from '../../../libs/models/AlertType';
 import { IChatUser } from '../../../libs/models/ChatUser';
 import { ServiceInfo } from '../../../libs/models/ServiceInfo';
-import { ISpecialization } from '../../../libs/models/Specialization';
 import { TokenUsage } from '../../../libs/models/TokenUsage';
 
 // This is the default user information when authentication is set to 'None'.
@@ -65,7 +64,6 @@ export interface AppState {
     settings: Setting[];
     serviceInfo: ServiceInfo;
     isMaintenance: boolean;
-    specializations: ISpecialization[];
 }
 
 export enum FeatureKeys {
@@ -144,19 +142,6 @@ export const Settings = [
     },
 ];
 
-export const DEFAULT_SPECIALIZATION_KEY = 'general';
-
-export const Specializations = [
-    {
-        // Basic settings
-        key: DEFAULT_SPECIALIZATION_KEY,
-        name: 'General',
-        description: 'General',
-        imagefilepath: '',
-        iconfilepath: '',
-        groupMemberships: [],
-    },
-];
 /**
  * The initialstate of app has been modified to support specializations.
  * All specializations supported by system will be pre-populated.
@@ -175,5 +160,4 @@ export const initialState: AppState = {
         isContentSafetyEnabled: false,
     },
     isMaintenance: false,
-    specializations: Specializations,
 };

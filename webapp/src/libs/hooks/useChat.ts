@@ -6,7 +6,7 @@ import botIcon1 from '../../assets/bot-icons/bot-icon-1.png';
 import { getErrorDetails } from '../../components/utils/TextUtils';
 import { useAppDispatch, useAppSelector } from '../../redux/app/hooks';
 import { RootState } from '../../redux/app/store';
-import { DEFAULT_SPECIALIZATION_KEY, FeatureKeys } from '../../redux/features/app/AppState';
+import { FeatureKeys } from '../../redux/features/app/AppState';
 import { addAlert, toggleFeatureState, updateTokenUsage } from '../../redux/features/app/appSlice';
 import { ChatState } from '../../redux/features/conversations/ChatState';
 import { Conversations } from '../../redux/features/conversations/ConversationsState';
@@ -44,7 +44,7 @@ export interface GetResponseOptions {
 
 export const useChat = () => {
     const dispatch = useAppDispatch();
-    const { specializations: specializationsState } = useAppSelector((state: RootState) => state.app);
+    const { specializations: specializationsState } = useAppSelector((state: RootState) => state.admin);
     const { instance, inProgress } = useMsal();
     const { conversations } = useAppSelector((state: RootState) => state.conversations);
     const { activeUserInfo, features } = useAppSelector((state: RootState) => state.app);
@@ -70,16 +70,12 @@ export const useChat = () => {
         if (id === `${chatId}-bot` || id.toLocaleLowerCase() === 'bot') return Constants.bot.profile;
         return users.find((user) => user.id === id);
     };
-
-    const createChat = async (specializationKey = DEFAULT_SPECIALIZATION_KEY) => {
+    const defaultSpecialization = '';
+    const createChat = async (specializationKey = defaultSpecialization) => {
         const chatTitle = `Copilot @ ${new Date().toLocaleString()}`;
         try {
             await chatService
-                .createChatAsync(
-                    chatTitle,
-                    specializationKey,
-                    await AuthHelper.getSKaaSAccessToken(instance, inProgress),
-                )
+                .createChatAsync(chatTitle, await AuthHelper.getSKaaSAccessToken(instance, inProgress))
                 .then((result: ICreateChatSessionResponse) => {
                     const newChat: ChatState = {
                         id: result.chatSession.id,
@@ -302,7 +298,7 @@ export const useChat = () => {
      * @returns {string} Specialization Key
      */
     const getSpecializationKey = (chatSession: IChatSession) => {
-        return chatSession.specialization?.specializationKey ?? DEFAULT_SPECIALIZATION_KEY;
+        return chatSession.specialization?.specializationKey ?? defaultSpecialization;
     };
 
     /**
@@ -438,6 +434,19 @@ export const useChat = () => {
         }
     };
 
+    const editChatSpecialization = async (chatId: string, specializationKey: string) => {
+        try {
+            await chatService.editChatSepcializationAsync(
+                chatId,
+                specializationKey,
+                await AuthHelper.getSKaaSAccessToken(instance, inProgress),
+            );
+        } catch (e: any) {
+            const errorMessage = `Error editing chat ${chatId}. Details: ${getErrorDetails(e)}`;
+            dispatch(addAlert({ message: errorMessage, type: AlertType.Error }));
+        }
+    };
+
     const getServiceInfo = async () => {
         try {
             return await chatService.getServiceInfoAsync(await AuthHelper.getSKaaSAccessToken(instance, inProgress));
@@ -515,6 +524,7 @@ export const useChat = () => {
         importDocument,
         joinChat,
         editChat,
+        editChatSpecialization,
         getServiceInfo,
         deleteChat,
         processPlan,

@@ -1,12 +1,13 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { ChatMessageType, IChatMessage, UserFeedback } from '../../../libs/models/ChatMessage';
+import { IChatMessage } from '../../../libs/models/ChatMessage';
 import { IChatUser } from '../../../libs/models/ChatUser';
 import { ChatState } from './ChatState';
 import {
     ConversationInputChange,
     Conversations,
+    ConversationSpecializationChange,
     ConversationsState,
     ConversationSystemDescriptionChange,
     ConversationTitleChange,
@@ -25,6 +26,14 @@ export const conversationsSlice = createSlice({
             const id = action.payload.id;
             const newTitle = action.payload.newTitle;
             state.conversations[id].title = newTitle;
+            frontLoadChat(state, id);
+        },
+        editConversationSpecialization: (
+            state: ConversationsState,
+            action: PayloadAction<ConversationSpecializationChange>,
+        ) => {
+            const id = action.payload.id;
+            state.conversations[id].specializationKey = action.payload.newSpecializationKey;
             frontLoadChat(state, id);
         },
         editConversationInput: (state: ConversationsState, action: PayloadAction<ConversationInputChange>) => {
@@ -212,11 +221,7 @@ const frontLoadChat = (state: ConversationsState, id: string) => {
 };
 
 const updateConversation = (state: ConversationsState, chatId: string, message: IChatMessage) => {
-    const requestUserFeedback = message.userId === 'bot' && message.type === ChatMessageType.Message;
-    state.conversations[chatId].messages.push({
-        ...message,
-        userFeedback: requestUserFeedback ? UserFeedback.Requested : undefined,
-    });
+    state.conversations[chatId].messages.push(message);
     frontLoadChat(state, chatId);
 };
 
@@ -248,6 +253,7 @@ export const {
     deleteConversation,
     disableConversation,
     updatePluginState,
+    editConversationSpecialization,
 } = conversationsSlice.actions;
 
 export default conversationsSlice.reducer;

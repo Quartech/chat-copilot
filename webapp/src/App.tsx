@@ -22,7 +22,7 @@ import { useChat, useFile, useSpecialization } from './libs/hooks';
 import { useAppDispatch, useAppSelector } from './redux/app/hooks';
 import { RootState } from './redux/app/store';
 import { FeatureKeys } from './redux/features/app/AppState';
-import { setActiveUserInfo, setServiceInfo, setSpecialization } from './redux/features/app/appSlice';
+import { setActiveUserInfo, setServiceInfo } from './redux/features/app/appSlice';
 import { semanticKernelDarkTheme, semanticKernelLightTheme } from './styles';
 
 /**
@@ -177,9 +177,12 @@ const App = () => {
      */
     const loadAppStateAsync = async (): Promise<void> => {
         try {
-            const specializations = (await specialization.getSpecializations()) ?? [];
+            //const specializations = (await specialization.getSpecializations()) ?? [];
+                //Get all specializations
+            await specialization.loadSpecializations();
+            await specialization.loadSpecializationIndexes();
 
-            dispatch(setSpecialization(specializations));
+            //dispatch(setSpecialization(specializations));
 
             const [serviceInfo] = await Promise.all([
                 chat.getServiceInfo(),

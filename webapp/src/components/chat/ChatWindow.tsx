@@ -11,7 +11,7 @@ import {
     TabValue,
     tokens,
 } from '@fluentui/react-components';
-import { Map16Regular, Person16Regular } from '@fluentui/react-icons';
+import { Map16Regular } from '@fluentui/react-icons';
 import React, { useMemo } from 'react';
 import { useAppSelector } from '../../redux/app/hooks';
 import { RootState } from '../../redux/app/store';
@@ -71,11 +71,11 @@ export const ChatWindow: React.FC = () => {
     const classes = useClasses();
     const { features } = useAppSelector((state: RootState) => state.app);
     const { conversations, selectedId } = useAppSelector((state: RootState) => state.conversations);
-    const { specializations } = useAppSelector((state: RootState) => state.app);
     const [selectedTab, setSelectedTab] = React.useState<TabValue>(ChatWindowTabEnum.CHAT);
 
     const showShareBotMenu = features[FeatureKeys.BotAsDocs].enabled || features[FeatureKeys.MultiUserChat].enabled;
     const chatName = conversations[selectedId].title;
+    const { specializations } = useAppSelector((state: RootState) => state.admin);
 
     // Memoized current chat specialization
     const specialization = useMemo(() => {
@@ -134,7 +134,7 @@ export const ChatWindow: React.FC = () => {
                                 >
                                     Plans
                                 </Tab>
-                                <Tab
+                                {/* <Tab
                                     data-testid="personaTab"
                                     id="persona"
                                     value={ChatWindowTabEnum.PERSONA}
@@ -143,7 +143,7 @@ export const ChatWindow: React.FC = () => {
                                     title="Persona Tab"
                                 >
                                     Persona
-                                </Tab>
+                                </Tab> */}
                             </>
                         )}
                     </TabList>
