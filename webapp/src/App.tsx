@@ -177,17 +177,13 @@ const App = () => {
      */
     const loadAppStateAsync = async (): Promise<void> => {
         try {
-            //const specializations = (await specialization.getSpecializations()) ?? [];
-                //Get all specializations
-            await specialization.loadSpecializations();
-            await specialization.loadSpecializationIndexes();
-
-            //dispatch(setSpecialization(specializations));
+            const specializations = await specialization.loadSpecializations();
 
             const [serviceInfo] = await Promise.all([
                 chat.getServiceInfo(),
+                specialization.loadSpecializationIndexes(),
                 file.getContentSafetyStatus(),
-                chat.loadChats(specializations),
+                chat.loadChats(specializations ?? []),
             ]);
 
             if (serviceInfo) {
