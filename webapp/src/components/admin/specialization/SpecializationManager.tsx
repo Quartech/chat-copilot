@@ -49,6 +49,7 @@ export const SpecializationManager: React.FC = () => {
     const [membershipId, setMembershipId] = useState<string[]>([]);
 
     const dropdownId = useId();
+
     const { specializations, specializationIndexes, selectedId } = useAppSelector((state: RootState) => state.admin);
 
     const onSaveSpecialization = () => {
@@ -206,6 +207,14 @@ export const SpecializationManager: React.FC = () => {
                 value={imageFilePath}
                 onChange={(_event, data) => {
                     setImageFilePath(data.value);
+                }}
+            />
+            <label htmlFor="image-url">Bot Icon URL</label>
+            <Input
+                id="icon-url"
+                value={iconFilePath}
+                onChange={(_event, data) => {
+                    setIconFilePath(data.value);
                 }}
             />
             <div className={classes.controls}>

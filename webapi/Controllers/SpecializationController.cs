@@ -35,10 +35,11 @@ public class SpecializationController : ControllerBase
     private readonly PromptsOptions _promptOptions;
 
     public SpecializationController(
-    ILogger<SpecializationController> logger,
-    IOptions<QAzureOpenAIChatOptions> specializationOptions,
-    SpecializationRepository specializationSourceRepository,
-    IOptions<PromptsOptions> promptsOptions)
+        ILogger<SpecializationController> logger,
+        IOptions<QAzureOpenAIChatOptions> specializationOptions,
+        SpecializationRepository specializationSourceRepository,
+        IOptions<PromptsOptions> promptsOptions
+    )
     {
         this._logger = logger;
         this._qspecializationService = new QSpecializationService(specializationSourceRepository);
@@ -62,7 +63,8 @@ public class SpecializationController : ControllerBase
     public async Task<OkObjectResult> GetAllSpecializations()
     {
         var specializationResponses = new List<QSpecializationResponse>();
-        IEnumerable<Specialization> specializations = await this._qspecializationService.GetAllSpecializations();
+        IEnumerable<Specialization> specializations =
+            await this._qspecializationService.GetAllSpecializations();
         foreach (Specialization specialization in specializations)
         {
             QSpecializationResponse qSpecializationResponse = new(specialization);
@@ -123,7 +125,10 @@ public class SpecializationController : ControllerBase
             QSpecializationResponse qSpecializationResponse = new(_specializationsource);
             return this.Ok(qSpecializationResponse);
         }
-        return this.StatusCode(500, $"Failed to create specialization for label '{qSpecializationParameters.label}'.");
+        return this.StatusCode(
+            500,
+            $"Failed to create specialization for label '{qSpecializationParameters.label}'."
+        );
     }
 
     /// <summary>
@@ -142,7 +147,11 @@ public class SpecializationController : ControllerBase
         [FromRoute] Guid specializationId
     )
     {
-        Specialization? specializationToEdit = await this._qspecializationService.UpdateSpecialization(specializationId, qSpecializationParameters);
+        Specialization? specializationToEdit =
+            await this._qspecializationService.UpdateSpecialization(
+                specializationId,
+                qSpecializationParameters
+            );
         if (specializationToEdit != null)
         {
             QSpecializationResponse qSpecializationResponse = new(specializationToEdit);

@@ -96,7 +96,7 @@ export const ChatWindow: React.FC = () => {
                         key={'Semantic Kernel Bot'}
                         size="medium"
                         avatar={{
-                            image: { src: conversations[selectedId].botProfilePicture },
+                            image: { src: specialization?.iconFilePath ?? conversations[selectedId].botProfilePicture },
                         }}
                         presence={{ status: 'available' }}
                     />

@@ -293,7 +293,12 @@ export const useChat = () => {
      * @returns {string} Icon image path
      */
     const getBotProfilePicture = (specializations: ISpecialization[], specializationId?: string): string => {
-        return specializations.find((spec) => spec.id === specializationId)?.iconFilePath ?? botIcon1;
+        const specializationMatch = specializations.find((spec) => spec.id === specializationId);
+
+        if (specializationMatch?.iconFilePath) {
+            return specializationMatch.iconFilePath;
+        }
+        return botIcon1;
     };
 
     const getChatMemorySources = async (chatId: string) => {
