@@ -296,66 +296,16 @@ webapi:
         secretKeyRef:
           name: q-copilot-webapi-secret
           key: KernelMemory-Services-AzureBlobs-ConnectionString
-    - name: "QAzureOpenAIChatConfig__SpecializationIndexes__0__ApiKey"
+    - name: "QAzureOpenAIChatConfig__AzureConfig__ApiKey"
       valueFrom:
         secretKeyRef:
           name: q-copilot-webapi-secret
-          key: KernelMemory-Services-AzureAISearch-APIKey
-    - name: "QAzureOpenAIChatConfig__SpecializationIndexes__0__VectorizationSource__APIKey"
+          key: QAzureOpenAIChatConfig-AzureConfig-ApiKey
+    - name: "QAzureOpenAIChatConfig__AzureConfig__VectorizationSource__APIKey"
       valueFrom:
         secretKeyRef:
           name: q-copilot-webapi-secret
-          key: KernelMemory-Services-AzureOpenAIEmbedding-APIKey
-    - name: "QAzureOpenAIChatConfig__SpecializationIndexes__1__ApiKey"
-      valueFrom:
-        secretKeyRef:
-          name: q-copilot-webapi-secret
-          key: KernelMemory-Services-AzureAISearch-APIKey
-    - name: "QAzureOpenAIChatConfig__SpecializationIndexes__1__VectorizationSource__APIKey"
-      valueFrom:
-        secretKeyRef:
-          name: q-copilot-webapi-secret
-          key: KernelMemory-Services-AzureOpenAIEmbedding-APIKey
-    - name: "QAzureOpenAIChatConfig__SpecializationIndexes__2__ApiKey"
-      valueFrom:
-        secretKeyRef:
-          name: q-copilot-webapi-secret
-          key: KernelMemory-Services-AzureAISearch-APIKey
-    - name: "QAzureOpenAIChatConfig__SpecializationIndexes__2__VectorizationSource__APIKey"
-      valueFrom:
-        secretKeyRef:
-          name: q-copilot-webapi-secret
-          key: KernelMemory-Services-AzureOpenAIEmbedding-APIKey
-    - name: "QAzureOpenAIChatConfig__SpecializationIndexes__3__ApiKey"
-      valueFrom:
-        secretKeyRef:
-          name: q-copilot-webapi-secret
-          key: KernelMemory-Services-AzureAISearch-APIKey
-    - name: "QAzureOpenAIChatConfig__SpecializationIndexes__3__VectorizationSource__APIKey"
-      valueFrom:
-        secretKeyRef:
-          name: q-copilot-webapi-secret
-          key: KernelMemory-Services-AzureOpenAIEmbedding-APIKey
-    - name: "QAzureOpenAIChatConfig__SpecializationIndexes__4__ApiKey"
-      valueFrom:
-        secretKeyRef:
-          name: q-copilot-webapi-secret
-          key: KernelMemory-Services-AzureAISearch-APIKey
-    - name: "QAzureOpenAIChatConfig__SpecializationIndexes__4__VectorizationSource__APIKey"
-      valueFrom:
-        secretKeyRef:
-          name: q-copilot-webapi-secret
-          key: KernelMemory-Services-AzureOpenAIEmbedding-APIKey
-    - name: "QAzureOpenAIChatConfig__SpecializationIndexes__5__ApiKey"
-      valueFrom:
-        secretKeyRef:
-          name: q-copilot-webapi-secret
-          key: KernelMemory-Services-AzureAISearch-APIKey
-    - name: "QAzureOpenAIChatConfig__SpecializationIndexes__5__VectorizationSource__APIKey"
-      valueFrom:
-        secretKeyRef:
-          name: q-copilot-webapi-secret
-          key: KernelMemory-Services-AzureOpenAIEmbedding-APIKey
+          key: QAzureOpenAIChatConfig-AzureConfig-VectorizationSource-APIKey
     - name: "ChatStore__Cosmos__ConnectionString"
       valueFrom:
         secretKeyRef:
@@ -412,6 +362,8 @@ webapi:
         KernelMemory-Services-AzureOpenAI-APIKey,
         KernelMemory-Services-AzureAISearch-APIKey,
         KernelMemory-Services-AzureBlobs-ConnectionString,
+        QAzureOpenAIChatConfig-AzureConfig-ApiKey,
+        QAzureOpenAIChatConfig-AzureConfig-VectorizationSource-APIKey,
         ChatStore-Cosmos-ConnectionString,
       ]
 
