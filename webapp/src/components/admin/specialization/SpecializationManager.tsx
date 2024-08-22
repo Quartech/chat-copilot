@@ -25,6 +25,11 @@ const useClasses = makeStyles({
     dialog: {
         maxWidth: '25%',
     },
+    scrollableContainer: {
+        overflowY: 'auto',
+        maxHeight: '100vh', // Adjust this value as needed
+        ...shorthands.padding('10px'),
+    },
 });
 
 const Rows = 8;
@@ -98,73 +103,75 @@ export const SpecializationManager: React.FC = () => {
     };
 
     return (
-        <div className={classes.root}>
-            <div className={classes.horizontal}></div>
-            <label>Key</label>
-            <Input
-                value={key}
-                onChange={(_event, data) => {
-                    setKey(data.value);
-                }}
-            />
-            <label>Name</label>
-            <Input
-                value={name}
-                onChange={(_event, data) => {
-                    setName(data.value);
-                }}
-            />
-            <label>Index Name</label>
-            <Dropdown
-                aria-labelledby={dropdownId}
-                placeholder="Select Index"
-                value={indexName}
-                selectedOptions={[indexName]}
-            >
-                {specializationIndexes.map((specializationIndex) => (
-                    <Option
-                        key={specializationIndex}
-                        onClick={() => {
-                            setIndexName(specializationIndex);
-                        }}
-                    >
-                        {specializationIndex}
-                    </Option>
-                ))}
-            </Dropdown>
-            <label>Short Description</label>
-            <Textarea
-                resize="vertical"
-                value={description}
-                rows={2}
-                onChange={(_event, data) => {
-                    setDescription(data.value);
-                }}
-            />
-            <label>Role Information</label>
-            <Textarea
-                resize="vertical"
-                value={roleInformation}
-                rows={Rows}
-                onChange={(_event, data) => {
-                    setRoleInformation(data.value);
-                }}
-            />
-            <label>Image URL</label>
-            <Input
-                value={imageFilePath}
-                onChange={(_event, data) => {
-                    setImageFilePath(data.value);
-                }}
-            />
-            <div className={classes.controls}>
-                <Button appearance="secondary" onClick={onDeleteChat}>
-                    Delete
-                </Button>
+        <div className={classes.scrollableContainer}>
+            <div className={classes.root}>
+                <div className={classes.horizontal}></div>
+                <label>Key</label>
+                <Input
+                    value={key}
+                    onChange={(_event, data) => {
+                        setKey(data.value);
+                    }}
+                />
+                <label>Name</label>
+                <Input
+                    value={name}
+                    onChange={(_event, data) => {
+                        setName(data.value);
+                    }}
+                />
+                <label>Index Name</label>
+                <Dropdown
+                    aria-labelledby={dropdownId}
+                    placeholder="Select Index"
+                    value={indexName}
+                    selectedOptions={[indexName]}
+                >
+                    {specializationIndexes.map((specializationIndex) => (
+                        <Option
+                            key={specializationIndex}
+                            onClick={() => {
+                                setIndexName(specializationIndex);
+                            }}
+                        >
+                            {specializationIndex}
+                        </Option>
+                    ))}
+                </Dropdown>
+                <label>Short Description</label>
+                <Textarea
+                    resize="vertical"
+                    value={description}
+                    rows={2}
+                    onChange={(_event, data) => {
+                        setDescription(data.value);
+                    }}
+                />
+                <label>Role Information</label>
+                <Textarea
+                    resize="vertical"
+                    value={roleInformation}
+                    rows={Rows}
+                    onChange={(_event, data) => {
+                        setRoleInformation(data.value);
+                    }}
+                />
+                <label>Image URL</label>
+                <Input
+                    value={imageFilePath}
+                    onChange={(_event, data) => {
+                        setImageFilePath(data.value);
+                    }}
+                />
+                <div className={classes.controls}>
+                    <Button appearance="secondary" onClick={onDeleteChat}>
+                        Delete
+                    </Button>
 
-                <Button appearance="primary" onClick={onSaveSpecialization}>
-                    Save
-                </Button>
+                    <Button appearance="primary" onClick={onSaveSpecialization}>
+                        Save
+                    </Button>
+                </div>
             </div>
         </div>
     );
