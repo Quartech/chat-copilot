@@ -85,7 +85,7 @@ export const useChat = () => {
                         messages: [result.initialBotMessage],
                         enabledHostedPlugins: result.chatSession.enabledPlugins,
                         users: [loggedInUser],
-                        botProfilePicture: getBotProfilePicture(specializationId, specializationsState),
+                        botProfilePicture: getBotProfilePicture(specializationsState, specializationId),
                         input: '',
                         botResponseStatus: undefined,
                         userDataLoaded: false,
@@ -210,7 +210,7 @@ export const useChat = () => {
                         users: chatUsers,
                         messages: chatMessages,
                         enabledHostedPlugins: chatSession.enabledPlugins,
-                        botProfilePicture: getBotProfilePicture(chatSession.specializationId, specializations),
+                        botProfilePicture: getBotProfilePicture(specializations, chatSession.specializationId),
                         input: '',
                         botResponseStatus: undefined,
                         userDataLoaded: false,
@@ -268,7 +268,7 @@ export const useChat = () => {
                     users: [loggedInUser],
                     messages: chatMessages,
                     enabledHostedPlugins: chatSession.enabledPlugins,
-                    botProfilePicture: getBotProfilePicture(chatSession.specializationId, specializationsState),
+                    botProfilePicture: getBotProfilePicture(specializationsState, chatSession.specializationId),
                     input: '',
                     botResponseStatus: undefined,
                     userDataLoaded: false,
@@ -288,11 +288,11 @@ export const useChat = () => {
     /**
      * Get bot profile picture from specialization key or fall back to a standard icon.
      *
-     * @param {string} specializationKey - Unique identifier of the Specialization
      * @param {ISpecialization[]} specializations - List of system Specializations
+     * @param {string} specializationId - Unique identifier of the Specialization
      * @returns {string} Icon image path
      */
-    const getBotProfilePicture = (specializationId?: string, specializations: ISpecialization[]): string => {
+    const getBotProfilePicture = (specializations: ISpecialization[], specializationId?: string): string => {
         return specializations.find((spec) => spec.id === specializationId)?.iconFilePath ?? botIcon1;
     };
 
@@ -382,7 +382,7 @@ export const useChat = () => {
                     messages: chatMessages,
                     enabledHostedPlugins: result.enabledPlugins,
                     users: chatUsers,
-                    botProfilePicture: getBotProfilePicture(result.specializationId, specializationsState),
+                    botProfilePicture: getBotProfilePicture(specializationsState, result.specializationId),
                     input: '',
                     botResponseStatus: undefined,
                     userDataLoaded: false,

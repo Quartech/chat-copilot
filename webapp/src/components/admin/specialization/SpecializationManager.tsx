@@ -45,6 +45,7 @@ export const SpecializationManager: React.FC = () => {
     const [roleInformation, setRoleInformation] = useState('');
     const [indexName, setIndexName] = useState('');
     const [imageFilePath, setImageFilePath] = useState('');
+    const [iconFilePath, setIconFilePath] = useState('');
     const [membershipId, setMembershipId] = useState<string[]>([]);
 
     const dropdownId = useId();
@@ -59,6 +60,7 @@ export const SpecializationManager: React.FC = () => {
                 roleInformation,
                 indexName,
                 imageFilePath,
+                iconFilePath,
                 groupMemberships: [],
             });
             resetSpecialization();
@@ -70,6 +72,7 @@ export const SpecializationManager: React.FC = () => {
                 roleInformation,
                 indexName,
                 imageFilePath,
+                iconFilePath,
                 groupMemberships: [],
             });
             resetSpecialization();
@@ -100,6 +103,7 @@ export const SpecializationManager: React.FC = () => {
                 setRoleInformation(specializationObj.roleInformation);
                 setMembershipId(specializationObj.groupMemberships);
                 setImageFilePath(specializationObj.imageFilePath);
+                setIconFilePath(specializationObj.iconFilePath);
                 setIndexName(specializationObj.indexName ?? '');
             }
         } else {
