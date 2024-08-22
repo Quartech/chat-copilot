@@ -23,7 +23,7 @@ import { useSettings } from './libs/hooks/useSettings';
 import { useAppDispatch, useAppSelector } from './redux/app/hooks';
 import { RootState } from './redux/app/store';
 import { FeatureKeys } from './redux/features/app/AppState';
-import { setActiveUserInfo, setFeatureFlag, setServiceInfo } from './redux/features/app/appSlice';
+import { setFeatureFlag, setServiceInfo, updateActiveUserInfo } from './redux/features/app/appSlice';
 import { semanticKernelDarkTheme, semanticKernelLightTheme } from './styles';
 
 /**
@@ -80,7 +80,7 @@ const App = () => {
     const dispatch = useAppDispatch();
 
     const { instance, inProgress } = useMsal();
-    const { features, isMaintenance } = useAppSelector((state: RootState) => state.app);
+    const { features, isMaintenance, activeUserInfo } = useAppSelector((state: RootState) => state.app);
     const isAuthenticated = useIsAuthenticated();
 
     const chat = useChat();
@@ -146,14 +146,12 @@ const App = () => {
                 if (result) {
                     getUserImage(result.accessToken, account.username)
                         .then((image) => {
-                            const decoded: JWTPayload = jwtDecode(account.idToken ?? '');
                             dispatch(
-                                setActiveUserInfo({
+                                updateActiveUserInfo({
                                     id: `${account.localAccountId}.${account.tenantId}`,
                                     email: account.username, // username is the email address
                                     username: account.name ?? account.username,
                                     image: image,
-                                    groups: decoded.groups,
                                     id_token: account.idToken ?? '',
                                 }),
                             );
@@ -242,6 +240,13 @@ const App = () => {
             if (!account) {
                 setAppState(AppState.ErrorLoadingUserInfo);
             } else {
+                const decoded: JWTPayload = jwtDecode(account.idToken ?? '');
+                dispatch(
+                    updateActiveUserInfo({
+                        groups: decoded.groups,
+                    }),
+                );
+
                 loadUser(instance, account);
                 setAppState(AppState.LoadingChats);
             }

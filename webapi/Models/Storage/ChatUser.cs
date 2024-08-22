@@ -39,11 +39,6 @@ public class ChatUser : IStorageEntity
     public string Id { get; set; }
 
     /// <summary>
-    /// User ID that is persistent and unique.
-    /// </summary>
-    public string UserId { get; set; }
-
-    /// <summary>
     /// The users settings
     /// </summary>
     public ChatUserSettings settings { get; set; }
@@ -57,12 +52,11 @@ public class ChatUser : IStorageEntity
     /// The partition key for the source.
     /// </summary>
     [JsonIgnore]
-    public string Partition => this.UserId;
+    public string Partition => this.Id;
 
     public ChatUser(string userId)
     {
-        this.Id = Guid.NewGuid().ToString();
-        this.UserId = userId;
+        this.Id = userId;
         this.CreatedOn = DateTimeOffset.Now;
         this.settings = new ChatUserSettings
         {

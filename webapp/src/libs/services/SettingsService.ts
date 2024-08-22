@@ -1,9 +1,9 @@
-import { IUserSettings } from '../models/UserSettings';
+import { IUserSettings, UserSettingsResponse } from '../models/UserSettings';
 import { BaseService } from './BaseService';
 
 export class SettingService extends BaseService {
-    public getUserSettingsAsync = async (accessToken: string): Promise<IUserSettings> => {
-        return await this.getResponseAsync<IUserSettings>(
+    public getUserSettingsAsync = async (accessToken: string): Promise<UserSettingsResponse> => {
+        return await this.getResponseAsync<UserSettingsResponse>(
             {
                 commandPath: 'user-settings',
                 method: 'GET',

@@ -31,8 +31,8 @@ export const appSlice = createSlice({
         removeAlert: (state: AppState, action: PayloadAction<number>) => {
             state.alerts.splice(action.payload, 1);
         },
-        setActiveUserInfo: (state: AppState, action: PayloadAction<ActiveUserInfo>) => {
-            state.activeUserInfo = action.payload;
+        updateActiveUserInfo: (state: AppState, action: PayloadAction<Partial<ActiveUserInfo>>) => {
+            state.activeUserInfo = Object.assign({}, state.activeUserInfo, action.payload);
         },
         updateTokenUsage: (state: AppState, action: PayloadAction<TokenUsage>) => {
             Object.keys(TokenUsageFunctionNameMap).forEach((key) => {
@@ -94,7 +94,7 @@ export const {
     addAlert,
     removeAlert,
     setAlerts,
-    setActiveUserInfo,
+    updateActiveUserInfo,
     toggleFeatureFlag,
     toggleFeatureState,
     updateTokenUsage,
