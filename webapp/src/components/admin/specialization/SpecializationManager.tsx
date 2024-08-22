@@ -40,6 +40,7 @@ export const SpecializationManager: React.FC = () => {
     const [description, setDescription] = useState('');
     const [roleInformation, setRoleInformation] = useState('');
     const [imageFilePath, setImageFilePath] = useState('');
+    const [iconFilePath, setIconFilePath] = useState('');
     const [editMode, setEditMode] = useState(false);
     const dropdownId = useId();
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-return
@@ -55,10 +56,19 @@ export const SpecializationManager: React.FC = () => {
                 roleInformation,
                 indexName,
                 imageFilePath,
+                iconFilePath,
             );
             resetSpecialization();
         } else {
-            void specialization.createSpecialization(key, name, description, roleInformation, indexName, imageFilePath);
+            void specialization.createSpecialization(
+                key,
+                name,
+                description,
+                roleInformation,
+                indexName,
+                imageFilePath,
+                iconFilePath,
+            );
             resetSpecialization();
         }
     };
@@ -69,6 +79,7 @@ export const SpecializationManager: React.FC = () => {
         setDescription('');
         setRoleInformation('');
         setImageFilePath('');
+        setIconFilePath('');
         setIndexName('');
     };
 
@@ -84,6 +95,7 @@ export const SpecializationManager: React.FC = () => {
                 setDescription(specializationObj.description);
                 setRoleInformation(specializationObj.roleInformation);
                 setImageFilePath(specializationObj.imageFilePath);
+                setIconFilePath(specializationObj.iconFilePath);
                 setIndexName(specializationObj.indexName);
             }
         } else {

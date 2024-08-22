@@ -18,6 +18,7 @@ export const Specializations = [
         roleInformation: '',
         indexName: '',
         imageFilePath: '',
+        iconFilePath: '',
         isActive: true,
         groupMemberships: [],
         strictness: 3,

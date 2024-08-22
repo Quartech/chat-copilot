@@ -31,6 +31,7 @@ export class SpecializationService extends BaseService {
         roleInformation: string,
         indexName: string,
         imageFilePath: string,
+        iconFilePath: string,
         accessToken: string,
     ): Promise<ISpecialization> => {
         const body: ISpecializationRequest = {
@@ -40,6 +41,7 @@ export class SpecializationService extends BaseService {
             roleInformation,
             indexName,
             imageFilePath,
+            iconFilePath,
         };
         const result = await this.getResponseAsync<ISpecialization>(
             {
@@ -60,6 +62,7 @@ export class SpecializationService extends BaseService {
         roleInformation: string,
         indexName: string,
         imageFilePath: string,
+        iconFilePath: string,
         accessToken: string,
     ): Promise<ISpecialization> => {
         const body: ISpecializationRequest = {
@@ -69,6 +72,7 @@ export class SpecializationService extends BaseService {
             roleInformation,
             indexName,
             imageFilePath,
+            iconFilePath,
         };
         const result = await this.getResponseAsync<ISpecialization>(
             {

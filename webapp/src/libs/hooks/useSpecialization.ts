@@ -53,6 +53,7 @@ export const useSpecialization = () => {
         roleInformation: string,
         indexName: string,
         imageFilePath: string,
+        iconFilePath: string,
     ) => {
         try {
             const accessToken = await AuthHelper.getSKaaSAccessToken(instance, inProgress);
@@ -64,6 +65,7 @@ export const useSpecialization = () => {
                     roleInformation,
                     indexName,
                     imageFilePath,
+                    iconFilePath,
                     accessToken,
                 )
                 .then((result: ISpecialization) => {
@@ -83,6 +85,7 @@ export const useSpecialization = () => {
         roleInformation: string,
         indexName: string,
         imageFilePath: string,
+        iconFilePath: string,
     ) => {
         try {
             const accessToken = await AuthHelper.getSKaaSAccessToken(instance, inProgress);
@@ -95,6 +98,7 @@ export const useSpecialization = () => {
                     roleInformation,
                     indexName,
                     imageFilePath,
+                    iconFilePath,
                     accessToken,
                 )
                 .then((result: ISpecialization) => {
