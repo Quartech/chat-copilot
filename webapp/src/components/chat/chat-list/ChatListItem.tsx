@@ -105,6 +105,7 @@ export const ChatListItem: FC<IChatListItemProps> = ({
     const classes = useClasses();
     const dispatch = useAppDispatch();
     const { features } = useAppSelector((state: RootState) => state.app);
+    const { chatSpecialization } = useAppSelector((state: RootState) => state.admin);
 
     const showPreview = !features[FeatureKeys.SimplifiedExperience].enabled && preview;
     const showActions = features[FeatureKeys.SimplifiedExperience].enabled && isSelected;
@@ -124,7 +125,11 @@ export const ChatListItem: FC<IChatListItemProps> = ({
             aria-label={`Chat list item: ${header}`}
         >
             <Persona
-                avatar={{ image: { src: botProfilePicture } }}
+                avatar={{
+                    image: {
+                        src: chatSpecialization?.iconFilePath ? chatSpecialization.iconFilePath : botProfilePicture,
+                    },
+                }}
                 presence={!features[FeatureKeys.SimplifiedExperience].enabled ? { status: 'available' } : undefined}
             />
             {editingTitle ? (

@@ -12,7 +12,7 @@ import {
     tokens,
 } from '@fluentui/react-components';
 import { Map16Regular } from '@fluentui/react-icons';
-import React, { useMemo } from 'react';
+import React from 'react';
 import { useAppSelector } from '../../redux/app/hooks';
 import { RootState } from '../../redux/app/store';
 import { FeatureKeys } from '../../redux/features/app/AppState';
@@ -75,14 +75,7 @@ export const ChatWindow: React.FC = () => {
 
     const showShareBotMenu = features[FeatureKeys.BotAsDocs].enabled || features[FeatureKeys.MultiUserChat].enabled;
     const chatName = conversations[selectedId].title;
-    const { specializations } = useAppSelector((state: RootState) => state.admin);
-
-    // Memoized current chat specialization
-    const specialization = useMemo(() => {
-        if (!selectedId) return;
-        const specializationKey = conversations[selectedId].specializationId;
-        return specializations.find((spec) => spec.id === specializationKey);
-    }, [selectedId, conversations, specializations]);
+    const { chatSpecialization } = useAppSelector((state: RootState) => state.admin);
 
     const onTabSelect: SelectTabEventHandler = (_event, data) => {
         setSelectedTab(data.value);
@@ -96,12 +89,16 @@ export const ChatWindow: React.FC = () => {
                         key={'Semantic Kernel Bot'}
                         size="medium"
                         avatar={{
-                            image: { src: specialization?.iconFilePath ?? conversations[selectedId].botProfilePicture },
+                            image: {
+                                src: chatSpecialization?.iconFilePath
+                                    ? chatSpecialization.iconFilePath
+                                    : conversations[selectedId].botProfilePicture,
+                            },
                         }}
                         presence={{ status: 'available' }}
                     />
                     <Label size="large" weight="semibold">
-                        {specialization?.name}
+                        {chatSpecialization?.name}
                     </Label>
                     <TabList selectedValue={selectedTab} onTabSelect={onTabSelect}>
                         <Tab
