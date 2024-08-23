@@ -30,7 +30,7 @@ const useClasses = makeStyles({
     },
     scrollableContainer: {
         overflowY: 'auto',
-        maxHeight: '100vh', // Adjust this value as needed
+        maxHeight: 'calc(100vh - 100px)', // Adjust this value as needed
         ...shorthands.padding('10px'),
     },
 });
