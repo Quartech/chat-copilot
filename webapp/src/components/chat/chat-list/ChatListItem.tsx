@@ -9,6 +9,7 @@ import { Breakpoints, SharedStyles } from '../../../styles';
 import { timestampToDateString } from '../../utils/TextUtils';
 import { EditChatName } from '../shared/EditChatName';
 import { ListItemActions } from './ListItemActions';
+import { setChatSpecialization } from '../../../redux/features/admin/adminSlice';
 
 const useClasses = makeStyles({
     root: {
@@ -105,7 +106,8 @@ export const ChatListItem: FC<IChatListItemProps> = ({
     const classes = useClasses();
     const dispatch = useAppDispatch();
     const { features } = useAppSelector((state: RootState) => state.app);
-    const { chatSpecialization } = useAppSelector((state: RootState) => state.admin);
+    const { specializations } = useAppSelector((state: RootState) => state.admin);
+    const { conversations } = useAppSelector((state: RootState) => state.conversations);
 
     const showPreview = !features[FeatureKeys.SimplifiedExperience].enabled && preview;
     const showActions = features[FeatureKeys.SimplifiedExperience].enabled && isSelected;
@@ -113,6 +115,15 @@ export const ChatListItem: FC<IChatListItemProps> = ({
     const [editingTitle, setEditingTitle] = useState(false);
 
     const onClick = (_ev: any) => {
+        const specializationId = conversations[id].specializationId;
+        if (specializationId) {
+            const foundSpecialization = specializations.find(
+                (specialization) => specialization.id === specializationId,
+            );
+            if (foundSpecialization) {
+                dispatch(setChatSpecialization(foundSpecialization));
+            }
+        }
         dispatch(setSelectedConversation(id));
     };
 
@@ -127,7 +138,7 @@ export const ChatListItem: FC<IChatListItemProps> = ({
             <Persona
                 avatar={{
                     image: {
-                        src: chatSpecialization?.iconFilePath ? chatSpecialization.iconFilePath : botProfilePicture,
+                        src: botProfilePicture,
                     },
                 }}
                 presence={!features[FeatureKeys.SimplifiedExperience].enabled ? { status: 'available' } : undefined}
