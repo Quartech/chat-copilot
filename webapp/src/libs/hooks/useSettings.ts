@@ -8,15 +8,23 @@ import { AlertType } from '../models/AlertType';
 import { IUserSettings } from '../models/UserSettings';
 import { SettingService } from '../services/SettingsService';
 
+/**
+ * Hook that provides access to settings related functions
+ * @returns functions to get and update settings
+ */
 export const useSettings = () => {
     const dispatch = useAppDispatch();
     const { instance, inProgress } = useMsal();
-    const specializationService = new SettingService();
+    const settingService = new SettingService();
 
+    /**
+     * Loads the users settings from the backend
+     * @returns the users settings
+     */
     const getSettings = async () => {
         try {
             const accessToken = await AuthHelper.getSKaaSAccessToken(instance, inProgress);
-            return specializationService.getUserSettingsAsync(accessToken);
+            return settingService.getUserSettingsAsync(accessToken);
         } catch (e: any) {
             const errorMessage = `Unable to load user settings. Details: ${getErrorDetails(e)}`;
             dispatch(addAlert({ message: errorMessage, type: AlertType.Error }));
@@ -24,10 +32,16 @@ export const useSettings = () => {
         }
     };
 
+    /**
+     * Updates a setting to the specified boolean
+     * @param setting the key to toggle
+     * @param enabled the value to toggle to
+     * @returns the updated settings
+     */
     const updateSetting = async (setting: keyof IUserSettings, enabled: boolean) => {
         try {
             const accessToken = await AuthHelper.getSKaaSAccessToken(instance, inProgress);
-            return specializationService.saveUserSettings(accessToken, {
+            return settingService.saveUserSettings(accessToken, {
                 setting,
                 enabled,
             });

@@ -32,18 +32,13 @@ export const SettingSection: React.FC<ISettingsSectionProps> = ({ setting, conte
     const settings = useSettings();
 
     const onFeatureChange = useCallback(
-        (featureKey: FeatureKeys) => {
-            settings
-                .updateSetting('darkMode', !features[featureKey].enabled)
-                .then(() => {
-                    dispatch(toggleFeatureFlag(featureKey));
-                    if (featureKey === FeatureKeys.MultiUserChat) {
-                        dispatch(toggleMultiUserConversations());
-                    }
-                })
-                .catch((e) => {
-                    console.error(e);
-                });
+        async (featureKey: FeatureKeys) => {
+            await settings.updateSetting('darkMode', !features[featureKey].enabled);
+
+            dispatch(toggleFeatureFlag(featureKey));
+            if (featureKey === FeatureKeys.MultiUserChat) {
+                dispatch(toggleMultiUserConversations());
+            }
         },
         [dispatch, features, settings],
     );
@@ -70,7 +65,7 @@ export const SettingSection: React.FC<ISettingsSectionProps> = ({ setting, conte
                                     !!feature.inactive || (key === FeatureKeys.MultiUserChat && !AuthHelper.isAuthAAD())
                                 }
                                 onChange={() => {
-                                    onFeatureChange(key);
+                                    void onFeatureChange(key);
                                 }}
                                 data-testid={feature.label}
                             />

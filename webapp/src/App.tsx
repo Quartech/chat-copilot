@@ -209,21 +209,26 @@ const App = () => {
         const loadedSettings = await settings.getSettings();
         if (loadedSettings) {
             dispatch(
-                setFeatureFlag({
-                    key: FeatureKeys.DarkMode,
-                    enabled: loadedSettings.darkMode,
+                updateActiveUserInfo({
+                    hasAdmin: activeUserInfo?.groups.includes(loadedSettings.adminGroupId) ?? false,
                 }),
             );
             dispatch(
                 setFeatureFlag({
-                    enabled: loadedSettings.pluginsPersonas,
+                    key: FeatureKeys.DarkMode,
+                    enabled: loadedSettings.settings.darkMode,
+                }),
+            );
+            dispatch(
+                setFeatureFlag({
+                    enabled: loadedSettings.settings.pluginsPersonas,
                     key: FeatureKeys.PluginsPlannersAndPersonas,
                 }),
             );
             dispatch(
                 setFeatureFlag({
                     key: FeatureKeys.SimplifiedExperience,
-                    enabled: loadedSettings.simplifiedChat,
+                    enabled: loadedSettings.settings.simplifiedChat,
                 }),
             );
         }
