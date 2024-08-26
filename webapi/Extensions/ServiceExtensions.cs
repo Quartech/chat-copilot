@@ -173,7 +173,6 @@ public static class CopilotChatServiceExtensions
         ICopilotChatMessageStorageContext chatMessageStorageContext;
         IStorageContext<MemorySource> chatMemorySourceStorageContext;
         IStorageContext<ChatParticipant> chatParticipantStorageContext;
-        IStorageContext<ChatSpecializationSession> chatSpecializationSessionStorageContext;
         IStorageContext<Specialization> specializationStorageContext;
         IStorageContext<ChatUser> chatUserStorageContext;
 
@@ -187,7 +186,6 @@ public static class CopilotChatServiceExtensions
                 chatMessageStorageContext = new VolatileCopilotChatMessageContext();
                 chatMemorySourceStorageContext = new VolatileContext<MemorySource>();
                 chatParticipantStorageContext = new VolatileContext<ChatParticipant>();
-                chatSpecializationSessionStorageContext = new VolatileContext<ChatSpecializationSession>();
                 specializationStorageContext = new VolatileContext<Specialization>();
                 chatUserStorageContext = new VolatileContext<ChatUser>();
                 break;
