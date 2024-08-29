@@ -288,13 +288,6 @@ public static class CopilotChatServiceExtensions
                     .AddMicrosoftIdentityWebApi(configuration.GetSection($"{ChatAuthenticationOptions.PropertyName}:AzureAd"));
                 break;
 
-            case ChatAuthenticationOptions.AuthenticationType.None:
-                services.AddAuthentication(PassThroughAuthenticationHandler.AuthenticationScheme)
-                    .AddScheme<AuthenticationSchemeOptions, PassThroughAuthenticationHandler>(
-                        authenticationScheme: PassThroughAuthenticationHandler.AuthenticationScheme,
-                        configureOptions: null);
-                break;
-
             default:
                 throw new InvalidOperationException($"Invalid authentication type '{config.Type}'.");
         }
