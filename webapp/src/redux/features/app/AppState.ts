@@ -5,7 +5,6 @@ import { AlertType } from '../../../libs/models/AlertType';
 import { ServiceInfo } from '../../../libs/models/ServiceInfo';
 import { TokenUsage } from '../../../libs/models/TokenUsage';
 
-
 export interface ActiveUserInfo {
     id: string;
     email: string;
