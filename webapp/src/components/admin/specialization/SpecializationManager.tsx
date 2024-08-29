@@ -4,6 +4,7 @@ import { Button, Dropdown, Input, makeStyles, Option, shorthands, Textarea, toke
 import { useSpecialization } from '../../../libs/hooks';
 import { useAppSelector } from '../../../redux/app/hooks';
 import { RootState } from '../../../redux/app/store';
+import { ImageUploaderPreview } from '../../files/ImageUploaderPreview';
 
 const useClasses = makeStyles({
     root: {
@@ -108,8 +109,8 @@ export const SpecializationManager: React.FC = () => {
                 setDescription(specializationObj.description);
                 setRoleInformation(specializationObj.roleInformation);
                 setMembershipId(specializationObj.groupMemberships);
-                setImageFilePath(specializationObj.imageFilePath);
-                setIconFilePath(specializationObj.iconFilePath);
+                setImageFilePath('');
+                setIconFilePath('');
                 setIndexName(specializationObj.indexName ?? '');
             }
         } else {
@@ -207,22 +208,13 @@ export const SpecializationManager: React.FC = () => {
                         setMembershipId(data.value.split(', '));
                     }}
                 />
-                <label htmlFor="image-url">Image URL</label>
-                <Input
-                    id="image-url"
-                    value={imageFilePath}
-                    onChange={(_event, data) => {
-                        setImageFilePath(data.value);
+                <label htmlFor="image-url">Bot Image</label>
+                <ImageUploaderPreview
+                    onFileUpdate={(_file, src) => {
+                        setImageFilePath(src);
                     }}
                 />
-                <label htmlFor="image-url">Bot Icon URL</label>
-                <Input
-                    id="icon-url"
-                    value={iconFilePath}
-                    onChange={(_event, data) => {
-                        setIconFilePath(data.value);
-                    }}
-                />
+                <label htmlFor="image-url">Bot Icon</label>
                 <div className={classes.controls}>
                     <Button appearance="secondary" disabled={!id} onClick={onDeleteChat}>
                         Delete
