@@ -87,8 +87,8 @@ webapi:
           secretProviderClass: "q-copilot-webapi"
 
   configs:
-    - config/test/appsettings.json
-    - config/test/appsettings.Production.json
+    - config/prod/appsettings.json
+    - config/prod/appsettings.Production.json
 
   ingress:
     hosts:
