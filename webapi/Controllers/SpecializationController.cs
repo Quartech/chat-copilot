@@ -119,7 +119,8 @@ public class SpecializationController : ControllerBase
             Description = qSpecializationMutate.Description,
             RoleInformation = qSpecializationMutate.RoleInformation,
             IndexName = qSpecializationMutate.IndexName,
-            GroupMemberships = qSpecializationMutate.GroupMemberships
+            // Convert the group memberships string to a list of strings
+            GroupMemberships = qSpecializationMutate.GroupMemberships.Split(',')
         };
 
 

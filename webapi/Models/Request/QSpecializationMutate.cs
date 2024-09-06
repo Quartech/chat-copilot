@@ -22,4 +22,12 @@ public class QSpecializationMutate : QSpecializationBase
     /// </summary>
     [JsonPropertyName("iconFile")]
     public IFormFile? ImageFile { get; set; } = null;
+
+    /// <summary>
+    /// Overrides the GroupMemberships property from the base class.
+    /// Why? Mutate payloads are `FromForm` ie: `FormData` which expect all property values to be strings.
+    /// This value will need to be deserialized into a list of strings.
+    /// </summary>
+    [JsonPropertyName("groupMemberships")]
+    public new string GroupMemberships { get; set; } = string.Empty;
 }
