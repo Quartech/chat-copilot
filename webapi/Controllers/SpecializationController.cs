@@ -3,6 +3,8 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
 using CopilotChat.WebApi.Auth;
 using CopilotChat.WebApi.Models.Request;
 using CopilotChat.WebApi.Models.Response;
@@ -107,6 +109,9 @@ public class SpecializationController : ControllerBase
         [FromBody] QSpecializationParameters qSpecializationParameters
     )
     {
+        BlobContainerClient containerClient =
+            await this.GetSpecializationBlobContainerClientAsync();
+
         if (string.IsNullOrEmpty(qSpecializationParameters.ImageFilePath))
         {
             qSpecializationParameters.ImageFilePath =
@@ -208,5 +213,24 @@ public class SpecializationController : ControllerBase
         defaultProps.Add("imageFilePath", this._qAzureOpenAIChatOptions.DefaultSpecializationImage);
         defaultProps.Add("iconFilePath", this._qAzureOpenAIChatOptions.DefaultSpecializationIcon);
         return defaultProps;
+    }
+
+    /// <summary>
+    /// Gets the Specialization blob container client
+    /// </summary>
+    /// <returns>BlobContainerClient used to interface with blobs in the storage account</returns>
+    private async Task<BlobContainerClient> GetSpecializationBlobContainerClientAsync()
+    {
+        // Create a BlobServiceClient object which will be used to create a container client
+        BlobServiceClient blobServiceClient = new BlobServiceClient(
+            this._qAzureOpenAIChatOptions.AzureConfig.BlobStorage.ConnectionString
+        );
+
+        BlobContainerClient containerClient = blobServiceClient.GetBlobContainerClient(
+            this._qAzureOpenAIChatOptions.AzureConfig.BlobStorage.SpecializationContainerName
+        );
+        await containerClient.CreateIfNotExistsAsync(PublicAccessType.Blob);
+
+        return containerClient;
     }
 }

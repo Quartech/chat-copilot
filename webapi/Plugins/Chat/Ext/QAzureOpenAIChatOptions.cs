@@ -35,7 +35,9 @@ public class AzureConfig
     public Uri? Endpoint { get; set; } = null;
 #pragma warning restore CS8618
     public string APIKey { get; set; } = string.Empty;
-    public VectorizationSourceOption VectorizationSource { get; set; } = new VectorizationSourceOption();
+    public VectorizationSourceOption VectorizationSource { get; set; } =
+        new VectorizationSourceOption();
+    public BlobStorageOption BlobStorage { get; set; } = new BlobStorageOption();
 }
 
 /// <summary>
@@ -71,4 +73,13 @@ public class VectorizationSourceOption
     public Uri Endpoint { get; set; }
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
     public string APIKey { get; set; } = string.Empty;
+}
+
+/// <summary>
+/// Blob storage configuration.
+/// </summary>
+public class BlobStorageOption
+{
+    public string ConnectionString { get; set; } = string.Empty;
+    public string SpecializationContainerName { get; set; } = "specialization";
 }
