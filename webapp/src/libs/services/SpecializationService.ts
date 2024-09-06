@@ -28,11 +28,29 @@ export class SpecializationService extends BaseService {
         body: ISpecializationRequest,
         accessToken: string,
     ): Promise<ISpecialization> => {
+        const formData = new FormData();
+
+        // FormData expects string values for each key
+        formData.append('label', body.label);
+        formData.append('name', body.name);
+        formData.append('description', body.description);
+        formData.append('roleInformation', body.roleInformation);
+        // This will need to be parsed on the backend
+        formData.append('groupMemberships', body.groupMemberships.join(','));
+
+        if (body.imageFile) {
+            formData.append('imageFile', body.imageFile);
+        }
+
+        if (body.iconFile) {
+            formData.append('iconFile', body.iconFile);
+        }
+
         const result = await this.getResponseAsync<ISpecialization>(
             {
                 commandPath: 'specializations',
                 method: 'POST',
-                body,
+                body: formData,
             },
             accessToken,
         );

@@ -106,22 +106,42 @@ public class SpecializationController : ControllerBase
     [ProducesResponseType(StatusCodes.Status504GatewayTimeout)]
     public async Task<IActionResult> CreateSpecializationAsync(
         [FromServices] IAuthInfo authInfo,
-        [FromBody] QSpecializationParameters qSpecializationParameters
+        [FromForm] QSpecializationMutate qSpecializationMutate
     )
     {
         BlobContainerClient containerClient =
             await this.GetSpecializationBlobContainerClientAsync();
 
-        if (string.IsNullOrEmpty(qSpecializationParameters.ImageFilePath))
+        QSpecializationParameters qSpecializationParameters = new QSpecializationParameters
         {
-            qSpecializationParameters.ImageFilePath =
-                this._qAzureOpenAIChatOptions.DefaultSpecializationImage;
-        }
-        if (string.IsNullOrEmpty(qSpecializationParameters.IconFilePath))
+            label = qSpecializationMutate.label,
+            Name = qSpecializationMutate.Name,
+            Description = qSpecializationMutate.Description,
+            RoleInformation = qSpecializationMutate.RoleInformation,
+            IndexName = qSpecializationMutate.IndexName,
+            GroupMemberships = qSpecializationMutate.GroupMemberships
+        };
+
+
+        if (qSpecializationMutate.ImageFile != null)
         {
-            qSpecializationParameters.IconFilePath =
-                this._qAzureOpenAIChatOptions.DefaultSpecializationIcon;
+            var blobClient = containerClient.GetBlobClient(qSpecializationMutate.ImageFile.FileName);
+            await blobClient.UploadAsync(qSpecializationMutate.ImageFile.OpenReadStream(), true);
+            qSpecializationParameters.ImageFilePath = blobClient.Uri.ToString();
+        } else {
+            qSpecializationParameters.ImageFilePath = this._qAzureOpenAIChatOptions.DefaultSpecializationImage;
         }
+
+        if (qSpecializationMutate.IconFile != null)
+        {
+            var blobClient = containerClient.GetBlobClient(qSpecializationMutate.IconFile.FileName);
+            await blobClient.UploadAsync(qSpecializationMutate.IconFile.OpenReadStream(), true);
+            qSpecializationParameters.IconFilePath = blobClient.Uri.ToString();
+        } else {
+            qSpecializationParameters.IconFilePath = this._qAzureOpenAIChatOptions.DefaultSpecializationIcon;
+        }
+
+
         var _specializationsource = await this._qspecializationService.SaveSpecialization(
             qSpecializationParameters
         );
@@ -194,7 +214,7 @@ public class SpecializationController : ControllerBase
     }
 
     /// <summary>
-    /// Gets the default specialization prtoperties
+    /// Gets the default specialization properties
     /// </summary>
     /// <returns>The dictionary containing default specialization properties</returns>
     private Dictionary<string, string> GetDefaultSpecializationDict()
