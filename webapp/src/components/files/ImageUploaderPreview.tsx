@@ -23,6 +23,7 @@ const useStyles = makeStyles({
     },
     uploadBtn: {
         maxWidth: 'fit-content',
+        minWidth: '150px',
     },
 });
 
@@ -34,6 +35,13 @@ interface ImageUploaderPreviewProps {
      * @memberof ImageUploaderPreviewProps
      */
     initialFile?: File | null;
+    /**
+     * The label for the upload button.
+     *
+     * @type {string} buttonLabel
+     * @memberof ImageUploaderPreviewProps
+     */
+    buttonLabel?: string;
     /**
      * Callback function for file updates ie: file upload or removal.
      *
@@ -94,7 +102,7 @@ export const ImageUploaderPreview = (props: ImageUploaderPreviewProps) => {
                     iconPosition="after"
                     onClick={() => imageUploaderRef.current?.click()}
                 >
-                    Upload Image
+                    {props.buttonLabel ?? 'Upload Image'}
                 </Button>
             )}
             <FileUploader

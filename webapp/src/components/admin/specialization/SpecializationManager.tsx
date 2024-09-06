@@ -50,8 +50,8 @@ export const SpecializationManager: React.FC = () => {
     const [description, setDescription] = useState('');
     const [roleInformation, setRoleInformation] = useState('');
     const [indexName, setIndexName] = useState('');
-    const [imageFilePath, setImageFilePath] = useState('');
-    const [iconFilePath, setIconFilePath] = useState('');
+    const [imageFile, setImageFile] = useState<File | null>(null);
+    const [iconFile, setIconFile] = useState<File | null>(null);
     const [membershipId, setMembershipId] = useState<string[]>([]);
 
     const dropdownId = useId();
@@ -66,8 +66,8 @@ export const SpecializationManager: React.FC = () => {
                 description,
                 roleInformation,
                 indexName,
-                imageFilePath,
-                iconFilePath,
+                imageFile,
+                iconFile,
                 groupMemberships: membershipId,
             });
             resetSpecialization();
@@ -78,8 +78,8 @@ export const SpecializationManager: React.FC = () => {
                 description,
                 roleInformation,
                 indexName,
-                imageFilePath,
-                iconFilePath,
+                imageFile,
+                iconFile,
                 groupMemberships: membershipId,
             });
             resetSpecialization();
@@ -93,8 +93,8 @@ export const SpecializationManager: React.FC = () => {
         setDescription('');
         setRoleInformation('');
         setMembershipId([]);
-        setImageFilePath('');
-        setIconFilePath('');
+        setImageFile(null);
+        setIconFile(null);
         setIndexName('');
     };
 
@@ -109,8 +109,9 @@ export const SpecializationManager: React.FC = () => {
                 setDescription(specializationObj.description);
                 setRoleInformation(specializationObj.roleInformation);
                 setMembershipId(specializationObj.groupMemberships);
-                setImageFilePath('');
-                setIconFilePath('');
+                //TODO: update these to be the actual files
+                setImageFile(null);
+                setIconFile(null);
                 setIndexName(specializationObj.indexName ?? '');
             }
         } else {
@@ -208,13 +209,20 @@ export const SpecializationManager: React.FC = () => {
                         setMembershipId(data.value.split(', '));
                     }}
                 />
-                <label htmlFor="image-url">Bot Image</label>
+                <label htmlFor="image-url">Specialization Image</label>
                 <ImageUploaderPreview
-                    onFileUpdate={(_file, src) => {
-                        setImageFilePath(src);
+                    buttonLabel="Upload Image"
+                    onFileUpdate={(file) => {
+                        setImageFile(file);
                     }}
                 />
-                <label htmlFor="image-url">Bot Icon</label>
+                <label htmlFor="image-url">Specialization Icon</label>
+                <ImageUploaderPreview
+                    buttonLabel="Upload Icon"
+                    onFileUpdate={(file) => {
+                        setIconFile(file);
+                    }}
+                />
                 <div className={classes.controls}>
                     <Button appearance="secondary" disabled={!id} onClick={onDeleteChat}>
                         Delete

@@ -19,8 +19,8 @@ export interface ISpecializationRequest {
     description: string;
     roleInformation: string;
     indexName: string;
-    imageFilePath: string;
-    iconFilePath: string;
+    imageFile: File | null;
+    iconFile: File | null;
     groupMemberships: string[];
 }
 
