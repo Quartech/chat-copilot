@@ -30,6 +30,8 @@ public class SpecializationController : ControllerBase
 
     private readonly QSpecializationService _qspecializationService;
 
+    private readonly QBlobStorage _qBlobStorage;
+
     private readonly QAzureOpenAIChatExtension _qAzureOpenAIChatExtension;
 
     private readonly QAzureOpenAIChatOptions _qAzureOpenAIChatOptions;
@@ -49,6 +51,10 @@ public class SpecializationController : ControllerBase
         this._qAzureOpenAIChatExtension = new QAzureOpenAIChatExtension(
             specializationOptions.Value,
             specializationSourceRepository
+        );
+        this._qBlobStorage = new QBlobStorage(
+            this._qAzureOpenAIChatOptions.AzureConfig.BlobStorage.ConnectionString,
+            this._qAzureOpenAIChatOptions.AzureConfig.BlobStorage.SpecializationContainerName
         );
         this._promptOptions = promptsOptions.Value;
     }
@@ -109,9 +115,6 @@ public class SpecializationController : ControllerBase
         [FromForm] QSpecializationMutate qSpecializationMutate
     )
     {
-        BlobContainerClient containerClient =
-            await this.GetSpecializationBlobContainerClientAsync();
-
         QSpecializationParameters qSpecializationParameters = new QSpecializationParameters
         {
             label = qSpecializationMutate.label,
@@ -120,28 +123,18 @@ public class SpecializationController : ControllerBase
             RoleInformation = qSpecializationMutate.RoleInformation,
             IndexName = qSpecializationMutate.IndexName,
             // Convert the group memberships string to a list of strings
-            GroupMemberships = qSpecializationMutate.GroupMemberships.Split(',')
+            GroupMemberships = qSpecializationMutate.GroupMemberships.Split(','),
         };
 
+        qSpecializationParameters.ImageFilePath =
+            qSpecializationMutate.ImageFile == null
+                ? this._qAzureOpenAIChatOptions.DefaultSpecializationImage
+                : await this._qBlobStorage.AddBlobAsync(qSpecializationMutate.ImageFile);
 
-        if (qSpecializationMutate.ImageFile != null)
-        {
-            var blobClient = containerClient.GetBlobClient(qSpecializationMutate.ImageFile.FileName);
-            await blobClient.UploadAsync(qSpecializationMutate.ImageFile.OpenReadStream(), true);
-            qSpecializationParameters.ImageFilePath = blobClient.Uri.ToString();
-        } else {
-            qSpecializationParameters.ImageFilePath = this._qAzureOpenAIChatOptions.DefaultSpecializationImage;
-        }
-
-        if (qSpecializationMutate.IconFile != null)
-        {
-            var blobClient = containerClient.GetBlobClient(qSpecializationMutate.IconFile.FileName);
-            await blobClient.UploadAsync(qSpecializationMutate.IconFile.OpenReadStream(), true);
-            qSpecializationParameters.IconFilePath = blobClient.Uri.ToString();
-        } else {
-            qSpecializationParameters.IconFilePath = this._qAzureOpenAIChatOptions.DefaultSpecializationIcon;
-        }
-
+        qSpecializationParameters.IconFilePath =
+            qSpecializationMutate.IconFile == null
+                ? this._qAzureOpenAIChatOptions.DefaultSpecializationIcon
+                : await this._qBlobStorage.AddBlobAsync(qSpecializationMutate.IconFile);
 
         var _specializationsource = await this._qspecializationService.SaveSpecialization(
             qSpecializationParameters
@@ -234,24 +227,5 @@ public class SpecializationController : ControllerBase
         defaultProps.Add("imageFilePath", this._qAzureOpenAIChatOptions.DefaultSpecializationImage);
         defaultProps.Add("iconFilePath", this._qAzureOpenAIChatOptions.DefaultSpecializationIcon);
         return defaultProps;
-    }
-
-    /// <summary>
-    /// Gets the Specialization blob container client
-    /// </summary>
-    /// <returns>BlobContainerClient used to interface with blobs in the storage account</returns>
-    private async Task<BlobContainerClient> GetSpecializationBlobContainerClientAsync()
-    {
-        // Create a BlobServiceClient object which will be used to create a container client
-        BlobServiceClient blobServiceClient = new BlobServiceClient(
-            this._qAzureOpenAIChatOptions.AzureConfig.BlobStorage.ConnectionString
-        );
-
-        BlobContainerClient containerClient = blobServiceClient.GetBlobContainerClient(
-            this._qAzureOpenAIChatOptions.AzureConfig.BlobStorage.SpecializationContainerName
-        );
-        await containerClient.CreateIfNotExistsAsync(PublicAccessType.Blob);
-
-        return containerClient;
     }
 }
