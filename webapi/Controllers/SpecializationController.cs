@@ -126,6 +126,7 @@ public class SpecializationController : ControllerBase
             GroupMemberships = qSpecializationMutate.GroupMemberships.Split(','),
         };
 
+        // Add the image and icon files to the blob storage or use the default image and icon
         qSpecializationParameters.ImageFilePath =
             qSpecializationMutate.ImageFile == null
                 ? this._qAzureOpenAIChatOptions.DefaultSpecializationImage
@@ -196,9 +197,24 @@ public class SpecializationController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> DisableSpecializationAsync(Guid specializationId)
     {
+        Specialization specialization = await this._qspecializationService.GetSpecializationAsync(
+            specializationId.ToString()
+        );
+
         bool result = await this._qspecializationService.DeleteSpecialization(specializationId);
         if (result)
         {
+            // Delete the image and icon files from the blob storage
+            if (!string.IsNullOrEmpty(specialization.ImageFilePath))
+            {
+                await this._qBlobStorage.DeleteBlobAsync(specialization.ImageFilePath);
+            }
+
+            if (!string.IsNullOrEmpty(specialization.IconFilePath))
+            {
+                await this._qBlobStorage.DeleteBlobAsync(specialization.IconFilePath);
+            }
+
             return this.Ok(specializationId);
         }
         return this.StatusCode(
