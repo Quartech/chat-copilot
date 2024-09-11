@@ -135,7 +135,7 @@ public sealed class Program
         app.UseCors();
         app.UseAuthentication();
         app.UseAuthorization();
-        // app.UseMiddleware<UserMiddleware>();
+        app.UseMiddleware<UserMiddleware>();
         app.UseMiddleware<MaintenanceMiddleware>();
         app.MapControllers()
             .RequireAuthorization();

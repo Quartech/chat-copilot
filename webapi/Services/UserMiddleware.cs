@@ -37,7 +37,7 @@ public class UserMiddleware
     {
         // List<string> groups = await this.GetGroupsAsync(ctx.User.Identity?.Name);
         // this._logger.LogInformation(groups?.ForEach(Console.WriteLine));
-
+        ctx.Request.Headers.Add("X-Forwarded-Host", ctx.Request.Headers["X-Original-Host"]);
         await this._next(ctx);
     }
 
