@@ -9,7 +9,7 @@ import {
     Subtitle2,
 } from '@fluentui/react-components';
 import { DismissFilled, ImageAddRegular } from '@fluentui/react-icons';
-import { useRef, useState } from 'react';
+import { useRef } from 'react';
 import { FileUploader } from '../FileUploader';
 import { getFormattedFileSize } from './utils';
 
@@ -27,14 +27,21 @@ const useStyles = makeStyles({
     },
 });
 
+/**
+ * File source path.
+ *
+ * @type {string} FileURL
+ */
+type FileURL = string;
+
 interface ImageUploaderPreviewProps {
     /**
-     * Initial image file to display if exists.
+     * The file to display.
      *
-     * @type {File | null | undefined} file
+     * @type {File | FileURL | null | undefined} file
      * @memberof ImageUploaderPreviewProps
      */
-    initialFile?: File | null;
+    file?: File | FileURL | null;
     /**
      * The label for the upload button.
      *
@@ -60,14 +67,31 @@ interface ImageUploaderPreviewProps {
 export const ImageUploaderPreview = (props: ImageUploaderPreviewProps) => {
     const classes = useStyles();
 
-    // Set the file state to the initial file if it exists
-    const [file, setFile] = useState<File | null>(props.initialFile ?? null);
-
     const imageUploaderRef = useRef<HTMLInputElement>(null);
+
+    /**
+     * Get the file source.
+     *
+     * @param {File | FileSource | null} file - File or file source path.
+     * @returns {FileSource | null} File source path.
+     */
+    const getFileURL = (file?: File | FileURL | null): FileURL | undefined => {
+        if (!file) {
+            return;
+        }
+
+        // If the file is a instance of file, create a URL for it
+        if (file instanceof File) {
+            return URL.createObjectURL(file);
+        }
+
+        // If the file is already a URL, return it as is
+        return file;
+    };
 
     return (
         <>
-            {file ? (
+            {props.file ? (
                 <Card className={classes.card}>
                     <CardHeader
                         action={
@@ -75,7 +99,6 @@ export const ImageUploaderPreview = (props: ImageUploaderPreviewProps) => {
                                 appearance="transparent"
                                 icon={<DismissFilled />}
                                 onClick={() => {
-                                    setFile(null);
                                     props.onFileUpdate?.(null, '');
                                     // Reset the ref value to allow re-uploading the same file
                                     if (imageUploaderRef.current) {
@@ -88,11 +111,13 @@ export const ImageUploaderPreview = (props: ImageUploaderPreviewProps) => {
                         }
                         header={<Subtitle2>Image Preview</Subtitle2>}
                     />
-                    <Image src={URL.createObjectURL(file)} shadow block shape={'rounded'} />
-                    <CardFooter className={classes.cardFooter}>
-                        <Body1Strong>{file.name}</Body1Strong>
-                        <Body1Strong>{getFormattedFileSize(file.size)}</Body1Strong>
-                    </CardFooter>
+                    <Image src={getFileURL(props.file)} shadow block shape={'rounded'} />
+                    {props.file instanceof File && (
+                        <CardFooter className={classes.cardFooter}>
+                            <Body1Strong>{props.file.name}</Body1Strong>
+                            <Body1Strong>{getFormattedFileSize(props.file.size)}</Body1Strong>
+                        </CardFooter>
+                    )}
                 </Card>
             ) : (
                 <Button
@@ -111,7 +136,6 @@ export const ImageUploaderPreview = (props: ImageUploaderPreviewProps) => {
                 onSelectedFile={(file: File) => {
                     const src = URL.createObjectURL(file);
                     props.onFileUpdate?.(file, src);
-                    setFile(file);
                 }}
             />
         </>

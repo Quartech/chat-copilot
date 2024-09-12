@@ -6,6 +6,11 @@ import { useAppSelector } from '../../../redux/app/hooks';
 import { RootState } from '../../../redux/app/store';
 import { ImageUploaderPreview } from '../../files/ImageUploaderPreview';
 
+interface ISpecializationFile {
+    file: File | null;
+    src: string | null;
+}
+
 const useClasses = makeStyles({
     root: {
         display: 'flex',
@@ -34,10 +39,25 @@ const useClasses = makeStyles({
         maxHeight: 'calc(100vh - 100px)', // Adjust this value as needed
         ...shorthands.padding('10px'),
     },
+    fileUploadContainer: {
+        display: 'flex',
+        flexDirection: 'row',
+        ...shorthands.gap(tokens.spacingHorizontalXXXL),
+    },
+    imageContainer: {
+        display: 'flex',
+        flexDirection: 'column',
+        ...shorthands.gap(tokens.spacingVerticalSNudge),
+    },
 });
 
 const Rows = 8;
 
+/**
+ * Specialization Manager component.
+ *
+ * @returns {*}
+ */
 export const SpecializationManager: React.FC = () => {
     const specialization = useSpecialization();
     const classes = useClasses();
@@ -50,14 +70,25 @@ export const SpecializationManager: React.FC = () => {
     const [description, setDescription] = useState('');
     const [roleInformation, setRoleInformation] = useState('');
     const [indexName, setIndexName] = useState('');
-    const [imageFile, setImageFile] = useState<File | null>(null);
-    const [iconFile, setIconFile] = useState<File | null>(null);
     const [membershipId, setMembershipId] = useState<string[]>([]);
+
+    const [imageFile, setImageFile] = useState<ISpecializationFile>({ file: null, src: null });
+    const [iconFile, setIconFile] = useState<ISpecializationFile>({ file: null, src: null });
+
+    const [isValid, setIsValid] = useState(false);
 
     const dropdownId = useId();
 
     const { specializations, specializationIndexes, selectedId } = useAppSelector((state: RootState) => state.admin);
 
+    /**
+     * Save specialization by creating or updating.
+     *
+     * Note: When we save a specialization we send the actual files (image / icon) to the server.
+     * On fetch we get the file paths from the Specialization payload and display them.
+     *
+     * @returns {void}
+     */
     const onSaveSpecialization = () => {
         if (editMode) {
             void specialization.updateSpecialization(id, {
@@ -66,8 +97,8 @@ export const SpecializationManager: React.FC = () => {
                 description,
                 roleInformation,
                 indexName,
-                imageFile,
-                iconFile,
+                imageFile: imageFile.file,
+                iconFile: imageFile.file,
                 groupMemberships: membershipId,
             });
             resetSpecialization();
@@ -78,8 +109,8 @@ export const SpecializationManager: React.FC = () => {
                 description,
                 roleInformation,
                 indexName,
-                imageFile,
-                iconFile,
+                imageFile: imageFile.file,
+                iconFile: imageFile.file,
                 groupMemberships: membershipId,
             });
             resetSpecialization();
@@ -93,8 +124,8 @@ export const SpecializationManager: React.FC = () => {
         setDescription('');
         setRoleInformation('');
         setMembershipId([]);
-        setImageFile(null);
-        setIconFile(null);
+        setImageFile({ file: null, src: null });
+        setIconFile({ file: null, src: null });
         setIndexName('');
     };
 
@@ -109,9 +140,12 @@ export const SpecializationManager: React.FC = () => {
                 setDescription(specializationObj.description);
                 setRoleInformation(specializationObj.roleInformation);
                 setMembershipId(specializationObj.groupMemberships);
-                //TODO: update these to be the actual files
-                setImageFile(null);
-                setIconFile(null);
+                /**
+                 * Set the image and icon file paths
+                 * Note: The file is set to null because we only retrieve the file path from the server
+                 */
+                setImageFile({ file: null, src: specializationObj.imageFilePath });
+                setIconFile({ file: null, src: specializationObj.iconFilePath });
                 setIndexName(specializationObj.indexName ?? '');
             }
         } else {
@@ -125,12 +159,11 @@ export const SpecializationManager: React.FC = () => {
         resetSpecialization();
     };
 
-    const [isValid, setIsValid] = useState(false);
     useEffect(() => {
-        const isValid = !!label && !!name && !!roleInformation;
+        const isValid = !!label && !!name && !!roleInformation && membershipId.length > 0;
         setIsValid(isValid);
         return () => {};
-    }, [specializations, selectedId, label, name, roleInformation]);
+    }, [specializations, selectedId, label, name, roleInformation, membershipId]);
 
     return (
         <div className={classes.scrollableContainer}>
@@ -209,20 +242,28 @@ export const SpecializationManager: React.FC = () => {
                         setMembershipId(data.value.split(', '));
                     }}
                 />
-                <label htmlFor="image-url">Specialization Image</label>
-                <ImageUploaderPreview
-                    buttonLabel="Upload Image"
-                    onFileUpdate={(file) => {
-                        setImageFile(file);
-                    }}
-                />
-                <label htmlFor="image-url">Specialization Icon</label>
-                <ImageUploaderPreview
-                    buttonLabel="Upload Icon"
-                    onFileUpdate={(file) => {
-                        setIconFile(file);
-                    }}
-                />
+                <div className={classes.fileUploadContainer}>
+                    <div className={classes.imageContainer}>
+                        <label htmlFor="image-url">Specialization Image</label>
+                        <ImageUploaderPreview
+                            buttonLabel="Upload Image"
+                            file={imageFile.file ?? imageFile.src}
+                            onFileUpdate={(file, src) => {
+                                setImageFile({ file, src });
+                            }}
+                        />
+                    </div>
+                    <div className={classes.imageContainer}>
+                        <label htmlFor="image-url">Specialization Icon</label>
+                        <ImageUploaderPreview
+                            buttonLabel="Upload Icon"
+                            file={iconFile.file ?? iconFile.src}
+                            onFileUpdate={(file, src) => {
+                                setIconFile({ file, src });
+                            }}
+                        />
+                    </div>
+                </div>
                 <div className={classes.controls}>
                     <Button appearance="secondary" disabled={!id} onClick={onDeleteChat}>
                         Delete
