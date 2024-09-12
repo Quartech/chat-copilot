@@ -24,6 +24,18 @@ public class QSpecializationMutate : QSpecializationBase
     public IFormFile? ImageFile { get; set; } = null;
 
     /// <summary>
+    /// String (Boolean) flag to delete the image file.
+    /// </summary>
+    [JsonPropertyName("deleteImageFile")]
+    public string? DeleteImageFile { get; set; } = null;
+
+    /// <summary>
+    /// Boolean (Boolean) flag to delete the icon file.
+    /// </summary>
+    [JsonPropertyName("deleteIconFile")]
+    public string? DeleteIconFile { get; set; } = null;
+
+    /// <summary>
     /// Overrides the GroupMemberships property from the base class.
     ///
     /// Why? Mutate payloads are `FromForm` ie: `FormData` which expect all property values to be strings.

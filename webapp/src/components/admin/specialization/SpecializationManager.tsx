@@ -1,4 +1,4 @@
-import React, { useEffect, useId, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { Button, Dropdown, Input, makeStyles, Option, shorthands, Textarea, tokens } from '@fluentui/react-components';
 import { useSpecialization } from '../../../libs/hooks';
@@ -62,6 +62,8 @@ export const SpecializationManager: React.FC = () => {
     const specialization = useSpecialization();
     const classes = useClasses();
 
+    const { specializations, specializationIndexes, selectedId } = useAppSelector((state: RootState) => state.admin);
+
     const [editMode, setEditMode] = useState(false);
 
     const [id, setId] = useState('');
@@ -71,15 +73,12 @@ export const SpecializationManager: React.FC = () => {
     const [roleInformation, setRoleInformation] = useState('');
     const [indexName, setIndexName] = useState('');
     const [membershipId, setMembershipId] = useState<string[]>([]);
-
     const [imageFile, setImageFile] = useState<ISpecializationFile>({ file: null, src: null });
     const [iconFile, setIconFile] = useState<ISpecializationFile>({ file: null, src: null });
 
     const [isValid, setIsValid] = useState(false);
 
-    const dropdownId = useId();
-
-    const { specializations, specializationIndexes, selectedId } = useAppSelector((state: RootState) => state.admin);
+    console.log({ imageFile });
 
     /**
      * Save specialization by creating or updating.
@@ -98,7 +97,9 @@ export const SpecializationManager: React.FC = () => {
                 roleInformation,
                 indexName,
                 imageFile: imageFile.file,
-                iconFile: imageFile.file,
+                iconFile: iconFile.file,
+                deleteImage: !imageFile.src,
+                deleteIcon: !iconFile.src,
                 groupMemberships: membershipId,
             });
             resetSpecialization();
@@ -110,7 +111,7 @@ export const SpecializationManager: React.FC = () => {
                 roleInformation,
                 indexName,
                 imageFile: imageFile.file,
-                iconFile: imageFile.file,
+                iconFile: iconFile.file,
                 groupMemberships: membershipId,
             });
             resetSpecialization();
@@ -135,6 +136,7 @@ export const SpecializationManager: React.FC = () => {
             const specializationObj = specializations.find((specialization) => specialization.id === selectedId);
             if (specializationObj) {
                 setId(specializationObj.id);
+
                 setLabel(specializationObj.label);
                 setName(specializationObj.name);
                 setDescription(specializationObj.description);
@@ -195,7 +197,6 @@ export const SpecializationManager: React.FC = () => {
                 <Dropdown
                     clearable
                     id="index-name"
-                    aria-labelledby={dropdownId}
                     onOptionSelect={(_control, data) => {
                         setIndexName(data.optionValue ?? '');
                     }}
@@ -239,6 +240,10 @@ export const SpecializationManager: React.FC = () => {
                     required
                     value={membershipId.join(', ')}
                     onChange={(_event, data) => {
+                        if (!data.value) {
+                            setMembershipId([]);
+                            return;
+                        }
                         setMembershipId(data.value.split(', '));
                     }}
                 />
@@ -259,7 +264,8 @@ export const SpecializationManager: React.FC = () => {
                             buttonLabel="Upload Icon"
                             file={iconFile.file ?? iconFile.src}
                             onFileUpdate={(file, src) => {
-                                setIconFile({ file, src });
+                                // Set the src to null if the file is falsy ie: '' or null
+                                setIconFile({ file, src: src || null });
                             }}
                         />
                     </div>

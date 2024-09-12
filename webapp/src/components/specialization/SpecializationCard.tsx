@@ -45,8 +45,9 @@ const useStyles = makeStyles({
 
     smallRadius: { borderRadius: tokens.borderRadiusSmall },
 
-    grayBackground: {
+    cardPreview: {
         backgroundColor: tokens.colorNeutralBackground3,
+        height: '100px',
     },
 
     logoBadge: {
@@ -112,7 +113,7 @@ export const SpecializationCard: React.FC<SpecializationItemProps> = ({ speciali
     return (
         <div className={styles.root} key={cardDivId}>
             <Card className={styles.card} data-testid="addNewBotMenuItem" onClick={onAddChat} key={cardId}>
-                <CardPreview className={styles.grayBackground}>
+                <CardPreview className={styles.cardPreview}>
                     <img
                         className={styles.smallRadius}
                         src={getimagefilepath(specialization.imageFilePath)}

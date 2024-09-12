@@ -1,17 +1,7 @@
-import {
-    Body1Strong,
-    Button,
-    Card,
-    CardFooter,
-    CardHeader,
-    Image,
-    makeStyles,
-    Subtitle2,
-} from '@fluentui/react-components';
+import { Button, Card, CardHeader, Image, makeStyles, Subtitle2 } from '@fluentui/react-components';
 import { DismissFilled, ImageAddRegular } from '@fluentui/react-icons';
 import { useRef } from 'react';
 import { FileUploader } from '../FileUploader';
-import { getFormattedFileSize } from './utils';
 
 const useStyles = makeStyles({
     card: {
@@ -112,12 +102,6 @@ export const ImageUploaderPreview = (props: ImageUploaderPreviewProps) => {
                         header={<Subtitle2>Image Preview</Subtitle2>}
                     />
                     <Image src={getFileURL(props.file)} shadow block shape={'rounded'} />
-                    {props.file instanceof File && (
-                        <CardFooter className={classes.cardFooter}>
-                            <Body1Strong>{props.file.name}</Body1Strong>
-                            <Body1Strong>{getFormattedFileSize(props.file.size)}</Body1Strong>
-                        </CardFooter>
-                    )}
                 </Card>
             ) : (
                 <Button

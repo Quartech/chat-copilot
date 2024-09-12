@@ -28,8 +28,6 @@ public class SpecializationController : ControllerBase
 
     private readonly QSpecializationService _qspecializationService;
 
-    private readonly QBlobStorage _qBlobStorage;
-
     private readonly QAzureOpenAIChatExtension _qAzureOpenAIChatExtension;
 
     private readonly QAzureOpenAIChatOptions _qAzureOpenAIChatOptions;
@@ -44,15 +42,14 @@ public class SpecializationController : ControllerBase
     )
     {
         this._logger = logger;
-        this._qspecializationService = new QSpecializationService(specializationSourceRepository);
         this._qAzureOpenAIChatOptions = specializationOptions.Value;
         this._qAzureOpenAIChatExtension = new QAzureOpenAIChatExtension(
             specializationOptions.Value,
             specializationSourceRepository
         );
-        this._qBlobStorage = new QBlobStorage(
-            this._qAzureOpenAIChatOptions.AzureConfig.BlobStorage.ConnectionString,
-            this._qAzureOpenAIChatOptions.AzureConfig.BlobStorage.SpecializationContainerName
+        this._qspecializationService = new QSpecializationService(
+            specializationSourceRepository,
+            specializationOptions.Value
         );
         this._promptOptions = promptsOptions.Value;
     }
@@ -113,19 +110,24 @@ public class SpecializationController : ControllerBase
         [FromForm] QSpecializationMutate qSpecializationMutate
     )
     {
-        var _specializationsource = await this._qspecializationService.SaveSpecialization(
-            qSpecializationMutate
-        );
-
-        if (_specializationsource != null)
+        try
         {
+            var _specializationsource = await this._qspecializationService.SaveSpecialization(
+                qSpecializationMutate
+            );
+
             QSpecializationResponse qSpecializationResponse = new(_specializationsource);
             return this.Ok(qSpecializationResponse);
         }
-        return this.StatusCode(
-            500,
-            $"Failed to create specialization for label '{qSpecializationMutate.label}'."
-        );
+        catch (Exception ex)
+        {
+            this._logger.LogError(ex, "Specialization create threw an exception");
+
+            return this.StatusCode(
+                500,
+                $"Failed to create specialization for label '{qSpecializationMutate.label}'."
+            );
+        }
     }
 
     /// <summary>
@@ -144,71 +146,34 @@ public class SpecializationController : ControllerBase
         [FromRoute] Guid specializationId
     )
     {
-        QSpecializationParameters qSpecializationParameters =
-            qSpecializationMutate.GetQSpecializationBaseAsParameters();
-
-        Specialization specialization = await this._qspecializationService.GetSpecializationAsync(
-            specializationId.ToString()
-        );
-
         try
         {
-            // If the image file is included, remove the old file and add the new file to the blob storage
-            if (
-                qSpecializationMutate.ImageFile != null
-                && specialization.ImageFilePath
-                    != this._qAzureOpenAIChatOptions.DefaultSpecializationImage
-            )
+            Specialization? specializationToEdit =
+                await this._qspecializationService.UpdateSpecialization(
+                    specializationId,
+                    qSpecializationMutate
+                );
+
+            if (specializationToEdit != null)
             {
-                this._logger.LogDebug(
-                    $"Updating blob storage Image file: '{qSpecializationMutate.ImageFile.FileName}'"
-                );
-                await this._qBlobStorage.DeleteBlobByURIAsync(specialization.ImageFilePath);
-                var imageURI = await this._qBlobStorage.AddBlobAsync(
-                    qSpecializationMutate.ImageFile
-                );
-                qSpecializationParameters.ImageFilePath = imageURI;
+                QSpecializationResponse qSpecializationResponse = new(specializationToEdit);
+                return this.Ok(qSpecializationResponse);
             }
 
-            // If the icon file is included, remove the old file and add the new file to the blob storage
-            if (
-                qSpecializationMutate.IconFile != null
-                && specialization.IconFilePath
-                    != this._qAzureOpenAIChatOptions.DefaultSpecializationIcon
-            )
-            {
-                this._logger.LogDebug(
-                    $"Updating blob storage Icon file: '{qSpecializationMutate.IconFile.FileName}'"
-                );
-                await this._qBlobStorage.DeleteBlobByURIAsync(specialization.IconFilePath);
-                var imageURI = await this._qBlobStorage.AddBlobAsync(
-                    qSpecializationMutate.IconFile
-                );
-                qSpecializationParameters.ImageFilePath = imageURI;
-            }
+            return this.StatusCode(
+                500,
+                $"Failed to update specialization for id '{specializationId}'."
+            );
         }
         catch (Exception ex)
         {
-            this._logger.LogError(ex, "Failed to update specialization image or icon.");
-            return this.StatusCode(500, "Failed to update the specialization image or icon.");
-        }
+            this._logger.LogError(ex, "Specialization update threw an exception");
 
-        Specialization? specializationToEdit =
-            await this._qspecializationService.UpdateSpecialization(
-                specializationId,
-                qSpecializationParameters
+            return this.StatusCode(
+                500,
+                $"Failed to edit specialization for id '{specializationId}'."
             );
-
-        if (specializationToEdit != null)
-        {
-            QSpecializationResponse qSpecializationResponse = new(specializationToEdit);
-            return this.Ok(qSpecializationResponse);
         }
-
-        return this.StatusCode(
-            500,
-            $"Failed to update specialization for id '{specializationId}'."
-        );
     }
 
     /// <summary>
@@ -224,21 +189,34 @@ public class SpecializationController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> DisableSpecializationAsync(Guid specializationId)
     {
-        Specialization specialization = await this._qspecializationService.GetSpecializationAsync(
-            specializationId.ToString()
-        );
-
-        bool result = await this._qspecializationService.DeleteSpecialization(specializationId);
-
-        if (result)
+        try
         {
-            return this.Ok(specializationId);
-        }
+            Specialization specialization =
+                await this._qspecializationService.GetSpecializationAsync(
+                    specializationId.ToString()
+                );
 
-        return this.StatusCode(
-            500,
-            $"Failed to delete specialization for id '{specializationId}'."
-        );
+            bool result = await this._qspecializationService.DeleteSpecialization(specializationId);
+
+            if (result)
+            {
+                return this.Ok(specializationId);
+            }
+
+            return this.StatusCode(
+                500,
+                $"Failed to delete specialization for id '{specializationId}'."
+            );
+        }
+        catch (Exception ex)
+        {
+            this._logger.LogError(ex, "Specialization delete threw an exception");
+
+            return this.StatusCode(
+                500,
+                $"Failed to delete specialization for id '{specializationId}'."
+            );
+        }
     }
 
     /// <summary>
