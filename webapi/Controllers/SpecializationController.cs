@@ -3,8 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Azure.Storage.Blobs;
-using Azure.Storage.Blobs.Models;
 using CopilotChat.WebApi.Auth;
 using CopilotChat.WebApi.Models.Request;
 using CopilotChat.WebApi.Models.Response;
@@ -115,31 +113,46 @@ public class SpecializationController : ControllerBase
         [FromForm] QSpecializationMutate qSpecializationMutate
     )
     {
-        QSpecializationParameters qSpecializationParameters = new QSpecializationParameters
+        QSpecializationParameters qSpecializationParameters =
+            qSpecializationMutate.GetQSpecializationBaseAsParameters();
+
+        try
         {
-            label = qSpecializationMutate.label,
-            Name = qSpecializationMutate.Name,
-            Description = qSpecializationMutate.Description,
-            RoleInformation = qSpecializationMutate.RoleInformation,
-            IndexName = qSpecializationMutate.IndexName,
-            // Convert the group memberships string to a list of strings
-            GroupMemberships = qSpecializationMutate.GroupMemberships.Split(','),
-        };
+            // Add the image to the blob storage or use the default image
+            qSpecializationParameters.ImageFilePath =
+                qSpecializationMutate.ImageFile == null
+                    ? this._qAzureOpenAIChatOptions.DefaultSpecializationImage
+                    : await this._qBlobStorage.AddBlobAsync(qSpecializationMutate.ImageFile);
 
-        // Add the image and icon files to the blob storage or use the default image and icon
-        qSpecializationParameters.ImageFilePath =
-            qSpecializationMutate.ImageFile == null
-                ? this._qAzureOpenAIChatOptions.DefaultSpecializationImage
-                : await this._qBlobStorage.AddBlobAsync(qSpecializationMutate.ImageFile);
+            // Add the icon to the blob storage or use the default icon
+            qSpecializationParameters.IconFilePath =
+                qSpecializationMutate.IconFile == null
+                    ? this._qAzureOpenAIChatOptions.DefaultSpecializationIcon
+                    : await this._qBlobStorage.AddBlobAsync(qSpecializationMutate.IconFile);
 
-        qSpecializationParameters.IconFilePath =
-            qSpecializationMutate.IconFile == null
-                ? this._qAzureOpenAIChatOptions.DefaultSpecializationIcon
-                : await this._qBlobStorage.AddBlobAsync(qSpecializationMutate.IconFile);
+            this._logger.LogDebug(
+                $"Specialization image file path: {qSpecializationParameters.ImageFilePath}"
+            );
+            this._logger.LogDebug(
+                $"Specialization icon file path: {qSpecializationParameters.ImageFilePath}"
+            );
+        }
+        catch (Exception ex)
+        {
+            this._logger.LogError(
+                ex,
+                "Failed to add Specialization image or icon to the blob storage."
+            );
+            return this.StatusCode(
+                500,
+                $"Failed to create specialization for label '{qSpecializationParameters.label}'."
+            );
+        }
 
         var _specializationsource = await this._qspecializationService.SaveSpecialization(
             qSpecializationParameters
         );
+
         if (_specializationsource != null)
         {
             QSpecializationResponse qSpecializationResponse = new(_specializationsource);
@@ -163,15 +176,57 @@ public class SpecializationController : ControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> EditSpecializationAsync(
-        [FromBody] QSpecializationParameters qSpecializationParameters,
+        [FromForm] QSpecializationMutate qSpecializationMutate,
         [FromRoute] Guid specializationId
     )
     {
+        QSpecializationParameters qSpecializationParameters =
+            qSpecializationMutate.GetQSpecializationBaseAsParameters();
+
+        Specialization specialization = await this._qspecializationService.GetSpecializationAsync(
+            specializationId.ToString()
+        );
+
+        try
+        {
+            // If the image file is included, remove the old file and add the new file to the blob storage
+            if (qSpecializationMutate.ImageFile != null)
+            {
+                this._logger.LogDebug(
+                    $"Updating blob storage Image file: '{qSpecializationMutate.ImageFile.FileName}'"
+                );
+                await this._qBlobStorage.DeleteBlobByURIAsync(specialization.ImageFilePath);
+                var imageURI = await this._qBlobStorage.AddBlobAsync(
+                    qSpecializationMutate.ImageFile
+                );
+                qSpecializationParameters.ImageFilePath = imageURI;
+            }
+
+            // If the icon file is included, remove the old file and add the new file to the blob storage
+            if (qSpecializationMutate.IconFile != null)
+            {
+                this._logger.LogDebug(
+                    $"Updating blob storage Icon file: '{qSpecializationMutate.IconFile.FileName}'"
+                );
+                await this._qBlobStorage.DeleteBlobByURIAsync(specialization.IconFilePath);
+                var imageURI = await this._qBlobStorage.AddBlobAsync(
+                    qSpecializationMutate.IconFile
+                );
+                qSpecializationParameters.ImageFilePath = imageURI;
+            }
+        }
+        catch (Exception ex)
+        {
+            this._logger.LogError(ex, "Failed to update specialization image or icon.");
+            return this.StatusCode(500, "Failed to update the specialization image or icon.");
+        }
+
         Specialization? specializationToEdit =
             await this._qspecializationService.UpdateSpecialization(
                 specializationId,
                 qSpecializationParameters
             );
+
         if (specializationToEdit != null)
         {
             QSpecializationResponse qSpecializationResponse = new(specializationToEdit);
@@ -207,12 +262,12 @@ public class SpecializationController : ControllerBase
             // Delete the image and icon files from the blob storage
             if (!string.IsNullOrEmpty(specialization.ImageFilePath))
             {
-                await this._qBlobStorage.DeleteBlobAsync(specialization.ImageFilePath);
+                await this._qBlobStorage.DeleteBlobByURIAsync(specialization.ImageFilePath);
             }
 
             if (!string.IsNullOrEmpty(specialization.IconFilePath))
             {
-                await this._qBlobStorage.DeleteBlobAsync(specialization.IconFilePath);
+                await this._qBlobStorage.DeleteBlobByURIAsync(specialization.IconFilePath);
             }
 
             return this.Ok(specializationId);

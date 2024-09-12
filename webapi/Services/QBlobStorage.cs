@@ -31,7 +31,17 @@ public class QBlobStorage
         this._blobContainerClient = blobContainerClient;
     }
 
-    // TODO: Add validation for the blob file. ie: size, type, etc.
+    /// <summary>
+    /// Get the blob name from a URI
+    /// </summary>
+    /// <param name="uri">Blob URI</param>
+    /// <returns>Blob name</returns>
+    public string GetBlobNameFromURI(string uri)
+    {
+        BlobUriBuilder blobUriBuilder = new BlobUriBuilder(new Uri(uri));
+
+        return blobUriBuilder.BlobName;
+    }
 
     /// <summary>
     /// Add a blob to the storage container
@@ -41,6 +51,7 @@ public class QBlobStorage
     public async Task<string> AddBlobAsync(IFormFile blob)
     {
         var blobClient = this._blobContainerClient.GetBlobClient(
+            // Inject a unique identifier into the blob file name ie: file_name$1000-1000-1000-1000.ext
             blob.FileName.Insert(blob.FileName.LastIndexOf('.'), "$" + Guid.NewGuid().ToString())
         );
 
@@ -49,16 +60,14 @@ public class QBlobStorage
     }
 
     /// <summary>
-    /// Remove a blob from the storage container
+    /// Remove a blob from the storage container by URI
     /// </summary>
     /// <returns>Deleted blob URI</returns>
-    public async Task DeleteBlobAsync(string uri)
+    public async Task DeleteBlobByURIAsync(string uri)
     {
-        BlobUriBuilder blobUriBuilder = new BlobUriBuilder(new Uri(uri));
+        var blobName = this.GetBlobNameFromURI(uri);
 
-        var blobName = blobUriBuilder.BlobName;
-
-        var blobClient = this._blobContainerClient.GetBlobClient(blobUriBuilder.BlobName);
+        var blobClient = this._blobContainerClient.GetBlobClient(blobName);
 
         await blobClient.DeleteIfExistsAsync();
     }
