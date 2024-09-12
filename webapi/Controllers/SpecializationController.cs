@@ -190,7 +190,11 @@ public class SpecializationController : ControllerBase
         try
         {
             // If the image file is included, remove the old file and add the new file to the blob storage
-            if (qSpecializationMutate.ImageFile != null)
+            if (
+                qSpecializationMutate.ImageFile != null
+                && specialization.ImageFilePath
+                    != this._qAzureOpenAIChatOptions.DefaultSpecializationImage
+            )
             {
                 this._logger.LogDebug(
                     $"Updating blob storage Image file: '{qSpecializationMutate.ImageFile.FileName}'"
@@ -203,7 +207,11 @@ public class SpecializationController : ControllerBase
             }
 
             // If the icon file is included, remove the old file and add the new file to the blob storage
-            if (qSpecializationMutate.IconFile != null)
+            if (
+                qSpecializationMutate.IconFile != null
+                && specialization.IconFilePath
+                    != this._qAzureOpenAIChatOptions.DefaultSpecializationIcon
+            )
             {
                 this._logger.LogDebug(
                     $"Updating blob storage Icon file: '{qSpecializationMutate.IconFile.FileName}'"
