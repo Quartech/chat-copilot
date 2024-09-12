@@ -93,8 +93,6 @@ export class SpecializationService extends BaseService {
         // This will need to be parsed on the backend
         formData.append('groupMemberships', body.groupMemberships.join(','));
 
-        console.log({ body });
-
         if (body.deleteImage) {
             formData.append('deleteImageFile', 'True');
         }

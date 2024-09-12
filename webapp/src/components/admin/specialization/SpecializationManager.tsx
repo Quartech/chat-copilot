@@ -78,8 +78,6 @@ export const SpecializationManager: React.FC = () => {
 
     const [isValid, setIsValid] = useState(false);
 
-    console.log({ imageFile });
-
     /**
      * Save specialization by creating or updating.
      *
@@ -98,8 +96,8 @@ export const SpecializationManager: React.FC = () => {
                 indexName,
                 imageFile: imageFile.file,
                 iconFile: iconFile.file,
-                deleteImage: !imageFile.src,
-                deleteIcon: !iconFile.src,
+                deleteImage: !imageFile.src, // Set the delete flag if the src is null
+                deleteIcon: !iconFile.src, // Set the delete flag if the src is null
                 groupMemberships: membershipId,
             });
             resetSpecialization();

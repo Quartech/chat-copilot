@@ -19,7 +19,7 @@ public class QBlobStorage
 
     public QBlobStorage(string connectionString, string containerName)
     {
-        BlobServiceClient blobServiceClient = new BlobServiceClient(connectionString);
+        BlobServiceClient blobServiceClient = new(connectionString);
         BlobContainerClient blobContainerClient = blobServiceClient.GetBlobContainerClient(
             containerName
         );
@@ -40,11 +40,11 @@ public class QBlobStorage
     {
         try
         {
-            BlobUriBuilder blobUriBuilder = new BlobUriBuilder(new Uri(uri));
+            BlobUriBuilder blobUriBuilder = new(new Uri(uri));
             var blobClient = this._blobContainerClient.GetBlobClient(blobUriBuilder.BlobName);
             return await blobClient.ExistsAsync();
         }
-        catch (Exception)
+        catch (Azure.RequestFailedException)
         {
             return false;
         }
@@ -72,7 +72,7 @@ public class QBlobStorage
     /// <returns>Deleted blob URI</returns>
     public async Task DeleteBlobByURIAsync(string uri)
     {
-        BlobUriBuilder blobUriBuilder = new BlobUriBuilder(new Uri(uri));
+        BlobUriBuilder blobUriBuilder = new(new Uri(uri));
 
         var blobClient = this._blobContainerClient.GetBlobClient(blobUriBuilder.BlobName);
 
