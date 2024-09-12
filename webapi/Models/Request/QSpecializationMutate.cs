@@ -31,29 +31,4 @@ public class QSpecializationMutate : QSpecializationBase
     /// </summary>
     [JsonPropertyName("groupMemberships")]
     public new string GroupMemberships { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Get the QSpecializationParameters object from the QSpecializationMutate object
-    /// as the shape of the QSpecializationBase object.
-    ///
-    /// Note: This does not include the IconFile and ImageFile properties.
-    /// They will need to be manually injected into the QSpecializationParameters object.
-    ///
-    /// Why? The create and update actions need to interact with the blob storage container differently.
-    /// </summary>
-    /// <returns>QSpecializationBase</returns>
-    public QSpecializationParameters GetQSpecializationBaseAsParameters()
-    {
-        return new QSpecializationParameters
-        {
-            label = this.label,
-            Name = this.Name,
-            Description = this.Description,
-            RoleInformation = this.RoleInformation,
-            // Split the GroupMemberships string into a list of strings
-            GroupMemberships = this.GroupMemberships.Split(","),
-            IndexName = this.IndexName,
-            isActive = this.isActive,
-        };
-    }
 }

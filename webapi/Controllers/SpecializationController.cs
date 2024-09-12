@@ -113,44 +113,8 @@ public class SpecializationController : ControllerBase
         [FromForm] QSpecializationMutate qSpecializationMutate
     )
     {
-        QSpecializationParameters qSpecializationParameters =
-            qSpecializationMutate.GetQSpecializationBaseAsParameters();
-
-        try
-        {
-            // Add the image to the blob storage or use the default image
-            qSpecializationParameters.ImageFilePath =
-                qSpecializationMutate.ImageFile == null
-                    ? this._qAzureOpenAIChatOptions.DefaultSpecializationImage
-                    : await this._qBlobStorage.AddBlobAsync(qSpecializationMutate.ImageFile);
-
-            // Add the icon to the blob storage or use the default icon
-            qSpecializationParameters.IconFilePath =
-                qSpecializationMutate.IconFile == null
-                    ? this._qAzureOpenAIChatOptions.DefaultSpecializationIcon
-                    : await this._qBlobStorage.AddBlobAsync(qSpecializationMutate.IconFile);
-
-            this._logger.LogDebug(
-                $"Specialization image file path: {qSpecializationParameters.ImageFilePath}"
-            );
-            this._logger.LogDebug(
-                $"Specialization icon file path: {qSpecializationParameters.ImageFilePath}"
-            );
-        }
-        catch (Exception ex)
-        {
-            this._logger.LogError(
-                ex,
-                "Failed to add Specialization image or icon to the blob storage."
-            );
-            return this.StatusCode(
-                500,
-                $"Failed to create specialization for label '{qSpecializationParameters.label}'."
-            );
-        }
-
         var _specializationsource = await this._qspecializationService.SaveSpecialization(
-            qSpecializationParameters
+            qSpecializationMutate
         );
 
         if (_specializationsource != null)
@@ -160,7 +124,7 @@ public class SpecializationController : ControllerBase
         }
         return this.StatusCode(
             500,
-            $"Failed to create specialization for label '{qSpecializationParameters.label}'."
+            $"Failed to create specialization for label '{qSpecializationMutate.label}'."
         );
     }
 
@@ -265,21 +229,12 @@ public class SpecializationController : ControllerBase
         );
 
         bool result = await this._qspecializationService.DeleteSpecialization(specializationId);
+
         if (result)
         {
-            // Delete the image and icon files from the blob storage
-            if (!string.IsNullOrEmpty(specialization.ImageFilePath))
-            {
-                await this._qBlobStorage.DeleteBlobByURIAsync(specialization.ImageFilePath);
-            }
-
-            if (!string.IsNullOrEmpty(specialization.IconFilePath))
-            {
-                await this._qBlobStorage.DeleteBlobByURIAsync(specialization.IconFilePath);
-            }
-
             return this.Ok(specializationId);
         }
+
         return this.StatusCode(
             500,
             $"Failed to delete specialization for id '{specializationId}'."

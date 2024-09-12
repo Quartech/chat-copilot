@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using CopilotChat.WebApi.Models.Request;
 using CopilotChat.WebApi.Models.Storage;
+using CopilotChat.WebApi.Plugins.Chat.Ext;
 using CopilotChat.WebApi.Storage;
 
 namespace CopilotChat.WebApi.Services;
@@ -16,9 +17,21 @@ public class QSpecializationService : IQSpecializationService
 {
     private SpecializationRepository _specializationSourceRepository;
 
-    public QSpecializationService(SpecializationRepository specializationSourceRepository)
+    private QAzureOpenAIChatOptions _qAzureOpenAIChatOptions;
+
+    private QBlobStorage _qBlobStorage;
+
+    public QSpecializationService(
+        SpecializationRepository specializationSourceRepository,
+        QAzureOpenAIChatOptions qAzureOpenAIChatOptions
+    )
     {
         this._specializationSourceRepository = specializationSourceRepository;
+        this._qAzureOpenAIChatOptions = qAzureOpenAIChatOptions;
+        this._qBlobStorage = new QBlobStorage(
+            qAzureOpenAIChatOptions.AzureConfig.BlobStorage.ConnectionString,
+            qAzureOpenAIChatOptions.AzureConfig.BlobStorage.SpecializationContainerName
+        );
     }
 
     /// <summary>
@@ -46,21 +59,34 @@ public class QSpecializationService : IQSpecializationService
     /// <param name="qSpecializationParameters">Specialization parameters</param>
     /// <returns>The task result contains the specialization source</returns>
     public async Task<Specialization> SaveSpecialization(
-        QSpecializationParameters qSpecializationParameters
+        QSpecializationMutate qSpecializationMutate
     )
     {
+        // Add the image to the blob storage or use the default image
+        var imageFilePath =
+            qSpecializationMutate.ImageFile == null
+                ? this._qAzureOpenAIChatOptions.DefaultSpecializationImage
+                : await this._qBlobStorage.AddBlobAsync(qSpecializationMutate.ImageFile);
+
+        // Add the icon to the blob storage or use the default icon
+        var iconFilePath =
+            qSpecializationMutate.IconFile == null
+                ? this._qAzureOpenAIChatOptions.DefaultSpecializationIcon
+                : await this._qBlobStorage.AddBlobAsync(qSpecializationMutate.IconFile);
+
         Specialization specializationSource =
             new(
-                qSpecializationParameters.label,
-                qSpecializationParameters.Name,
-                qSpecializationParameters.Description,
-                qSpecializationParameters.RoleInformation,
-                qSpecializationParameters.IndexName,
-                qSpecializationParameters.ImageFilePath!,
-                qSpecializationParameters.IconFilePath,
-                qSpecializationParameters.GroupMemberships
+                qSpecializationMutate.label,
+                qSpecializationMutate.Name,
+                qSpecializationMutate.Description,
+                qSpecializationMutate.RoleInformation,
+                qSpecializationMutate.IndexName,
+                imageFilePath,
+                iconFilePath,
+                qSpecializationMutate.GroupMemberships.Split(',')
             );
         await this._specializationSourceRepository.CreateAsync(specializationSource);
+
         return specializationSource;
     }
 
@@ -75,13 +101,10 @@ public class QSpecializationService : IQSpecializationService
         QSpecializationParameters qSpecializationParameters
     )
     {
-        Specialization? specializationToUpdate = null;
-        if (
-            await this._specializationSourceRepository.TryFindByIdAsync(
-                specializationId.ToString(),
-                callback: v => specializationToUpdate = v
-            )
-        )
+        Specialization? specializationToUpdate =
+            await this._specializationSourceRepository.FindByIdAsync(specializationId.ToString());
+
+        if (specializationToUpdate != null)
         {
             specializationToUpdate!.IsActive = qSpecializationParameters.isActive;
             specializationToUpdate!.Name = !string.IsNullOrEmpty(qSpecializationParameters.Name)
@@ -133,12 +156,34 @@ public class QSpecializationService : IQSpecializationService
                 await this._specializationSourceRepository.FindByIdAsync(
                     specializationId.ToString()
                 );
+
             await this._specializationSourceRepository.DeleteAsync(specializationToDelete);
+
+            // Remove the image file from the blob storage if it is not the default image
+            if (!this.IsDefaultFilePath(specializationToDelete!.ImageFilePath))
+            {
+                await this._qBlobStorage.DeleteBlobByURIAsync(
+                    specializationToDelete!.ImageFilePath
+                );
+            }
+
+            // Remove the icon file from the blob storage if it is not the default icon
+            if (!this.IsDefaultFilePath(specializationToDelete!.IconFilePath))
+            {
+                await this._qBlobStorage.DeleteBlobByURIAsync(specializationToDelete!.IconFilePath);
+            }
+
             return true;
         }
         catch (Exception ex) when (ex is ArgumentOutOfRangeException)
         {
             return false;
         }
+    }
+
+    private bool IsDefaultFilePath(string? filePath)
+    {
+        return filePath == this._qAzureOpenAIChatOptions.DefaultSpecializationImage
+            || filePath == this._qAzureOpenAIChatOptions.DefaultSpecializationIcon;
     }
 }
