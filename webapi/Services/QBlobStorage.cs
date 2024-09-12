@@ -36,11 +36,11 @@ public class QBlobStorage
     /// </summary>
     /// <param name="uri">Blob Storage URI</param>
     /// <returns>Boolean indicator if string is a URI</returns>
-    public async Task<bool> IsURI(string uri)
+    public async Task<bool> IsURI(string blobURI)
     {
         try
         {
-            BlobUriBuilder blobUriBuilder = new(new Uri(uri));
+            BlobUriBuilder blobUriBuilder = new(new Uri(blobURI));
             var blobClient = this._blobContainerClient.GetBlobClient(blobUriBuilder.BlobName);
             return await blobClient.ExistsAsync();
         }
@@ -70,9 +70,9 @@ public class QBlobStorage
     /// Remove a blob from the storage container by URI
     /// </summary>
     /// <returns>Deleted blob URI</returns>
-    public async Task DeleteBlobByURIAsync(string uri)
+    public async Task DeleteBlobByURIAsync(string blobURI)
     {
-        BlobUriBuilder blobUriBuilder = new(new Uri(uri));
+        BlobUriBuilder blobUriBuilder = new(new Uri(blobURI));
 
         var blobClient = this._blobContainerClient.GetBlobClient(blobUriBuilder.BlobName);
 

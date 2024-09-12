@@ -119,7 +119,7 @@ public class SpecializationController : ControllerBase
             QSpecializationResponse qSpecializationResponse = new(_specializationsource);
             return this.Ok(qSpecializationResponse);
         }
-        catch (Exception ex)
+        catch (Azure.RequestFailedException ex)
         {
             this._logger.LogError(ex, "Specialization create threw an exception");
 
@@ -165,7 +165,7 @@ public class SpecializationController : ControllerBase
                 $"Failed to update specialization for id '{specializationId}'."
             );
         }
-        catch (Exception ex)
+        catch (Azure.RequestFailedException ex)
         {
             this._logger.LogError(ex, "Specialization update threw an exception");
 
@@ -208,7 +208,7 @@ public class SpecializationController : ControllerBase
                 $"Failed to delete specialization for id '{specializationId}'."
             );
         }
-        catch (Exception ex)
+        catch (Azure.RequestFailedException ex)
         {
             this._logger.LogError(ex, "Specialization delete threw an exception");
 
