@@ -1,4 +1,4 @@
-# To fix locally run: dotnet csharpier .
+# To fix locally Run: dotnet csharpier .
 name: Validate Code Style
 on:
   pull_request:
@@ -9,6 +9,8 @@ jobs:
     name: Check Formatting
     steps:
       - uses: actions/checkout@v2
-      - run: |
+      - name: chsharpier formatting
+        working-directory: ./webapi
+        run: |
           dotnet tool restore
           dotnet csharpier --check .
