@@ -1,4 +1,9 @@
-# To fix locally Run: dotnet csharpier .
+#
+# See: scripts/format.sh
+#
+# To fix: scripts/format.sh
+# To check: scripts/format.sh --check
+#
 name: Validate Code Style
 on:
   pull_request:
@@ -10,5 +15,5 @@ jobs:
       - uses: actions/checkout@v2
       - name: csharpier formatting
         run: |
-          dotnet tool restore
+          dotnet tool restore --tool-manifest webapi/.config/dotnet-tools.json
           dotnet csharpier --check webapi
