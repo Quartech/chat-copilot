@@ -1,0 +1,14 @@
+# To fix locally run: dotnet csharpier .
+name: Validate Code Style
+on:
+  pull_request:
+    branches: [ main ]
+jobs:
+  check_formatting:
+    runs-on: ubuntu-latest
+    name: Check Formatting
+    steps:
+      - uses: actions/checkout@v2
+      - run: |
+          dotnet tool restore
+          dotnet csharpier --check .
