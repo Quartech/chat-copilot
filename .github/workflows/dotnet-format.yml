@@ -71,6 +71,5 @@ jobs:
         run: |
           for csproj in ${{ steps.find-csproj.outputs.csproj_files }}; do
             echo "Checking formatting for $csproj"
-            # Run dotnet format without --fix-whitespaces - allow csharpier to handle whitespace formatting
-            dotnet format $csproj --verify-no-changes --verbosity diagnostic --fix-style info --fix-analyzers info
+            dotnet format $csproj --verify-no-changes --verbosity diagnostic
           done
