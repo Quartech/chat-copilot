@@ -19,6 +19,6 @@
 #
 ##########################################################################
 
-cd ..
-dotnet tool restore --tool-manifest webapi/.config/dotnet-tools.json
-dotnet csharpier "$@" webapi
+cd ../webapi
+dotnet tool restore
+dotnet csharpier "$@" .

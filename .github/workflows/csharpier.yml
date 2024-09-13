@@ -14,6 +14,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: csharpier formatting
+        working-directory: webapi
         run: |
-          dotnet tool restore --tool-manifest webapi/.config/dotnet-tools.json
-          dotnet-csharpier --check webapi
+          dotnet tool restore
+          dotnet csharpier --check .
