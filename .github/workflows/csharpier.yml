@@ -16,4 +16,4 @@ jobs:
       - name: csharpier formatting
         run: |
           dotnet tool restore --tool-manifest webapi/.config/dotnet-tools.json
-          dotnet csharpier --check webapi
+          dotnet-csharpier --check webapi
