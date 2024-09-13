@@ -111,7 +111,7 @@ public class QSpecializationService : IQSpecializationService
             // Update the image file and set the file path
             specializationToUpdate.ImageFilePath = await this.UpsertSpecializationBlobAsync(
                 qSpecializationMutate.ImageFile,
-                specializationToUpdate.ImageFilePath,
+                new Uri(specializationToUpdate.ImageFilePath),
                 Convert.ToBoolean(qSpecializationMutate.DeleteImageFile),
                 this._qAzureOpenAIChatOptions.DefaultSpecializationImage
             );
@@ -119,7 +119,7 @@ public class QSpecializationService : IQSpecializationService
             // Update the icon file and set the file path
             specializationToUpdate.IconFilePath = await this.UpsertSpecializationBlobAsync(
                 qSpecializationMutate.IconFile,
-                specializationToUpdate.IconFilePath,
+                new Uri(specializationToUpdate.IconFilePath),
                 Convert.ToBoolean(qSpecializationMutate.DeleteIconFile),
                 this._qAzureOpenAIChatOptions.DefaultSpecializationIcon
             );
@@ -174,16 +174,19 @@ public class QSpecializationService : IQSpecializationService
 
         await this._specializationSourceRepository.DeleteAsync(specializationToDelete);
 
+        var imageFileUri = new Uri(specializationToDelete.ImageFilePath);
+        var iconFileUri = new Uri(specializationToDelete.IconFilePath);
+
         // Remove the image file from the blob storage if it is a Blob Storage URI
-        if (await this._qBlobStorage.BlobExistsAsync(specializationToDelete!.ImageFilePath))
+        if (await this._qBlobStorage.BlobExistsAsync(imageFileUri))
         {
-            await this._qBlobStorage.DeleteBlobByURIAsync(specializationToDelete!.ImageFilePath);
+            await this._qBlobStorage.DeleteBlobByURIAsync(imageFileUri);
         }
 
         // Remove the icon file from the blob storage if it is a Blob Storage URI
-        if (await this._qBlobStorage.BlobExistsAsync(specializationToDelete!.IconFilePath))
+        if (await this._qBlobStorage.BlobExistsAsync(iconFileUri))
         {
-            await this._qBlobStorage.DeleteBlobByURIAsync(specializationToDelete!.IconFilePath);
+            await this._qBlobStorage.DeleteBlobByURIAsync(iconFileUri);
         }
 
         return true;
@@ -193,40 +196,40 @@ public class QSpecializationService : IQSpecializationService
     /// Upsert the specialization blob and return filepath or blob storage URI.
     /// </summary>
     /// <param name="file">File to store in blob storage</param>
-    /// <param name="filePath">File path stored in DB</param>
+    /// <param name="fileUri">File path URI</param>
     /// <param name="delete">Flag to delete the file from the blob storage</param>
     /// <param name="filePathDefault">File path default value</param>
     /// <returns>FilePath or Blob Storage URI</returns>
     private async Task<string> UpsertSpecializationBlobAsync(
         IFormFile? file,
-        string filePath,
+        System.Uri fileUri,
         bool delete = false,
         string filePathDefault = ""
     )
     {
-        var filePathIsURI = await this._qBlobStorage.BlobExistsAsync(filePath);
+        var blobExists = await this._qBlobStorage.BlobExistsAsync(fileUri);
 
         // 1. File provided and a default file path is stored in the DB
-        if (file != null && !filePathIsURI)
+        if (file != null && !blobExists)
         {
             return await this._qBlobStorage.AddBlobAsync(file);
         }
 
         // 2. File provided and a Blob Storage URI is stored in the DB
-        if (file != null && filePathIsURI)
+        if (file != null && blobExists)
         {
-            await this._qBlobStorage.DeleteBlobByURIAsync(filePath);
+            await this._qBlobStorage.DeleteBlobByURIAsync(fileUri);
             return await this._qBlobStorage.AddBlobAsync(file);
         }
 
         // 3. File not provided and a default file path is stored in the DB and delete flag is set
-        if (file == null && filePathIsURI && delete)
+        if (file == null && blobExists && delete)
         {
-            await this._qBlobStorage.DeleteBlobByURIAsync(filePath);
+            await this._qBlobStorage.DeleteBlobByURIAsync(fileUri);
 
             return filePathDefault;
         }
 
-        return filePath;
+        return fileUri.ToString();
     }
 }
