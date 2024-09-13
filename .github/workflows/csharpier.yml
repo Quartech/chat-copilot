@@ -8,8 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: chsharpier formatting
-        working-directory: ./webapi
+      - name: csharpier formatting
         run: |
           dotnet tool restore
-          dotnet csharpier --config-path ../../.editorconfig --check .
+          dotnet csharpier --check webapi
