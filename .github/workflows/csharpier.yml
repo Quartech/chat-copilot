@@ -12,4 +12,4 @@ jobs:
         working-directory: ./webapi
         run: |
           dotnet tool restore
-          dotnet csharpier --check .
+          dotnet csharpier --config-path ../../.editorconfig --check .
