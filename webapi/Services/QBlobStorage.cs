@@ -32,11 +32,30 @@ public class QBlobStorage
     }
 
     /// <summary>
-    /// Checks if the provided string is a valid Blob Storage URI (for the current container)
+    /// Checks if the provided URI points to a valid Blob Storage File
     /// </summary>
-    /// <param name="uri">Blob Storage URI</param>
+    /// <param name="blobURI">Blob Storage URI</param>
     /// <returns>Boolean indicator if string is a URI</returns>
-    public async Task<bool> IsURI(string blobURI)
+    public async Task<bool> BlobExistsAsync(System.Uri blobURI)
+    {
+        try
+        {
+            BlobUriBuilder blobUriBuilder = new(blobURI);
+            var blobClient = this._blobContainerClient.GetBlobClient(blobUriBuilder.BlobName);
+            return await blobClient.ExistsAsync();
+        }
+        catch (Azure.RequestFailedException)
+        {
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Checks if the provided string converted to URI points to a valid Blob Storage File
+    /// </summary>
+    /// <param name="blobURI">Blob Storage string</param>
+    /// <returns>Boolean indicator if string is a URI</returns>
+    public async Task<bool> BlobExistsAsync(string blobURI)
     {
         try
         {
@@ -69,6 +88,21 @@ public class QBlobStorage
     /// <summary>
     /// Remove a blob from the storage container by URI
     /// </summary>
+    /// <param name="blobURI">Blob Storage URI</param>
+    /// <returns>Deleted blob URI</returns>
+    public async Task DeleteBlobByURIAsync(System.Uri blobURI)
+    {
+        BlobUriBuilder blobUriBuilder = new(blobURI);
+
+        var blobClient = this._blobContainerClient.GetBlobClient(blobUriBuilder.BlobName);
+
+        await blobClient.DeleteIfExistsAsync();
+    }
+
+    /// <summary>
+    /// Remove a blob from the storage container by string (URI)
+    /// </summary>
+    /// <param name="blobURI">Blob Storage URI</param>
     /// <returns>Deleted blob URI</returns>
     public async Task DeleteBlobByURIAsync(string blobURI)
     {

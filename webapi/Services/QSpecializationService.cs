@@ -175,13 +175,13 @@ public class QSpecializationService : IQSpecializationService
         await this._specializationSourceRepository.DeleteAsync(specializationToDelete);
 
         // Remove the image file from the blob storage if it is a Blob Storage URI
-        if (await this._qBlobStorage.IsURI(specializationToDelete!.ImageFilePath))
+        if (await this._qBlobStorage.BlobExistsAsync(specializationToDelete!.ImageFilePath))
         {
             await this._qBlobStorage.DeleteBlobByURIAsync(specializationToDelete!.ImageFilePath);
         }
 
         // Remove the icon file from the blob storage if it is a Blob Storage URI
-        if (await this._qBlobStorage.IsURI(specializationToDelete!.IconFilePath))
+        if (await this._qBlobStorage.BlobExistsAsync(specializationToDelete!.IconFilePath))
         {
             await this._qBlobStorage.DeleteBlobByURIAsync(specializationToDelete!.IconFilePath);
         }
@@ -204,7 +204,7 @@ public class QSpecializationService : IQSpecializationService
         string filePathDefault = ""
     )
     {
-        var filePathIsURI = await this._qBlobStorage.IsURI(filePath);
+        var filePathIsURI = await this._qBlobStorage.BlobExistsAsync(filePath);
 
         // 1. File provided and a default file path is stored in the DB
         if (file != null && !filePathIsURI)
