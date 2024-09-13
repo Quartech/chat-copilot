@@ -4,9 +4,8 @@ on:
   pull_request:
     branches: [ main ]
 jobs:
-  check_formatting:
+  format:
     runs-on: ubuntu-latest
-    name: Check Formatting
     steps:
       - uses: actions/checkout@v2
       - name: chsharpier formatting

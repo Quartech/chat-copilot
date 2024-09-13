@@ -13,7 +13,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  check-format:
+  lint:
     runs-on: ubuntu-latest
     env:
       NUGET_CERT_REVOCATION_MODE: offline
