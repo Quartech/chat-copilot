@@ -8,4 +8,6 @@ namespace CopilotChat.WebApi.Auth;
 public static class AuthPolicyName
 {
     public const string RequireChatParticipant = "RequireChatParticipant";
+    public const string RequireGroup = "RequireGroup";
+    public const string RequireGroupAndChatParticipant = "RequireGroupAndChatParticipant";
 }

@@ -260,6 +260,7 @@ public static class CopilotChatServiceExtensions
     public static IServiceCollection AddChatCopilotAuthorization(this IServiceCollection services)
     {
         return services.AddScoped<IAuthorizationHandler, ChatParticipantAuthorizationHandler>()
+            // .AddScoped<IAuthorizationHandler, GroupAuthorizationHandler>()
             .AddAuthorizationCore(options =>
             {
                 options.DefaultPolicy = new AuthorizationPolicyBuilder()
@@ -269,6 +270,17 @@ public static class CopilotChatServiceExtensions
                 {
                     builder.RequireAuthenticatedUser()
                         .AddRequirements(new ChatParticipantRequirement());
+                });
+                options.AddPolicy(AuthPolicyName.RequireGroup, builder =>
+                {
+                    builder.RequireAuthenticatedUser()
+                        .AddRequirements(new GroupRequirement());
+                });
+                options.AddPolicy(AuthPolicyName.RequireGroupAndChatParticipant, builder =>
+                {
+                    builder.RequireAuthenticatedUser()
+                        .AddRequirements(new ChatParticipantRequirement())
+                        .AddRequirements(new GroupRequirement());
                 });
             });
     }

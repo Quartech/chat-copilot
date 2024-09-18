@@ -92,6 +92,7 @@ public class ChatController : ControllerBase, IDisposable
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status504GatewayTimeout)]
+    //TODO:needs to check group
     public async Task<IActionResult> ChatAsync(
         [FromServices] Kernel kernel,
         [FromServices] IHubContext<MessageRelayHub> messageRelayHubContext,

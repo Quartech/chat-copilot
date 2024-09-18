@@ -17,14 +17,10 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
-using Microsoft.AspNetCore.Authentication.OpenIdConnect;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.Identity.Web;
-using System.Collections.Generic;
 
 namespace CopilotChat.WebApi;
 
@@ -89,45 +85,6 @@ public sealed class Program
             });
         builder.Services.AddHealthChecks();
 
-        builder.Services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
-                .AddMicrosoftIdentityWebApp(options =>
-                    {
-                        // Ensure default token validation is carried out
-                        builder.Configuration.Bind("Authentication:AzureAd", options);
-
-                        // The following lines code instruct the asp.net core middleware to use the data in the "roles" claim in the [Authorize] attribute, policy.RequireRole() and User.IsInRole()
-                        // See https://docs.microsoft.com/aspnet/core/security/authorization/roles for more info.
-                        options.TokenValidationParameters.RoleClaimType = "groups";
-
-                        /// <summary>
-                        /// Below you can do extended token validation and check for additional claims, such as:
-                        ///
-                        /// - check if the caller's tenant is in the allowed tenants list via the 'tid' claim (for multi-tenant applications)
-                        /// - check if the caller's account is homed or guest via the 'acct' optional claim
-                        /// - check if the caller belongs to right roles or groups via the 'roles' or 'groups' claim, respectively
-                        ///
-                        /// Bear in mind that you can do any of the above checks within the individual routes and/or controllers as well.
-                        /// For more information, visit: https://docs.microsoft.com/azure/active-directory/develop/access-tokens#validate-the-user-has-permission-to-access-this-data
-                        /// </summary>
-
-                        options.Events.OnTokenValidated = async context =>
-                        {
-                            if (context != null)
-                            {
-                                List<string> requiredGroupsIds = builder.Configuration.GetSection("AzureAd:Groups")
-                                    .AsEnumerable().Select(x => x.Value).Where(x => x != null).ToList();
-
-                                // // Calls method to process groups overage claim (before policy checks kick-in)
-                                // await GraphHelper.ProcessAnyGroupsOverage(context, requiredGroupsIds, cacheSettings);
-                            }
-
-                            await Task.CompletedTask;
-                        };
-                    });
-                // .EnableTokenAcquisitionToCallDownstreamApi(options => builder.Configuration.Bind("AzureAd", options), initialScopes)
-                // .AddMicrosoftGraph(builder.Configuration.GetSection("GraphAPI"))
-                // .AddInMemoryTokenCaches();
-
         // Configure middleware and endpoints
         WebApplication app = builder.Build();
         app.UseDefaultFiles();
@@ -135,7 +92,6 @@ public sealed class Program
         app.UseCors();
         app.UseAuthentication();
         app.UseAuthorization();
-        app.UseMiddleware<UserMiddleware>();
         app.UseMiddleware<MaintenanceMiddleware>();
         app.MapControllers()
             .RequireAuthorization();

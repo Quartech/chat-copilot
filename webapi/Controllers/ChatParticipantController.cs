@@ -56,6 +56,7 @@ public class ChatParticipantController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
+    //TODO:needs to check group
     public async Task<IActionResult> JoinChatAsync(
         [FromServices] IHubContext<MessageRelayHub> messageRelayHubContext,
         [FromServices] IAuthInfo authInfo,

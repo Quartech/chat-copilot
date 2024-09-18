@@ -1,10 +1,12 @@
 ﻿// Copyright (c) Quartech. All rights reserved.
 
 using System.Threading.Tasks;
+using CopilotChat.WebApi.Auth;
 using CopilotChat.WebApi.Models.Request;
 using CopilotChat.WebApi.Plugins.Chat.Ext;
 using CopilotChat.WebApi.Services;
 using CopilotChat.WebApi.Storage;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -43,6 +45,8 @@ public class SearchController : ControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(StatusCodes.Status504GatewayTimeout)]
+    [Authorize(Policy = AuthPolicyName.RequireGroup)]
+    //TODO:needs to check group
     public async Task<IActionResult> GetMatchesAsync(
         [FromBody] QSearchParameters searchParameters)
     {
