@@ -111,9 +111,7 @@ public class SpecializationController : ControllerBase
     {
         try
         {
-            var _specializationsource = await this._qspecializationService.SaveSpecialization(
-                qSpecializationMutate
-            );
+            var _specializationsource = await this._qspecializationService.SaveSpecialization(qSpecializationMutate);
 
             QSpecializationResponse qSpecializationResponse = new(_specializationsource);
             return this.Ok(qSpecializationResponse);
@@ -122,10 +120,7 @@ public class SpecializationController : ControllerBase
         {
             this._logger.LogError(ex, "Specialization create threw an exception");
 
-            return this.StatusCode(
-                500,
-                $"Failed to create specialization for label '{qSpecializationMutate.label}'."
-            );
+            return this.StatusCode(500, $"Failed to create specialization for label '{qSpecializationMutate.label}'.");
         }
     }
 
@@ -147,11 +142,10 @@ public class SpecializationController : ControllerBase
     {
         try
         {
-            Specialization? specializationToEdit =
-                await this._qspecializationService.UpdateSpecialization(
-                    specializationId,
-                    qSpecializationMutate
-                );
+            Specialization? specializationToEdit = await this._qspecializationService.UpdateSpecialization(
+                specializationId,
+                qSpecializationMutate
+            );
 
             if (specializationToEdit != null)
             {
@@ -159,19 +153,13 @@ public class SpecializationController : ControllerBase
                 return this.Ok(qSpecializationResponse);
             }
 
-            return this.StatusCode(
-                500,
-                $"Failed to update specialization for id '{specializationId}'."
-            );
+            return this.StatusCode(500, $"Failed to update specialization for id '{specializationId}'.");
         }
         catch (Azure.RequestFailedException ex)
         {
             this._logger.LogError(ex, "Specialization update threw an exception");
 
-            return this.StatusCode(
-                500,
-                $"Failed to edit specialization for id '{specializationId}'."
-            );
+            return this.StatusCode(500, $"Failed to edit specialization for id '{specializationId}'.");
         }
     }
 
@@ -190,10 +178,9 @@ public class SpecializationController : ControllerBase
     {
         try
         {
-            Specialization specialization =
-                await this._qspecializationService.GetSpecializationAsync(
-                    specializationId.ToString()
-                );
+            Specialization specialization = await this._qspecializationService.GetSpecializationAsync(
+                specializationId.ToString()
+            );
 
             bool result = await this._qspecializationService.DeleteSpecialization(specializationId);
 
@@ -202,19 +189,13 @@ public class SpecializationController : ControllerBase
                 return this.Ok(specializationId);
             }
 
-            return this.StatusCode(
-                500,
-                $"Failed to delete specialization for id '{specializationId}'."
-            );
+            return this.StatusCode(500, $"Failed to delete specialization for id '{specializationId}'.");
         }
         catch (Azure.RequestFailedException ex)
         {
             this._logger.LogError(ex, "Specialization delete threw an exception");
 
-            return this.StatusCode(
-                500,
-                $"Failed to delete specialization for id '{specializationId}'."
-            );
+            return this.StatusCode(500, $"Failed to delete specialization for id '{specializationId}'.");
         }
     }
 

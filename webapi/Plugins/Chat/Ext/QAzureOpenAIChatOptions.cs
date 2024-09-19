@@ -34,8 +34,7 @@ public class AzureConfig
     public Uri? Endpoint { get; set; } = null;
 #pragma warning restore CS8618
     public string APIKey { get; set; } = string.Empty;
-    public VectorizationSourceOption VectorizationSource { get; set; } =
-        new VectorizationSourceOption();
+    public VectorizationSourceOption VectorizationSource { get; set; } = new VectorizationSourceOption();
     public BlobStorageOption BlobStorage { get; set; } = new BlobStorageOption();
 }
 

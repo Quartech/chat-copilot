@@ -58,19 +58,13 @@ public class QAzureOpenAIChatExtension
     /// <summary>
     /// Extension method to support passing Azure Search options for chatCompletions.
     /// </summary>
-    public async Task<AzureChatExtensionsOptions?> GetAzureChatExtensionsOptions(
-        string specializationId
-    )
+    public async Task<AzureChatExtensionsOptions?> GetAzureChatExtensionsOptions(string specializationId)
     {
-        Specialization specialization = await this._qSpecializationService.GetSpecializationAsync(
-            specializationId
-        );
+        Specialization specialization = await this._qSpecializationService.GetSpecializationAsync(specializationId);
 
         if (specialization != null && specialization.IndexName != null)
         {
-            QSpecializationIndex? qSpecializationIndex = this.GetSpecializationIndexByName(
-                specialization.IndexName
-            );
+            QSpecializationIndex? qSpecializationIndex = this.GetSpecializationIndexByName(specialization.IndexName);
             if (qSpecializationIndex == null)
             {
                 return null;
@@ -90,9 +84,7 @@ public class QAzureOpenAIChatExtension
                         {
                             UrlFieldName = qSpecializationIndex.FieldMapping?.UrlFieldName,
                             TitleFieldName = qSpecializationIndex.FieldMapping?.TitleFieldName,
-                            FilepathFieldName = qSpecializationIndex
-                                .FieldMapping
-                                ?.FilepathFieldName,
+                            FilepathFieldName = qSpecializationIndex.FieldMapping?.FilepathFieldName,
                         },
                         SemanticConfiguration = qSpecializationIndex.SemanticConfiguration,
                         QueryType = new AzureSearchQueryType(qSpecializationIndex.QueryType),
@@ -122,9 +114,7 @@ public class QAzureOpenAIChatExtension
     public List<string> GetAllSpecializationIndexNames()
     {
         var indexNames = new List<string>();
-        foreach (
-            QSpecializationIndex _qSpecializationIndex in this._qAzureOpenAIChatOptions.SpecializationIndexes
-        )
+        foreach (QSpecializationIndex _qSpecializationIndex in this._qAzureOpenAIChatOptions.SpecializationIndexes)
         {
             indexNames.Add(_qSpecializationIndex.IndexName);
         }
@@ -136,9 +126,7 @@ public class QAzureOpenAIChatExtension
     /// </summary>
     public QSpecializationIndex? GetSpecializationIndexByName(string indexName)
     {
-        foreach (
-            QSpecializationIndex _qSpecializationIndex in this._qAzureOpenAIChatOptions.SpecializationIndexes
-        )
+        foreach (QSpecializationIndex _qSpecializationIndex in this._qAzureOpenAIChatOptions.SpecializationIndexes)
         {
             if (_qSpecializationIndex.IndexName == indexName)
             {

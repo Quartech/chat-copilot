@@ -20,9 +20,7 @@ public class QBlobStorage
     public QBlobStorage(string connectionString, string containerName)
     {
         BlobServiceClient blobServiceClient = new(connectionString);
-        BlobContainerClient blobContainerClient = blobServiceClient.GetBlobContainerClient(
-            containerName
-        );
+        BlobContainerClient blobContainerClient = blobServiceClient.GetBlobContainerClient(containerName);
 
         // Create a new container only if it does not exist
         blobContainerClient.CreateIfNotExists(PublicAccessType.Blob);

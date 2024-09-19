@@ -104,11 +104,7 @@ public class ChatHistoryController : ControllerBase
         }
         // Create a new chat session
         var systemDescription = this._promptOptions.SystemDescription;
-        var newChat = new ChatSession(
-            chatParameters.Title,
-            systemDescription,
-            chatParameters.specializationId
-        );
+        var newChat = new ChatSession(chatParameters.Title, systemDescription, chatParameters.specializationId);
         await this._sessionRepository.CreateAsync(newChat);
         ChatSession? chat = null;
         if (await this._sessionRepository.TryFindByIdAsync(newChat.Id, callback: v => chat = v))
@@ -129,9 +125,7 @@ public class ChatHistoryController : ControllerBase
         await this._messageRepository.CreateAsync(chatMessage);
 
         // Add the user to the chat session
-        await this._participantRepository.CreateAsync(
-            new ChatParticipant(this._authInfo.UserId, newChat.Id)
-        );
+        await this._participantRepository.CreateAsync(new ChatParticipant(this._authInfo.UserId, newChat.Id));
 
         this._logger.LogDebug("Created chat session with id {0}.", newChat.Id);
 
@@ -155,12 +149,7 @@ public class ChatHistoryController : ControllerBase
     public async Task<IActionResult> GetChatSessionByIdAsync(Guid chatId)
     {
         ChatSession? chat = null;
-        if (
-            await this._sessionRepository.TryFindByIdAsync(
-                chatId.ToString(),
-                callback: v => chat = v
-            )
-        )
+        if (await this._sessionRepository.TryFindByIdAsync(chatId.ToString(), callback: v => chat = v))
         {
             return this.Ok(chat);
         }
@@ -182,29 +171,19 @@ public class ChatHistoryController : ControllerBase
     {
         // Get all participants that belong to the user.
         // Then get all the chats from the list of participants.
-        var chatParticipants = await this._participantRepository.FindByUserIdAsync(
-            this._authInfo.UserId
-        );
+        var chatParticipants = await this._participantRepository.FindByUserIdAsync(this._authInfo.UserId);
 
         var chats = new List<ChatSession>();
         foreach (var chatParticipant in chatParticipants)
         {
             ChatSession? chat = null;
-            if (
-                await this._sessionRepository.TryFindByIdAsync(
-                    chatParticipant.ChatId,
-                    callback: v => chat = v
-                )
-            )
+            if (await this._sessionRepository.TryFindByIdAsync(chatParticipant.ChatId, callback: v => chat = v))
             {
                 chats.Add(chat!);
             }
             else
             {
-                this._logger.LogDebug(
-                    "Failed to find chat session with id {0}",
-                    chatParticipant.ChatId
-                );
+                this._logger.LogDebug("Failed to find chat session with id {0}", chatParticipant.ChatId);
             }
         }
 
@@ -230,11 +209,7 @@ public class ChatHistoryController : ControllerBase
         [FromQuery] int count = -1
     )
     {
-        var chatMessages = await this._messageRepository.FindByChatIdAsync(
-            chatId.ToString(),
-            skip,
-            count
-        );
+        var chatMessages = await this._messageRepository.FindByChatIdAsync(chatId.ToString(), skip, count);
         if (!chatMessages.Any())
         {
             return this.NotFound($"No messages found for chat id '{chatId}'.");
@@ -267,10 +242,7 @@ public class ChatHistoryController : ControllerBase
         [FromBody] RateChatMessageBody body
     )
     {
-        var chatMessage = await this._messageRepository.FindByMessageIdAsync(
-            chatId.ToString(),
-            messageId.ToString()
-        );
+        var chatMessage = await this._messageRepository.FindByMessageIdAsync(chatId.ToString(), messageId.ToString());
         if (chatMessage == null)
         {
             return this.NotFound($"No message found for message id '{messageId}'.");
@@ -300,21 +272,13 @@ public class ChatHistoryController : ControllerBase
     )
     {
         ChatSession? chat = null;
-        if (
-            await this._sessionRepository.TryFindByIdAsync(
-                chatId.ToString(),
-                callback: v => chat = v
-            )
-        )
+        if (await this._sessionRepository.TryFindByIdAsync(chatId.ToString(), callback: v => chat = v))
         {
             chat!.Title = chatParameters.Title ?? chat!.Title;
-            chat!.SystemDescription =
-                chatParameters.SystemDescription ?? chat!.SafeSystemDescription;
+            chat!.SystemDescription = chatParameters.SystemDescription ?? chat!.SafeSystemDescription;
             chat!.MemoryBalance = chatParameters.MemoryBalance ?? chat!.MemoryBalance;
             await this._sessionRepository.UpsertAsync(chat);
-            await messageRelayHubContext
-                .Clients.Group(chatId.ToString())
-                .SendAsync(ChatEditedClientCall, chat);
+            await messageRelayHubContext.Clients.Group(chatId.ToString()).SendAsync(ChatEditedClientCall, chat);
 
             return this.Ok(chat);
         }
@@ -339,12 +303,7 @@ public class ChatHistoryController : ControllerBase
     )
     {
         ChatSession? chat = null;
-        if (
-            await this._sessionRepository.TryFindByIdAsync(
-                chatId.ToString(),
-                callback: v => chat = v
-            )
-        )
+        if (await this._sessionRepository.TryFindByIdAsync(chatId.ToString(), callback: v => chat = v))
         {
             if (chatParameters.SpecializationId != "general")
             {
@@ -359,9 +318,7 @@ public class ChatHistoryController : ControllerBase
             }
             chat!.specializationId = chatParameters.SpecializationId;
             await this._sessionRepository.UpsertAsync(chat);
-            await messageRelayHubContext
-                .Clients.Group(chatId.ToString())
-                .SendAsync(ChatEditedClientCall, chat);
+            await messageRelayHubContext.Clients.Group(chatId.ToString()).SendAsync(ChatEditedClientCall, chat);
 
             return this.Ok(chat);
         }
@@ -385,9 +342,7 @@ public class ChatHistoryController : ControllerBase
 
         if (await this._sessionRepository.TryFindByIdAsync(chatId.ToString()))
         {
-            IEnumerable<MemorySource> sources = await this._sourceRepository.FindByChatIdAsync(
-                chatId.ToString()
-            );
+            IEnumerable<MemorySource> sources = await this._sourceRepository.FindByChatIdAsync(chatId.ToString());
 
             return this.Ok(sources);
         }
@@ -499,11 +454,7 @@ public class ChatHistoryController : ControllerBase
             {
                 foreach (var innerEx in aggregationTask.Exception.InnerExceptions)
                 {
-                    this._logger.LogInformation(
-                        "Failed to delete an entity of chat {0}: {1}",
-                        chatId,
-                        innerEx.Message
-                    );
+                    this._logger.LogInformation("Failed to delete an entity of chat {0}: {1}", chatId, innerEx.Message);
                 }
 
                 throw aggregationTask.Exception;

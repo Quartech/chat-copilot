@@ -39,10 +39,7 @@ public interface IQSpecializationService
     /// <param name="specializationId">Unique identifier of the specialization</param>
     /// <param name="qSpecializationMutate">Specialization mutate payload</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the specialization</returns>
-    Task<Specialization?> UpdateSpecialization(
-        Guid specializationId,
-        QSpecializationMutate qSpecializationMutate
-    );
+    Task<Specialization?> UpdateSpecialization(Guid specializationId, QSpecializationMutate qSpecializationMutate);
 
     /// <summary>
     /// Deletes the specialization.
