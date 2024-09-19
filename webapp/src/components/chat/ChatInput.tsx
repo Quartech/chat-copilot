@@ -5,7 +5,7 @@ import { Button, Spinner, Textarea, makeStyles, mergeClasses, shorthands, tokens
 import { AttachRegular, MicRegular, SendRegular } from '@fluentui/react-icons';
 import debug from 'debug';
 import * as speechSdk from 'microsoft-cognitiveservices-speech-sdk';
-import React, { useDeferredValue, useMemo, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { Constants } from '../../Constants';
 import { COPY } from '../../assets/strings';
 import { AuthHelper } from '../../libs/auth/AuthHelper';
@@ -78,6 +78,12 @@ interface ChatInputProps {
     onSubmit: (options: GetResponseOptions) => Promise<void>;
 }
 
+/**
+ * Chat input component to allow users to type messages, attach files, and submit messages.
+ *
+ * @param {ChatInputProps} props
+ * @returns {*} The chat input component
+ */
 export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeave, onSubmit }) => {
     const classes = useClasses();
     const fileHandler = useFile();
@@ -95,11 +101,8 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
     const documentFileRef = useRef<HTMLInputElement | null>(null);
     const textAreaRef = React.useRef<HTMLTextAreaElement>(null);
 
-    // Get the current memoized chat state
-    const chatState = useMemo(() => conversations[selectedId], [conversations, selectedId]);
-
-    // Deferring the value to prevent latency while the UI is rendering
-    const value = useDeferredValue(input);
+    // Current chat state
+    const chatState = conversations[selectedId];
 
     React.useEffect(() => {
         // Focus on the text area when the selected conversation changes
@@ -220,7 +223,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
                     ref={textAreaRef}
                     id="chat-input"
                     resize="vertical"
-                    disabled={conversations[selectedId].disabled}
+                    disabled={chatState.disabled}
                     textarea={{
                         className: isDraggingOver
                             ? mergeClasses(classes.dragAndDrop, classes.textarea)
@@ -253,7 +256,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
                     onKeyDown={(event) => {
                         if (event.key === 'Enter' && !event.shiftKey) {
                             event.preventDefault();
-                            handleSubmit(value);
+                            handleSubmit(input);
                         }
                     }}
                     onBlur={() => {
@@ -296,7 +299,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
                     {recognizer && (
                         <Button
                             appearance="transparent"
-                            disabled={conversations[selectedId].disabled || isListening}
+                            disabled={chatState.disabled || isListening}
                             icon={<MicRegular />}
                             onClick={handleSpeech}
                         />
@@ -307,9 +310,9 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
                         appearance="transparent"
                         icon={<SendRegular />}
                         onClick={() => {
-                            handleSubmit(value);
+                            handleSubmit(input);
                         }}
-                        disabled={conversations[selectedId].disabled || isSpecializationDisabled()}
+                        disabled={chatState.disabled || isSpecializationDisabled()}
                     />
                 </div>
             </div>
