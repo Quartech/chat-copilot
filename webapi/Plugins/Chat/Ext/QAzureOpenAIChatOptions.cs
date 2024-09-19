@@ -29,7 +29,11 @@ public class QAzureOpenAIChatOptions
         new List<AISearchDeploymentConnection>();
 
     [Required]
-    public IList<QSpecializationIndex> SpecializationIndexes { get; set; } = new List<QSpecializationIndex>();
+    public IList<QSpecializationIndex> SpecializationIndexes { get; set; } =
+        new List<QSpecializationIndex>();
+
+    [Required]
+    public BlobStorageOption BlobStorage { get; set; } = new BlobStorageOption();
 
     public class OpenAIDeploymentConnection
     {
@@ -40,18 +44,6 @@ public class QAzureOpenAIChatOptions
         public IList<string> EmbeddingDeployments { get; set; } = new List<string>();
     }
 
-/// <summary>
-/// Normalized representation of Azure configuration.
-/// </summary>
-public class AzureConfig
-{
-#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
-    public Uri? Endpoint { get; set; } = null;
-#pragma warning restore CS8618
-    public string APIKey { get; set; } = string.Empty;
-    public VectorizationSourceOption VectorizationSource { get; set; } = new VectorizationSourceOption();
-    public BlobStorageOption BlobStorage { get; set; } = new BlobStorageOption();
-}
     public class AISearchDeploymentConnection
     {
         public string Name { get; set; } = string.Empty;
@@ -79,13 +71,10 @@ public class AzureConfig
         public string TitleFieldName { get; set; } = "title";
         public string FilepathFieldName { get; set; } = "filepath";
     }
-}
 
-/// <summary>
-/// Blob storage configuration.
-/// </summary>
-public class BlobStorageOption
-{
-    public string ConnectionString { get; set; } = string.Empty;
-    public string SpecializationContainerName { get; set; } = "specialization";
+    public class BlobStorageOption
+    {
+        public string ConnectionString { get; set; } = string.Empty;
+        public string SpecializationContainerName { get; set; } = "specialization";
+    }
 }

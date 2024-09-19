@@ -71,7 +71,9 @@ export const SpecializationManager: React.FC = () => {
     const specialization = useSpecialization();
     const classes = useClasses();
 
-    const { specializations, specializationIndexes, chatCompletionDeployments, selectedId } = useAppSelector((state: RootState) => state.admin);
+    const { specializations, specializationIndexes, chatCompletionDeployments, selectedId } = useAppSelector(
+        (state: RootState) => state.admin,
+    );
 
     const [editMode, setEditMode] = useState(false);
 
@@ -148,7 +150,6 @@ export const SpecializationManager: React.FC = () => {
             const specializationObj = specializations.find((specialization) => specialization.id === selectedId);
             if (specializationObj) {
                 setId(specializationObj.id);
-
                 setLabel(specializationObj.label);
                 setName(specializationObj.name);
                 setDescription(specializationObj.description);
@@ -161,7 +162,7 @@ export const SpecializationManager: React.FC = () => {
                  */
                 setImageFile({ file: null, src: specializationObj.imageFilePath });
                 setIconFile({ file: null, src: specializationObj.iconFilePath });
-                setIndexName(specializationObj.indexName ?? '');
+                setIndexName(specializationObj.indexName);
             }
         } else {
             setEditMode(false);

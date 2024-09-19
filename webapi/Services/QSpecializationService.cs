@@ -30,8 +30,8 @@ public class QSpecializationService : IQSpecializationService
         this._specializationSourceRepository = specializationSourceRepository;
         this._qAzureOpenAIChatOptions = qAzureOpenAIChatOptions;
         this._qBlobStorage = new QBlobStorage(
-            qAzureOpenAIChatOptions.AzureConfig.BlobStorage.ConnectionString,
-            qAzureOpenAIChatOptions.AzureConfig.BlobStorage.SpecializationContainerName
+            qAzureOpenAIChatOptions.BlobStorage.ConnectionString,
+            qAzureOpenAIChatOptions.BlobStorage.SpecializationContainerName
         );
     }
 
@@ -80,10 +80,10 @@ public class QSpecializationService : IQSpecializationService
                 qSpecializationMutate.Description,
                 qSpecializationMutate.RoleInformation,
                 qSpecializationMutate.IndexName,
+                qSpecializationMutate.Deployment,
                 imageFilePath,
                 iconFilePath,
-                qSpecializationMutate.GroupMemberships.Split(','),
-                qSpecializationParameters.Deployment,
+                qSpecializationMutate.GroupMemberships.Split(',')
             );
 
         await this._specializationSourceRepository.CreateAsync(specializationSource);
@@ -147,10 +147,11 @@ public class QSpecializationService : IQSpecializationService
             specializationToUpdate!.GroupMemberships = !string.IsNullOrEmpty(qSpecializationMutate.GroupMemberships)
                 ? qSpecializationMutate.GroupMemberships.Split(',')
                 : specializationToUpdate!.GroupMemberships;
-                
+
             specializationToUpdate!.Deployment =
-                qSpecializationParameters.Deployment != null
-                    ? qSpecializationParameters.Deployment
+                qSpecializationMutate.Deployment != null
+                    ? qSpecializationMutate.Deployment
+                    : specializationToUpdate!.Deployment;
 
             await this._specializationSourceRepository.UpsertAsync(specializationToUpdate);
 
