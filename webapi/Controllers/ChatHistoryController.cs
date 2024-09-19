@@ -96,9 +96,7 @@ public class ChatHistoryController : ControllerBase
     [Route("chats")]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> CreateChatSessionAsync(
-        [FromBody] CreateChatParameters chatParameters
-    )
+    public async Task<IActionResult> CreateChatSessionAsync([FromBody] CreateChatParameters chatParameters)
     {
         if (chatParameters.Title == null || chatParameters.specializationId == null)
         {
@@ -350,10 +348,9 @@ public class ChatHistoryController : ControllerBase
         {
             if (chatParameters.SpecializationId != "general")
             {
-                Specialization specializationSource =
-                    await this._qSpecializationService.GetSpecializationAsync(
-                        chatParameters.SpecializationId
-                    );
+                Specialization specializationSource = await this._qSpecializationService.GetSpecializationAsync(
+                    chatParameters.SpecializationId
+                );
                 chat!.SystemDescription = specializationSource.RoleInformation;
             }
             else
@@ -482,11 +479,7 @@ public class ChatHistoryController : ControllerBase
 
         // Create and store the tasks for deleting semantic memories.
         cleanupTasks.Add(
-            this._memoryClient.RemoveChatMemoriesAsync(
-                this._promptOptions.MemoryIndexName,
-                chatId,
-                cancellationToken
-            )
+            this._memoryClient.RemoveChatMemoriesAsync(this._promptOptions.MemoryIndexName, chatId, cancellationToken)
         );
 
         // Create a task that represents the completion of all cleanupTasks

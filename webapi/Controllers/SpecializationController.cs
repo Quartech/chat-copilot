@@ -66,8 +66,7 @@ public class SpecializationController : ControllerBase
     public async Task<OkObjectResult> GetAllSpecializations()
     {
         var specializationResponses = new List<QSpecializationResponse>();
-        IEnumerable<Specialization> specializations =
-            await this._qspecializationService.GetAllSpecializations();
+        IEnumerable<Specialization> specializations = await this._qspecializationService.GetAllSpecializations();
         foreach (Specialization specialization in specializations)
         {
             QSpecializationResponse qSpecializationResponse = new(specialization);

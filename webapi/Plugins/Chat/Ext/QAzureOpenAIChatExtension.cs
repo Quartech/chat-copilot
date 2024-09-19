@@ -99,14 +99,10 @@ public class QAzureOpenAIChatExtension
                         ShouldRestrictResultScope = qSpecializationIndex!.RestrictResultScope,
                         RoleInformation = specialization.RoleInformation,
                         DocumentCount = specialization.DocumentCount,
-                        Authentication = new OnYourDataApiKeyAuthenticationOptions(
-                            azureConfig!.APIKey
-                        ),
+                        Authentication = new OnYourDataApiKeyAuthenticationOptions(azureConfig!.APIKey),
                         VectorizationSource = new OnYourDataEndpointVectorizationSource(
                             azureConfig.VectorizationSource!.Endpoint,
-                            new OnYourDataApiKeyAuthenticationOptions(
-                                azureConfig.VectorizationSource!.APIKey
-                            )
+                            new OnYourDataApiKeyAuthenticationOptions(azureConfig.VectorizationSource!.APIKey)
                         ),
                     },
                 },
