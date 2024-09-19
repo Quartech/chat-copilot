@@ -43,7 +43,7 @@ const useStyles = makeStyles({
         textOverflow: 'ellipsis',
     },
 
-    smallRadius: { borderRadius: tokens.borderRadiusSmall },
+    cardImage: { borderRadius: tokens.borderRadiusSmall, objectFit: 'contain' },
 
     cardPreview: {
         backgroundColor: tokens.colorNeutralBackground3,
@@ -115,14 +115,14 @@ export const SpecializationCard: React.FC<SpecializationItemProps> = ({ speciali
             <Card className={styles.card} data-testid="addNewBotMenuItem" onClick={onAddChat} key={cardId}>
                 <CardPreview className={styles.cardPreview}>
                     <img
-                        className={styles.smallRadius}
+                        className={styles.cardImage}
                         src={getimagefilepath(specialization.imageFilePath)}
                         alt="Presentation Preview"
                     />
                 </CardPreview>
 
                 <CardHeader
-                    header={<Text weight="semibold"> {specialization.name}</Text>}
+                    header={<Text weight="semibold">{specialization.name}</Text>}
                     description={<Caption1 className={styles.caption}>{truncate(specialization.description)}</Caption1>}
                     action={
                         <div
