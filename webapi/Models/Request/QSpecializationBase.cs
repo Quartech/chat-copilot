@@ -51,4 +51,10 @@ public class QSpecializationBase
     /// </summary>
     [JsonPropertyName("isActive")]
     public bool isActive { get; set; } = true;
+
+    /// <summary>
+    /// Deployment of the specialization
+    /// </summary>
+    [JsonPropertyName("deployment")]
+    public string? Deployment { get; set; } = string.Empty;
 }

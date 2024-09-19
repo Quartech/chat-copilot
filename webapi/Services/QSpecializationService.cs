@@ -82,7 +82,8 @@ public class QSpecializationService : IQSpecializationService
                 qSpecializationMutate.IndexName,
                 imageFilePath,
                 iconFilePath,
-                qSpecializationMutate.GroupMemberships.Split(',')
+                qSpecializationMutate.GroupMemberships.Split(','),
+                qSpecializationParameters.Deployment,
             );
 
         await this._specializationSourceRepository.CreateAsync(specializationSource);
@@ -146,6 +147,10 @@ public class QSpecializationService : IQSpecializationService
             specializationToUpdate!.GroupMemberships = !string.IsNullOrEmpty(qSpecializationMutate.GroupMemberships)
                 ? qSpecializationMutate.GroupMemberships.Split(',')
                 : specializationToUpdate!.GroupMemberships;
+                
+            specializationToUpdate!.Deployment =
+                qSpecializationParameters.Deployment != null
+                    ? qSpecializationParameters.Deployment
 
             await this._specializationSourceRepository.UpsertAsync(specializationToUpdate);
 

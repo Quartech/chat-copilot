@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useId, useState } from 'react';
 
 import { Button, Dropdown, Input, makeStyles, Option, shorthands, Textarea, tokens } from '@fluentui/react-components';
 import { useSpecialization } from '../../../libs/hooks';
@@ -71,7 +71,7 @@ export const SpecializationManager: React.FC = () => {
     const specialization = useSpecialization();
     const classes = useClasses();
 
-    const { specializations, specializationIndexes, selectedId } = useAppSelector((state: RootState) => state.admin);
+    const { specializations, specializationIndexes, chatCompletionDeployments, selectedId } = useAppSelector((state: RootState) => state.admin);
 
     const [editMode, setEditMode] = useState(false);
 
@@ -81,11 +81,13 @@ export const SpecializationManager: React.FC = () => {
     const [description, setDescription] = useState('');
     const [roleInformation, setRoleInformation] = useState('');
     const [indexName, setIndexName] = useState('');
+    const [deployment, setDeployment] = useState('');
     const [membershipId, setMembershipId] = useState<string[]>([]);
     const [imageFile, setImageFile] = useState<ISpecializationFile>({ file: null, src: null });
     const [iconFile, setIconFile] = useState<ISpecializationFile>({ file: null, src: null });
 
     const [isValid, setIsValid] = useState(false);
+    const dropdownId = useId();
 
     /**
      * Save specialization by creating or updating.
@@ -106,7 +108,8 @@ export const SpecializationManager: React.FC = () => {
                 imageFile: imageFile.file,
                 iconFile: iconFile.file,
                 deleteImage: !imageFile.src, // Set the delete flag if the src is null
-                deleteIcon: !iconFile.src, // Set the delete flag if the src is null
+                deleteIcon: !iconFile.src, // Set the delete flag if the src is null,
+                deployment,
                 groupMemberships: membershipId,
             });
             resetSpecialization();
@@ -119,6 +122,7 @@ export const SpecializationManager: React.FC = () => {
                 indexName,
                 imageFile: imageFile.file,
                 iconFile: iconFile.file,
+                deployment,
                 groupMemberships: membershipId,
             });
             resetSpecialization();
@@ -135,6 +139,7 @@ export const SpecializationManager: React.FC = () => {
         setImageFile({ file: null, src: null });
         setIconFile({ file: null, src: null });
         setIndexName('');
+        setDeployment('');
     };
 
     useEffect(() => {
@@ -149,6 +154,7 @@ export const SpecializationManager: React.FC = () => {
                 setDescription(specializationObj.description);
                 setRoleInformation(specializationObj.roleInformation);
                 setMembershipId(specializationObj.groupMemberships);
+                setDeployment(specializationObj.deployment);
                 /**
                  * Set the image and icon file paths
                  * Note: The file is set to null because we only retrieve the file path from the server
@@ -211,6 +217,22 @@ export const SpecializationManager: React.FC = () => {
                 >
                     {specializationIndexes.map((specializationIndex) => (
                         <Option key={specializationIndex}>{specializationIndex}</Option>
+                    ))}
+                </Dropdown>
+                <label htmlFor="deployment">Deployment</label>
+                <Dropdown
+                    clearable
+                    id="deployment"
+                    aria-labelledby={dropdownId}
+                    onOptionSelect={(_control, data) => {
+                        setDeployment(data.optionValue ?? '');
+                    }}
+                    value={deployment}
+                >
+                    {chatCompletionDeployments.map((deployment) => (
+                        <Option key={deployment} value={deployment}>
+                            {deployment}
+                        </Option>
                     ))}
                 </Dropdown>
                 <label htmlFor="description">
