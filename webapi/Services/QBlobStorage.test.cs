@@ -1,11 +1,10 @@
 ﻿using System.Threading.Tasks;
 using Azure.Storage.Blobs;
-using CopilotChat.WebApi.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
-namespace Copilogics.WebApi.Services
+namespace CopilotChat.WebApi.Services
 {
     [TestClass]
     public class QBlobStorageTests
