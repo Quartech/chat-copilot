@@ -121,7 +121,10 @@ public class ChatPlugin
         this._messageRelayHubContext = messageRelayHubContext;
         // Clone the prompt options to avoid modifying the original prompt options.
         this._promptOptions = promptOptions.Value.Copy();
-        this._qSpecializationService = new QSpecializationService(specializationSourceRepository);
+        this._qSpecializationService = new QSpecializationService(
+            specializationSourceRepository,
+            qAzureOpenAIChatOptions.Value
+        );
         this._semanticMemoryRetriever = new SemanticMemoryRetriever(
             promptOptions,
             chatSessionRepository,
@@ -319,7 +322,6 @@ public class ChatPlugin
         // Wait for system instructions to complete
         var systemInstructions = await systemInstructionsTask;
         ChatHistory metaPrompt = new(systemInstructions);
-
         // Wait for audience task to complete
         var audience = await audienceTask;
         var userIntent = await userIntentTask;
@@ -800,8 +802,8 @@ public class ChatPlugin
         string serializedContext = JsonSerializer.Serialize(chatContext);
 
         // Combine the context with the main prompt
-        string combinedPrompt = $"{prompt.MetaPromptTemplate}\n\nContext: {serializedContext}";
-        var chatHistory = new ChatHistory();
+        string combinedPrompt = $"Context: {serializedContext}";
+        ChatHistory chatHistory = prompt.MetaPromptTemplate;
         chatHistory.AddUserMessage(combinedPrompt);
         var provider = this._kernel.GetRequiredService<IServiceProvider>();
         var defaultModel = this._qAzureOpenAIChatExtension.GetDefaultChatCompletionDeployment();
