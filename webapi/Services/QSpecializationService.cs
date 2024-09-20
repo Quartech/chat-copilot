@@ -31,9 +31,8 @@ public class QSpecializationService : IQSpecializationService
         this._specializationSourceRepository = specializationSourceRepository;
         this._qAzureOpenAIChatOptions = qAzureOpenAIChatOptions;
 
-        BlobServiceClient blobServiceClient = new BlobServiceClient(
-            qAzureOpenAIChatOptions.BlobStorage.ConnectionString
-        );
+        BlobServiceClient blobServiceClient =
+            new(qAzureOpenAIChatOptions.BlobStorage.ConnectionString);
 
         BlobContainerClient blobContainerClient = blobServiceClient.GetBlobContainerClient(
             qAzureOpenAIChatOptions.BlobStorage.SpecializationContainerName
@@ -66,7 +65,9 @@ public class QSpecializationService : IQSpecializationService
     /// </summary>
     /// <param name="qSpecializationMutate">Specialization mutate payload</param>
     /// <returns>The task result contains the specialization source</returns>
-    public async Task<Specialization> SaveSpecialization(QSpecializationMutate qSpecializationMutate)
+    public async Task<Specialization> SaveSpecialization(
+        QSpecializationMutate qSpecializationMutate
+    )
     {
         // Add the image to the blob storage or use the default image
         var imageFilePath =
@@ -109,9 +110,8 @@ public class QSpecializationService : IQSpecializationService
         QSpecializationMutate qSpecializationMutate
     )
     {
-        Specialization? specializationToUpdate = await this._specializationSourceRepository.FindByIdAsync(
-            specializationId.ToString()
-        );
+        Specialization? specializationToUpdate =
+            await this._specializationSourceRepository.FindByIdAsync(specializationId.ToString());
 
         if (specializationToUpdate != null)
         {
@@ -137,11 +137,15 @@ public class QSpecializationService : IQSpecializationService
                 ? qSpecializationMutate.Name
                 : specializationToUpdate!.Name;
 
-            specializationToUpdate!.Description = !string.IsNullOrEmpty(qSpecializationMutate.Description)
+            specializationToUpdate!.Description = !string.IsNullOrEmpty(
+                qSpecializationMutate.Description
+            )
                 ? qSpecializationMutate.Description
                 : specializationToUpdate!.Description;
 
-            specializationToUpdate!.RoleInformation = !string.IsNullOrEmpty(qSpecializationMutate.RoleInformation)
+            specializationToUpdate!.RoleInformation = !string.IsNullOrEmpty(
+                qSpecializationMutate.RoleInformation
+            )
                 ? qSpecializationMutate.RoleInformation
                 : specializationToUpdate!.RoleInformation;
 
@@ -151,7 +155,9 @@ public class QSpecializationService : IQSpecializationService
                     : specializationToUpdate!.IndexName;
 
             // Group memberships (mutate payload) are a comma separated list of UUIDs.
-            specializationToUpdate!.GroupMemberships = !string.IsNullOrEmpty(qSpecializationMutate.GroupMemberships)
+            specializationToUpdate!.GroupMemberships = !string.IsNullOrEmpty(
+                qSpecializationMutate.GroupMemberships
+            )
                 ? qSpecializationMutate.GroupMemberships.Split(',')
                 : specializationToUpdate!.GroupMemberships;
 
@@ -175,9 +181,8 @@ public class QSpecializationService : IQSpecializationService
     /// <returns>The task result contains the delete state</returns>
     public async Task<bool> DeleteSpecialization(Guid specializationId)
     {
-        Specialization? specializationToDelete = await this._specializationSourceRepository.FindByIdAsync(
-            specializationId.ToString()
-        );
+        Specialization? specializationToDelete =
+            await this._specializationSourceRepository.FindByIdAsync(specializationId.ToString());
 
         await this._specializationSourceRepository.DeleteAsync(specializationToDelete);
 
