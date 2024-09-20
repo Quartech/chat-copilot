@@ -16,7 +16,6 @@ namespace Copilogics.WebApi.Services
         // Tests if the BlobExistsAsync method returns correctly when the blob exists or not
         public async Task BlobExistsAsync_TestBlobExists(bool exists)
         {
-            var blobServiceClientMock = new Mock<BlobServiceClient>();
             var blobContainerClientMock = new Mock<BlobContainerClient>();
             var blobClientMock = new Mock<BlobClient>();
 
@@ -28,7 +27,7 @@ namespace Copilogics.WebApi.Services
                 .Setup(mock => mock.ExistsAsync(It.IsAny<System.Threading.CancellationToken>()))
                 .Returns(Task.FromResult(Azure.Response.FromValue(exists, It.IsAny<Azure.Response>())));
 
-            var qBlobStorage = new QBlobStorage(blobServiceClientMock.Object, blobContainerClientMock.Object);
+            var qBlobStorage = new QBlobStorage(blobContainerClientMock.Object);
 
             var blobExists = await qBlobStorage.BlobExistsAsync(new System.Uri("https://www.example.com/index.html"));
 
@@ -39,7 +38,6 @@ namespace Copilogics.WebApi.Services
         // Tests if the BlobExistsAsync method returns false when the method throws an error
         public async Task BlobExistsAsync_TestThrownError()
         {
-            var blobServiceClientMock = new Mock<BlobServiceClient>();
             var blobContainerClientMock = new Mock<BlobContainerClient>();
             var blobClientMock = new Mock<BlobClient>();
 
@@ -47,7 +45,7 @@ namespace Copilogics.WebApi.Services
                 .Setup(mock => mock.GetBlobClient(It.IsAny<string>()))
                 .Throws(new Azure.RequestFailedException("Blob not found"));
 
-            var qBlobStorage = new QBlobStorage(blobServiceClientMock.Object, blobContainerClientMock.Object);
+            var qBlobStorage = new QBlobStorage(blobContainerClientMock.Object);
 
             var blobExists = await qBlobStorage.BlobExistsAsync(new System.Uri("https://www.example.com/index.html"));
 
@@ -58,7 +56,6 @@ namespace Copilogics.WebApi.Services
         // Tests if the AddBlobAsync method returns a URI
         public async Task AddBlobAsync_ReturnsURI()
         {
-            var blobServiceClientMock = new Mock<BlobServiceClient>();
             var blobContainerClientMock = new Mock<BlobContainerClient>();
             var blobClientMock = new Mock<BlobClient>();
 
@@ -81,7 +78,7 @@ namespace Copilogics.WebApi.Services
                 )
                 .Returns(blobClientMock.Object);
 
-            var qBlobStorage = new QBlobStorage(blobServiceClientMock.Object, blobContainerClientMock.Object);
+            var qBlobStorage = new QBlobStorage(blobContainerClientMock.Object);
 
             var uri = await qBlobStorage.AddBlobAsync(blobMock.Object);
 
@@ -92,7 +89,6 @@ namespace Copilogics.WebApi.Services
         // Tests if the DeleteBlobByURIAsync method does not throw
         public async Task DeleteBlobURIAsync_DoesNotThrow()
         {
-            var blobServiceClientMock = new Mock<BlobServiceClient>();
             var blobContainerClientMock = new Mock<BlobContainerClient>();
             var blobClientMock = new Mock<BlobClient>();
 
@@ -102,7 +98,7 @@ namespace Copilogics.WebApi.Services
 
             try
             {
-                var qBlobStorage = new QBlobStorage(blobServiceClientMock.Object, blobContainerClientMock.Object);
+                var qBlobStorage = new QBlobStorage(blobContainerClientMock.Object);
                 await qBlobStorage.DeleteBlobByURIAsync(new System.Uri("https://www.example.com/index.html"));
             }
             catch (Azure.RequestFailedException)

@@ -11,18 +11,14 @@ namespace CopilotChat.WebApi.Services;
 /// </summary>
 public class QBlobStorage
 {
-    // BlobServiceClient which is used to create a container client
-    private readonly BlobServiceClient _blobServiceClient;
-
     // BlobContainerClient which is used to interact with the container's blobs
     private BlobContainerClient _blobContainerClient;
 
-    public QBlobStorage(BlobServiceClient blobServiceClient, BlobContainerClient blobContainerClient)
+    public QBlobStorage(BlobContainerClient blobContainerClient)
     {
         // Create a new container only if it does not exist
         blobContainerClient.CreateIfNotExists(PublicAccessType.Blob);
 
-        this._blobServiceClient = blobServiceClient;
         this._blobContainerClient = blobContainerClient;
     }
 

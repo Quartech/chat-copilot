@@ -31,12 +31,15 @@ public class QSpecializationService : IQSpecializationService
         this._specializationSourceRepository = specializationSourceRepository;
         this._qAzureOpenAIChatOptions = qAzureOpenAIChatOptions;
 
-        BlobServiceClient blobServiceClient = new(qAzureOpenAIChatOptions.BlobStorage.ConnectionString);
+        BlobServiceClient blobServiceClient = new BlobServiceClient(
+            qAzureOpenAIChatOptions.BlobStorage.ConnectionString
+        );
+
         BlobContainerClient blobContainerClient = blobServiceClient.GetBlobContainerClient(
             qAzureOpenAIChatOptions.BlobStorage.SpecializationContainerName
         );
 
-        this._qBlobStorage = new QBlobStorage(blobServiceClient, blobContainerClient);
+        this._qBlobStorage = new QBlobStorage(blobContainerClient);
     }
 
     /// <summary>
