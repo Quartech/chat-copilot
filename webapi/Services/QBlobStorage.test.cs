@@ -1,9 +1,10 @@
 ﻿using System.Threading.Tasks;
 using Azure.Storage.Blobs;
-using CopilotChat.WebApi.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
+
+namespace CopilotChat.WebApi.Services.Tests;
 
 [TestClass]
 public class QBlobStorageTests
@@ -17,9 +18,7 @@ public class QBlobStorageTests
         var blobContainerClientMock = new Mock<BlobContainerClient>();
         var blobClientMock = new Mock<BlobClient>();
 
-        blobContainerClientMock
-            .Setup(mock => mock.GetBlobClient(It.IsAny<string>()))
-            .Returns(blobClientMock.Object);
+        blobContainerClientMock.Setup(mock => mock.GetBlobClient(It.IsAny<string>())).Returns(blobClientMock.Object);
 
         blobClientMock
             .Setup(mock => mock.ExistsAsync(It.IsAny<System.Threading.CancellationToken>()))
@@ -27,9 +26,7 @@ public class QBlobStorageTests
 
         var qBlobStorage = new QBlobStorage(blobContainerClientMock.Object);
 
-        var blobExists = await qBlobStorage.BlobExistsAsync(
-            new System.Uri("https://www.example.com/index.html")
-        );
+        var blobExists = await qBlobStorage.BlobExistsAsync(new System.Uri("https://www.example.com/index.html"));
 
         Assert.AreEqual(blobExists, exists);
     }
@@ -47,9 +44,7 @@ public class QBlobStorageTests
 
         var qBlobStorage = new QBlobStorage(blobContainerClientMock.Object);
 
-        var blobExists = await qBlobStorage.BlobExistsAsync(
-            new System.Uri("https://www.example.com/index.html")
-        );
+        var blobExists = await qBlobStorage.BlobExistsAsync(new System.Uri("https://www.example.com/index.html"));
 
         Assert.AreEqual(blobExists, false);
     }
@@ -66,9 +61,7 @@ public class QBlobStorageTests
         blobMock.Setup(mock => mock.FileName).Returns("file.txt");
         blobMock.Setup(mock => mock.OpenReadStream()).Returns(new System.IO.MemoryStream());
 
-        blobClientMock
-            .Setup(mock => mock.Uri)
-            .Returns(new System.Uri("https://www.example.com/index.html"));
+        blobClientMock.Setup(mock => mock.Uri).Returns(new System.Uri("https://www.example.com/index.html"));
 
         // Validating that the blob client is created with the correct file name
         // ie: file$1000-1000-1000-1000.txt
@@ -96,16 +89,12 @@ public class QBlobStorageTests
         var blobContainerClientMock = new Mock<BlobContainerClient>();
         var blobClientMock = new Mock<BlobClient>();
 
-        blobContainerClientMock
-            .Setup(mock => mock.GetBlobClient(It.IsAny<string>()))
-            .Returns(blobClientMock.Object);
+        blobContainerClientMock.Setup(mock => mock.GetBlobClient(It.IsAny<string>())).Returns(blobClientMock.Object);
 
         try
         {
             var qBlobStorage = new QBlobStorage(blobContainerClientMock.Object);
-            await qBlobStorage.DeleteBlobByURIAsync(
-                new System.Uri("https://www.example.com/index.html")
-            );
+            await qBlobStorage.DeleteBlobByURIAsync(new System.Uri("https://www.example.com/index.html"));
         }
         catch (Azure.RequestFailedException)
         {
