@@ -89,8 +89,8 @@ namespace Copilogics.WebApi.Services
         }
 
         [TestMethod]
-        // Tests if the DeleteBlobByURIAsync method returns a URI
-        public async Task DeleteBlobURIAsync_ReturnsURI()
+        // Tests if the DeleteBlobByURIAsync method does not throw
+        public async Task DeleteBlobURIAsync_DoesNotThrow()
         {
             var blobServiceClientMock = new Mock<BlobServiceClient>();
             var blobContainerClientMock = new Mock<BlobContainerClient>();

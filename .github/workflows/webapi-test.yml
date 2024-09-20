@@ -8,12 +8,12 @@
 #
 # Mocking Library (Moq): https://github.com/devlooped/moq/wiki/Quickstart#matching-arguments
 #
-name: Backend Unit Tests
+name: Test Backend
 on:
   pull_request:
     branches: [ main ]
 jobs:
-  format:
+  test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
