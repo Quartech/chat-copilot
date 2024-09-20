@@ -17,11 +17,8 @@ public class QBlobStorage
     // BlobContainerClient which is used to interact with the container's blobs
     private BlobContainerClient _blobContainerClient;
 
-    public QBlobStorage(string connectionString, string containerName)
+    public QBlobStorage(BlobServiceClient blobServiceClient, BlobContainerClient blobContainerClient)
     {
-        BlobServiceClient blobServiceClient = new(connectionString);
-        BlobContainerClient blobContainerClient = blobServiceClient.GetBlobContainerClient(containerName);
-
         // Create a new container only if it does not exist
         blobContainerClient.CreateIfNotExists(PublicAccessType.Blob);
 
@@ -68,7 +65,6 @@ public class QBlobStorage
     /// Remove a blob from the storage container by URI
     /// </summary>
     /// <param name="blobURI">Blob Storage URI</param>
-    /// <returns>Deleted blob URI</returns>
     public async Task DeleteBlobByURIAsync(System.Uri blobURI)
     {
         BlobUriBuilder blobUriBuilder = new(blobURI);
