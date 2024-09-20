@@ -99,6 +99,12 @@ dotnet_style_prefer_compound_assignment = true:suggestion
 # Code quality rules
 dotnet_code_quality_unused_parameters = all:suggestion
 
+[*.test.cs]
+# Allow placing test classes in the same directory as the class to test
+# ie: MyProject/MyClass.cs (MyProject.MyClass) and MyProject/MyClass.test.cs (MyProject.MyClass.Test)
+dotnet_diagnostic.IDE0130.severity = none # Namespace does not match folder structure
+
+[*.test.cs]
 [*.cs]
 
 # TODO: enable this but stop "dotnet format" from applying incorrect fixes and introducing a lot of unwanted changes.
