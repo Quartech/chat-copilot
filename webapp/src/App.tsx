@@ -10,7 +10,6 @@ import {
     IPublicClientApplication,
     PopupRequest,
 } from '@azure/msal-browser';
-import { Client, ResponseType } from '@microsoft/microsoft-graph-client';
 import { jwtDecode } from 'jwt-decode';
 import * as React from 'react';
 import { useEffect } from 'react';
@@ -88,55 +87,56 @@ const App = () => {
     const specialization = useSpecialization();
     const settings = useSettings();
 
-    const getUserImage = async (accessToken: string, _id: string) => {
-        try {
-            const client = getAuthenticatedClient(accessToken);
-            const response = (await client.api('/me/photo/$value').responseType(ResponseType.RAW).get()) as Response;
-            return await blobToBase64(await response.blob());
-        } catch (e) {
-            return;
-        }
-    };
+    //const getUserImage = async (accessToken: string, _id: string) => {
+    //    try {
+    //        const client = getAuthenticatedClient(accessToken);
+    //        const response = (await client.api('/me/photo/$value').responseType(ResponseType.RAW).get()) as Response;
+    //        return await blobToBase64(await response.blob());
+    //    } catch (e) {
+    //        return;
+    //    }
+    //};
 
-    const getAuthenticatedClient = (accessToken: string) => {
-        return Client.init({
-            authProvider: (done: (any: any, accessToken: string) => void) => {
-                done(null, accessToken);
-            },
-        });
-    };
+    //const getAuthenticatedClient = (accessToken: string) => {
+    //    return Client.init({
+    //        authProvider: (done: (any: any, accessToken: string) => void) => {
+    //            done(null, accessToken);
+    //        },
+    //    });
+    //};
 
-    const blobToBase64 = async (blob: Blob): Promise<string> => {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onerror = reject;
-            reader.onload = (_) => {
-                resolve(reader.result as string);
-            };
-            reader.readAsDataURL(blob);
-        });
-    };
+    //const blobToBase64 = async (blob: Blob): Promise<string> => {
+    //    return new Promise((resolve, reject) => {
+    //        const reader = new FileReader();
+    //        reader.onerror = reject;
+    //        reader.onload = (_) => {
+    //            resolve(reader.result as string);
+    //        };
+    //        reader.readAsDataURL(blob);
+    //    });
+    //};
 
-    const acquireTokenRequest = async (
-        instance: IPublicClientApplication,
-        account: AccountInfo | null,
-        tokenRequest: PopupRequest,
-    ) => {
-        if (account) {
-            return instance
-                .acquireTokenSilent({
-                    ...tokenRequest,
-                    account: account,
-                })
-                .catch((error) => {
-                    if (error instanceof InteractionRequiredAuthError) {
-                        return instance.acquireTokenPopup(tokenRequest);
-                    }
-                    throw error;
-                });
-        }
-        return null;
-    };
+    //const acquireTokenRequest = async (
+    //    instance: IPublicClientApplication,
+    //    account: AccountInfo | null,
+    //    tokenRequest: PopupRequest,
+    //) => {
+    //    if (account) {
+    //        return instance
+    //            .acquireTokenSilent({
+    //                ...tokenRequest,
+    //                account: account,
+    //            })
+    //            .catch((error) => {
+    //                if (error instanceof InteractionRequiredAuthError) {
+    //                    return instance.acquireTokenPopup(tokenRequest);
+    //                }
+    //                throw error;
+    //            });
+    //    }
+    //    return null;
+    //};
+    //
 
     function loadUser(instance: IPublicClientApplication, account: AccountInfo) {
         acquireTokenRequest(instance, account, {
