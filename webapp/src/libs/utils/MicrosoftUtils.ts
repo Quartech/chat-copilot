@@ -1,5 +1,4 @@
 import { Client, ResponseType } from '@microsoft/microsoft-graph-client';
-import { AccountInfo, InteractionRequiredAuthError, IPublicClientApplication, PopupRequest } from '@azure/msal-browser';
 
 // A type wrapper for base64 encoded strings
 type Base64String = string;
@@ -51,30 +50,7 @@ export const getMicrosoftUserImage = async (accessToken: string): Promise<Base64
 
         return await _blobToBase64(blob);
     } catch (e) {
-        return;
-    }
-};
-
-export const getMicrosoftAuth = async (
-    instance: IPublicClientApplication,
-    account: AccountInfo | null,
-    tokenRequest: PopupRequest,
-) => {
-    if (!account) {
-        return;
-    }
-
-    try {
-        const authAccount = await instance.acquireTokenSilent({
-            ...tokenRequest,
-            account: account,
-        });
-
-        return authAccount;
-    } catch (error) {
-        if (error instanceof InteractionRequiredAuthError) {
-            return instance.acquireTokenPopup(tokenRequest);
-        }
+        // Intentionally returning here to prevent the error from being thrown.
         return;
     }
 };
