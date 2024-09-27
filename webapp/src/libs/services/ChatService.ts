@@ -135,6 +135,27 @@ export class ChatService extends BaseService {
         return result;
     };
 
+    /**
+     * Deletes the chat history for a given chat ID asynchronously.
+     *
+     * This method sends a DELETE request to remove the history of a specific chat.
+     * It requires an access token for authentication.
+     *
+     * @param {string} chatId - The unique identifier of the chat whose history is to be deleted.
+     * @param {string} accessToken - The authentication token required for making the API request.
+     * @returns {Promise<void>} A promise that resolves to void, indicating the completion of the operation.
+     * @throws {Error} If there's an error during the fetch or API response, an error will be thrown.
+     */
+    public deleteChatHistoryAsync = async (chatId: string, accessToken: string): Promise<void> => {
+        await this.getResponseAsync(
+            {
+                commandPath: `chats/${chatId}/history`,
+                method: 'DELETE',
+            },
+            accessToken,
+        );
+    };
+
     public rateMessageAync = async (
         chatId: string,
         messageId: string,
@@ -216,6 +237,34 @@ export class ChatService extends BaseService {
         const result = await this.getResponseAsync<IAskResult>(
             {
                 commandPath: `chats/${chatId}/${processPlan ? 'plan' : 'messages'}`,
+                method: 'POST',
+                body: ask,
+            },
+            accessToken,
+            enabledPlugins,
+        );
+
+        return result;
+    };
+
+    /**
+     * getBotResponseSilentAsync - Calling this with a valid ask object will query the chatbot through a POST request,
+     * but will not show elements such as new chat bubbles or typing indicators.
+     * @param ask query for the chat bot
+     * @param accessToken valid access token
+     * @param enabledPlugins plugins, if any
+     */
+    public getBotResponseSilentAsync = async (
+        ask: IAsk,
+        accessToken: string,
+        enabledPlugins?: Plugin[],
+    ): Promise<IAskResult> => {
+        // If function requires any additional api properties, append to context
+        const chatId = ask.variables?.find((variable) => variable.key === 'chatId')?.value as string;
+
+        const result = await this.getResponseAsync<IAskResult>(
+            {
+                commandPath: `chats/${chatId}/messages?silent=true`,
                 method: 'POST',
                 body: ask,
             },
