@@ -95,7 +95,7 @@ export class GraphService extends BaseService {
      *
      * Context: To be able to get the user's avatar the image needs to have been uploaded to the user's profile
      * on the current tenant. There is discussion on migrating the current Microsoft user image from the Quartech
-     * tennant to the Quartech Lab tenant.
+     * tenant to the Quartech Lab tenant.
      *
      * Note: Passing `instance` and `inProgress` intentionally (vs accessToken)
      * as the generated token needs a specific scope ie: `User.Read` and using the Graph Client vs `getResponseAsync`

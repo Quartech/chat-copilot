@@ -64,7 +64,7 @@ export const useAppLoader = (): [AppState, Dispatch<SetStateAction<AppState>>] =
     };
 
     /**
-     * Load the user and attempt to retrive the microsoft user image.
+     * Load the user and attempt to retrieve the microsoft user image.
      *
      * @returns {Promise<void>}
      */
@@ -154,7 +154,6 @@ export const useAppLoader = (): [AppState, Dispatch<SetStateAction<AppState>>] =
             }
 
             // If the user is authenticated or AAD is disabled, we can load the chats
-            // and the dependant state
             if (canLoadChats) {
                 await loadChats();
                 return;
