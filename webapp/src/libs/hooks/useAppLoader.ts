@@ -12,6 +12,7 @@ import { useSpecialization } from './useSpecialization';
 import { useChat } from './useChat';
 import { useFile } from './useFile';
 import { GraphService } from '../services/GraphService';
+import { UserSettingsResponse } from '../models/UserSettings';
 
 /**
  * Hook to load the application state.
@@ -30,7 +31,7 @@ export const useAppLoader = (): [AppState, Dispatch<SetStateAction<AppState>>] =
     const chat = useChat();
     const file = useFile();
 
-    const { isMaintenance, activeUserInfo } = useAppSelector((state: RootState) => state.app);
+    const { isMaintenance } = useAppSelector((state: RootState) => state.app);
 
     // The current state of the application.
     const [appState, setAppState] = useState(AppState.ProbeForBackend);
@@ -41,23 +42,18 @@ export const useAppLoader = (): [AppState, Dispatch<SetStateAction<AppState>>] =
     const canLoadChats = (isAuthenticated || !AuthHelper.isAuthAAD()) && appState === AppState.LoadingChats;
 
     /**
-     * Load and set the settings for the user.
+     * Set the loaded settings for the user.
      *
      * @async
-     * @returns {Promise<void>}
+     * @returns {void}
      */
-    const loadSettings = async () => {
-        const loadedSettings = await settings.getSettings();
-
-        if (!loadedSettings) {
+    const setSettings = (userSettings?: UserSettingsResponse) => {
+        if (!userSettings) {
             return;
         }
 
-        const { darkMode, pluginsPersonas, simplifiedChat } = loadedSettings.settings;
-        const hasAdminRole = activeUserInfo?.groups.includes(loadedSettings.adminGroupId) ?? false;
-
+        const { darkMode, pluginsPersonas, simplifiedChat } = userSettings.settings;
         // Set the settings
-        dispatch(updateActiveUserInfo({ hasAdmin: hasAdminRole }));
         dispatch(setFeatureFlag({ key: FeatureKeys.DarkMode, enabled: darkMode }));
         dispatch(setFeatureFlag({ key: FeatureKeys.PluginsPlannersAndPersonas, enabled: pluginsPersonas }));
         dispatch(setFeatureFlag({ key: FeatureKeys.SimplifiedExperience, enabled: simplifiedChat }));
@@ -82,8 +78,13 @@ export const useAppLoader = (): [AppState, Dispatch<SetStateAction<AppState>>] =
 
             const graphService = new GraphService();
 
-            // Get the user avatar
-            const avatar = await graphService.getUserAvatar(instance, inProgress);
+            // Get the user avatar URI and application settings
+            const [avatar, userSettings] = await Promise.all([
+                graphService.getUserAvatar(instance, inProgress),
+                settings.getSettings(),
+            ]);
+
+            const hasAdminRole = userSettings?.adminGroupId ? groups.includes(userSettings.adminGroupId) : false;
 
             // Dispatch the user information
             dispatch(
@@ -94,8 +95,12 @@ export const useAppLoader = (): [AppState, Dispatch<SetStateAction<AppState>>] =
                     image: avatar,
                     id_token: account.idToken ?? '',
                     groups: groups,
+                    hasAdmin: hasAdminRole,
                 }),
             );
+
+            // Set the user application settings
+            setSettings(userSettings);
 
             // Trigger the next state
             setAppState(AppState.LoadingChats);
@@ -147,9 +152,9 @@ export const useAppLoader = (): [AppState, Dispatch<SetStateAction<AppState>>] =
                 return;
             }
 
-            // If the user is authenticated, we can load the user and settings
+            // If the user is authenticated, we can load the user and application settings
             if (canLoadUser) {
-                await Promise.all([loadSettings(), loadUser()]);
+                await loadUser();
                 return;
             }
 

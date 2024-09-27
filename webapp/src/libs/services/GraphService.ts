@@ -98,8 +98,10 @@ export class GraphService extends BaseService {
      * tenant to the Quartech Lab tenant.
      *
      * Note: Passing `instance` and `inProgress` intentionally (vs accessToken)
-     * as the generated token needs a specific scope ie: `User.Read` and using the Graph Client vs `getResponseAsync`
-     * to control the response type.
+     * as the generated token needs a specific scope ie: `User.Read`.
+     *
+     *
+     * Note:  Using the Graph Client vs `getResponseAsync` to control the response type.
      *
      * @param {IPublicClientApplication} instance - The MSAL instance.
      * @param {InteractionStatus} inProgress - The interaction status.
