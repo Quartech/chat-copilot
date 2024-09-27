@@ -1,4 +1,3 @@
-import { getMicrosoftUserImage } from '../utils/MicrosoftUtils';
 import { useAppDispatch, useAppSelector } from '../../redux/app/hooks';
 import { setFeatureFlag, setServiceInfo, updateActiveUserInfo } from '../../redux/features/app/appSlice';
 import { useSettings } from './useSettings';
@@ -12,11 +11,12 @@ import { AuthHelper } from '../auth/AuthHelper';
 import { useSpecialization } from './useSpecialization';
 import { useChat } from './useChat';
 import { useFile } from './useFile';
+import { GraphService } from '../services/GraphService';
 
 /**
  * Hook to load the application state.
  *
- * Loads: User, Settings, Specializations, Chats, and Service Info.
+ * Loads: User, Settings, Specializations, Chats, Service Info etc...
  *
  * @returns {[AppState, Dispatch<SetStateAction<AppState>>]}
  */
@@ -77,14 +77,13 @@ export const useAppLoader = (): [AppState, Dispatch<SetStateAction<AppState>>] =
                 return;
             }
 
-            // Get the access token
-            const accessToken = await AuthHelper.getSKaaSAccessToken(instance, inProgress);
-
             // Get the user groups from the token
             const { groups } = jwtDecode<{ groups: string[] }>(account.idToken);
 
-            // Attempt to get the microsoft user image
-            const userImage = await getMicrosoftUserImage(accessToken);
+            const graphService = new GraphService();
+
+            // Get the user avatar
+            const avatar = await graphService.getUserAvatar(instance, inProgress);
 
             // Dispatch the user information
             dispatch(
@@ -92,7 +91,7 @@ export const useAppLoader = (): [AppState, Dispatch<SetStateAction<AppState>>] =
                     id: `${account.localAccountId}.${account.tenantId}`,
                     email: account.username,
                     username: account.name ?? account.username,
-                    image: userImage,
+                    image: avatar,
                     id_token: account.idToken ?? '',
                     groups: groups,
                 }),
@@ -125,6 +124,7 @@ export const useAppLoader = (): [AppState, Dispatch<SetStateAction<AppState>>] =
                 file.getContentSafetyStatus(),
             ]);
 
+            // Load the chats and inject the specializations
             await chat.loadChats(loadedSpecializations ?? []);
 
             if (serviceInfo) {
@@ -141,16 +141,20 @@ export const useAppLoader = (): [AppState, Dispatch<SetStateAction<AppState>>] =
     // Watches for changes in the application state and loads the app accordingly
     useEffect(() => {
         const loadApp = async () => {
+            // If the app is in maintenance, we need to probe for the backend
             if (shouldProbeForBackend) {
                 setAppState(AppState.ProbeForBackend);
                 return;
             }
 
+            // If the user is authenticated, we can load the user and settings
             if (canLoadUser) {
                 await Promise.all([loadSettings(), loadUser()]);
                 return;
             }
 
+            // If the user is authenticated or AAD is disabled, we can load the chats
+            // and the dependant state
             if (canLoadChats) {
                 await loadChats();
                 return;
