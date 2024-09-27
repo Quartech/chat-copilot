@@ -30,7 +30,6 @@ export interface BatchResponse {
  * @class
  * @extends {BaseService}
  */
-
 export class GraphService extends BaseService {
     constructor() {
         super('https://graph.microsoft.com');
