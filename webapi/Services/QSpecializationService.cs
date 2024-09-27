@@ -3,10 +3,12 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Azure.Storage.Blobs;
 using CopilotChat.WebApi.Models.Request;
 using CopilotChat.WebApi.Models.Storage;
 using CopilotChat.WebApi.Plugins.Chat.Ext;
 using CopilotChat.WebApi.Storage;
+using CopilotChat.WebApi.Utilities;
 using Microsoft.AspNetCore.Http;
 
 namespace CopilotChat.WebApi.Services;
@@ -29,10 +31,14 @@ public class QSpecializationService : IQSpecializationService
     {
         this._specializationSourceRepository = specializationSourceRepository;
         this._qAzureOpenAIChatOptions = qAzureOpenAIChatOptions;
-        this._qBlobStorage = new QBlobStorage(
-            qAzureOpenAIChatOptions.BlobStorage.ConnectionString,
+
+        BlobServiceClient blobServiceClient = new(qAzureOpenAIChatOptions.BlobStorage.ConnectionString);
+
+        BlobContainerClient blobContainerClient = blobServiceClient.GetBlobContainerClient(
             qAzureOpenAIChatOptions.BlobStorage.SpecializationContainerName
         );
+
+        this._qBlobStorage = new QBlobStorage(blobContainerClient);
     }
 
     /// <summary>
@@ -64,13 +70,13 @@ public class QSpecializationService : IQSpecializationService
         // Add the image to the blob storage or use the default image
         var imageFilePath =
             qSpecializationMutate.ImageFile == null
-                ? this._qAzureOpenAIChatOptions.DefaultSpecializationImage
+                ? ResourceUtils.GetImageAsDataUri(this._qAzureOpenAIChatOptions.DefaultSpecializationImage)
                 : await this._qBlobStorage.AddBlobAsync(qSpecializationMutate.ImageFile);
 
         // Add the icon to the blob storage or use the default icon
         var iconFilePath =
             qSpecializationMutate.IconFile == null
-                ? this._qAzureOpenAIChatOptions.DefaultSpecializationIcon
+                ? ResourceUtils.GetImageAsDataUri(this._qAzureOpenAIChatOptions.DefaultSpecializationIcon)
                 : await this._qBlobStorage.AddBlobAsync(qSpecializationMutate.IconFile);
 
         Specialization specializationSource =
@@ -113,7 +119,7 @@ public class QSpecializationService : IQSpecializationService
                 qSpecializationMutate.ImageFile,
                 new Uri(specializationToUpdate.ImageFilePath),
                 Convert.ToBoolean(qSpecializationMutate.DeleteImageFile),
-                this._qAzureOpenAIChatOptions.DefaultSpecializationImage
+                ResourceUtils.GetImageAsDataUri(this._qAzureOpenAIChatOptions.DefaultSpecializationImage)
             );
 
             // Update the icon file and set the file path
@@ -121,7 +127,7 @@ public class QSpecializationService : IQSpecializationService
                 qSpecializationMutate.IconFile,
                 new Uri(specializationToUpdate.IconFilePath),
                 Convert.ToBoolean(qSpecializationMutate.DeleteIconFile),
-                this._qAzureOpenAIChatOptions.DefaultSpecializationIcon
+                ResourceUtils.GetImageAsDataUri(this._qAzureOpenAIChatOptions.DefaultSpecializationIcon)
             );
 
             specializationToUpdate!.IsActive = Convert.ToBoolean(qSpecializationMutate.isActive);
