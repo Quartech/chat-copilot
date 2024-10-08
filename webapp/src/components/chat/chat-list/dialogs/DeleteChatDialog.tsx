@@ -9,7 +9,6 @@ import {
     DialogTitle,
     DialogTrigger,
 } from '@fluentui/react-dialog';
-import React from 'react';
 import { useChat } from '../../../../libs/hooks';
 import { getFriendlyChatName } from '../../../../libs/hooks/useChat';
 import { useAppSelector } from '../../../../redux/app/hooks';
@@ -35,9 +34,8 @@ export const DeleteChatDialog: React.FC<IEditChatNameProps> = ({ chatId }) => {
     const { conversations } = useAppSelector((state) => state.conversations);
     const chatName = getFriendlyChatName(conversations[chatId]);
 
-    const onDeleteChat = (event: React.MouseEvent) => {
+    const onDeleteChat = () => {
         void chat.deleteChat(chatId);
-        event.stopPropagation();
     };
 
     return (
@@ -59,12 +57,7 @@ export const DeleteChatDialog: React.FC<IEditChatNameProps> = ({ chatId }) => {
                             <Button appearance="secondary">Cancel</Button>
                         </DialogTrigger>
                         <DialogTrigger action="close" disableButtonEnhancement>
-                            <Button
-                                appearance="primary"
-                                onClick={(e) => {
-                                    onDeleteChat(e);
-                                }}
-                            >
+                            <Button appearance="primary" onClick={onDeleteChat}>
                                 Delete
                             </Button>
                         </DialogTrigger>

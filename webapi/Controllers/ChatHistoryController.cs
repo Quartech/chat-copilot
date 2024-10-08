@@ -105,12 +105,7 @@ public class ChatHistoryController : ControllerBase
         }
         // Create a new chat session
         var systemDescription = this._promptOptions.SystemDescription;
-        var newChat = new ChatSession(
-            chatParameters.Title,
-            systemDescription,
-            chatParameters.specializationId,
-            chatParameters.Id
-        );
+        var newChat = new ChatSession(chatParameters.Title, systemDescription, chatParameters.specializationId);
         await this._sessionRepository.CreateAsync(newChat);
         ChatSession? chat = null;
         if (await this._sessionRepository.TryFindByIdAsync(newChat.Id, callback: v => chat = v))

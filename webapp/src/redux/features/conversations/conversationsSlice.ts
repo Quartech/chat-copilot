@@ -72,7 +72,7 @@ export const conversationsSlice = createSlice({
         },
         addConversation: (state: ConversationsState, action: PayloadAction<ChatState>) => {
             const newId = action.payload.id;
-            state.conversations = { ...state.conversations, [newId]: action.payload };
+            state.conversations = { [newId]: action.payload, ...state.conversations };
             state.selectedId = newId;
         },
         addUserToConversation: (
