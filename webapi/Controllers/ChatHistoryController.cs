@@ -144,7 +144,7 @@ public class ChatHistoryController : ControllerBase
         // Add the user to the chat session
         await this._participantRepository.CreateAsync(new ChatParticipant(this._authInfo.UserId, newChat.Id));
 
-        var sanitizedChatId = newChat.Id.Replace(Environment.NewLine, "").Replace("\n", "").Replace("\r", "");
+        var sanitizedChatId = newChat.Id.Replace(Environment.NewLine, "", StringComparison.InvariantCultureIgnoreCase).Replace("\n", "", StringComparison.InvariantCultureIgnoreCase).Replace("\r", "", StringComparison.InvariantCultureIgnoreCase);
         this._logger.LogDebug("Created chat session with id {0}.", sanitizedChatId);
 
         return this.CreatedAtRoute(
