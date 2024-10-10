@@ -41,6 +41,7 @@ export interface GetResponseOptions {
     chatId: string;
     kernelArguments?: IAskVariables[];
     processPlan?: boolean;
+    abortSignal?: AbortSignal;
 }
 
 export const useChat = () => {
@@ -171,7 +172,14 @@ export const useChat = () => {
         );
     };
 
-    const getResponse = async ({ messageType, value, chatId, kernelArguments, processPlan }: GetResponseOptions) => {
+    const getResponse = async ({
+        messageType,
+        value,
+        chatId,
+        kernelArguments,
+        processPlan,
+        abortSignal,
+    }: GetResponseOptions) => {
         /* eslint-disable
         @typescript-eslint/no-unsafe-assignment
         */
@@ -224,6 +232,7 @@ export const useChat = () => {
                     await AuthHelper.getSKaaSAccessToken(instance, inProgress),
                     getEnabledPlugins(),
                     processPlan,
+                    abortSignal,
                 )
                 .catch((e: any) => {
                     throw e;
@@ -236,7 +245,7 @@ export const useChat = () => {
             dispatch(updateBotResponseStatus({ chatId, status: undefined }));
 
             const errorDetails = getErrorDetails(e);
-            if (errorDetails.includes('Failed to process plan')) {
+            if (errorDetails.includes('Failed to process plan') || errorDetails.includes('The operation was aborted')) {
                 // Error should already be reflected in bot response message. Skip alert.
                 return;
             }

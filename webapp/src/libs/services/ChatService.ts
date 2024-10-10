@@ -188,6 +188,7 @@ export class ChatService extends BaseService {
         accessToken: string,
         enabledPlugins?: Plugin[],
         processPlan = false,
+        abortSignal: AbortSignal | undefined = undefined,
     ): Promise<IAskResult> => {
         // If function requires any additional api properties, append to context
         if (enabledPlugins && enabledPlugins.length > 0) {
@@ -246,6 +247,7 @@ export class ChatService extends BaseService {
                 commandPath: `chats/${chatId}/${processPlan ? 'plan' : 'messages'}`,
                 method: 'POST',
                 body: ask,
+                signal: abortSignal,
             },
             accessToken,
             enabledPlugins,

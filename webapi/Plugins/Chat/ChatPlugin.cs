@@ -738,7 +738,11 @@ public class ChatPlugin
         chatMessage.TokenUsage = this.GetTokenUsages(chatContext, chatMessage.Content);
 
         // Update the message on client and in chat history with final completion token usage
-        await this.UpdateMessageOnClient(chatMessage, cancellationToken);
+        if (!cancellationToken.IsCancellationRequested)
+        {
+            await this.UpdateMessageOnClient(chatMessage, cancellationToken);
+        }
+
         await this._chatMessageRepository.UpsertAsync(chatMessage);
 
         return chatMessage;
@@ -1128,6 +1132,10 @@ public class ChatPlugin
         // Stream the message to the client
         await foreach (var contentPiece in stream)
         {
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return chatMessage;
+            }
             accumulatedContent.Append(contentPiece.ToString());
             if (contentPiece.InnerContent is not null)
             {

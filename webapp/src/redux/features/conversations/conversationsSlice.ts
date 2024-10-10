@@ -154,10 +154,15 @@ export const conversationsSlice = createSlice({
                 messageIdOrIndex: string | number;
                 updatedContent?: string;
                 frontLoad?: boolean;
+                origin?: string;
             }>,
         ) => {
-            const { property, value, messageIdOrIndex, chatId, updatedContent, frontLoad } = action.payload;
+            const { property, value, messageIdOrIndex, chatId, updatedContent, frontLoad, origin } = action.payload;
             const conversation = state.conversations[chatId];
+            if (origin === 'hubMessage' && !conversation.botResponseStatus) {
+                console.log(`Bot is not typing, returning.`);
+                return;
+            }
             const conversationMessage =
                 typeof messageIdOrIndex === 'number'
                     ? conversation.messages[messageIdOrIndex]

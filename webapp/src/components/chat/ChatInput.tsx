@@ -2,7 +2,7 @@
 
 import { useMsal } from '@azure/msal-react';
 import { Button, Spinner, Textarea, makeStyles, mergeClasses, shorthands, tokens } from '@fluentui/react-components';
-import { AttachRegular, MicRegular, SendRegular } from '@fluentui/react-icons';
+import { AttachRegular, MicRegular, RecordStopRegular, SendRegular } from '@fluentui/react-icons';
 import debug from 'debug';
 import * as speechSdk from 'microsoft-cognitiveservices-speech-sdk';
 import React, { useRef, useState } from 'react';
@@ -96,6 +96,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
     const [input, setInput] = useState('');
     const [recognizer, setRecognizer] = useState<speechSdk.SpeechRecognizer>();
     const [isListening, setIsListening] = useState(false);
+    const [abortController, setAbortController] = useState<AbortController>();
 
     const documentFileRef = useRef<HTMLInputElement | null>(null);
     const textAreaRef = React.useRef<HTMLTextAreaElement>(null);
@@ -165,7 +166,8 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
         if (value.trim() === '') {
             return; // only submit if value is not empty
         }
-
+        const abortController = new AbortController();
+        setAbortController(abortController);
         // Update the conversation input on submit
         dispatch(editConversationInput({ id: selectedId, newInput: value }));
 
@@ -174,7 +176,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
         dispatch(editConversationInput({ id: selectedId, newInput: '' }));
         dispatch(updateBotResponseStatus({ chatId: selectedId, status: 'Calling the kernel' }));
 
-        onSubmit({ value, messageType, chatId: selectedId }).catch((error) => {
+        onSubmit({ value, messageType, chatId: selectedId, abortSignal: abortController.signal }).catch((error) => {
             const message = `Error submitting chat input: ${(error as Error).message}`;
             log(message);
             dispatch(
@@ -302,16 +304,29 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
                             onClick={handleSpeech}
                         />
                     )}
-                    <Button
-                        title="Submit"
-                        aria-label="Submit message"
-                        appearance="transparent"
-                        icon={<SendRegular />}
-                        onClick={() => {
-                            handleSubmit(input);
-                        }}
-                        disabled={chatState.disabled || isSpecializationDisabled()}
-                    />
+                    {chatState.botResponseStatus ? (
+                        <Button
+                            appearance="transparent"
+                            icon={<RecordStopRegular />}
+                            onClick={() => {
+                                abortController?.abort();
+                                setAbortController(undefined);
+                            }}
+                            title="Cancel message button"
+                            aria-label="Cancel button"
+                        />
+                    ) : (
+                        <Button
+                            title="Submit"
+                            aria-label="Submit message"
+                            appearance="transparent"
+                            icon={<SendRegular />}
+                            onClick={() => {
+                                handleSubmit(input);
+                            }}
+                            disabled={chatState.disabled || isSpecializationDisabled()}
+                        />
+                    )}
                 </div>
             </div>
         </div>
