@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using Elastic.Transport;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.KernelMemory;
@@ -21,6 +22,8 @@ internal sealed class ServiceConfiguration
     // Normalized configuration
     private KernelMemoryConfig _memoryConfiguration;
 
+    private DefaultConfiguration _defaultConfig;
+
     // appsettings.json root node name
     private const string ConfigRoot = "KernelMemory";
 
@@ -30,27 +33,29 @@ internal sealed class ServiceConfiguration
     // OpenAI env var
     private const string OpenAIEnvVar = "OPENAI_API_KEY";
 
-    public ServiceConfiguration(string? settingsDirectory = null)
-        : this(ReadAppSettings(settingsDirectory))
+    public ServiceConfiguration(DefaultConfiguration defaultConfig, string? settingsDirectory = null)
+        : this(ReadAppSettings(settingsDirectory), defaultConfig)
     {
     }
 
-    public ServiceConfiguration(IConfiguration rawAppSettings)
+    public ServiceConfiguration(IConfiguration rawAppSettings, DefaultConfiguration defaultConfig)
         : this(rawAppSettings,
             rawAppSettings.GetSection(ConfigRoot).Get<KernelMemoryConfig>()
             ?? throw new ConfigurationException($"Unable to load Kernel Memory settings from the given configuration. " +
                                                 $"There should be a '{ConfigRoot}' root node, " +
-                                                $"with data mapping to '{nameof(KernelMemoryConfig)}'"))
+                                                $"with data mapping to '{nameof(KernelMemoryConfig)}'"),
+            defaultConfig)
     {
     }
 
     public ServiceConfiguration(
         IConfiguration rawAppSettings,
-        KernelMemoryConfig memoryConfiguration)
+        KernelMemoryConfig memoryConfiguration,
+        DefaultConfiguration defaultConfig)
     {
         this._rawAppSettings = rawAppSettings ?? throw new ConfigurationException("The given app settings configuration is NULL");
         this._memoryConfiguration = memoryConfiguration ?? throw new ConfigurationException("The given memory configuration is NULL");
-
+        this._defaultConfig = defaultConfig ?? throw new ConfigurationException("The given default configuration is NULL");
         if (!this.MinimumConfigurationIsAvailable(false)) { this.SetupForOpenAI(); }
 
         this.MinimumConfigurationIsAvailable(true);
@@ -117,6 +122,24 @@ internal sealed class ServiceConfiguration
         var builder = new ConfigurationBuilder();
         builder.AddKMConfigurationSources(settingsDirectory: settingsDirectory);
         return builder.Build();
+    }
+
+    private void ConfigureAzureOpenAIText(AzureOpenAIConfig config)
+    {
+
+        config.APIKey = this._defaultConfig.APIKey;
+        config.Deployment = this._defaultConfig.DefaultModel;
+        config.Endpoint = this._defaultConfig.DefaultEndpoint?.ToString();
+        config.Auth = AzureOpenAIConfig.AuthTypes.APIKey;
+    }
+
+    private void ConfigureAzureOpenAIEmbedding(AzureOpenAIConfig config)
+    {
+
+        config.APIKey = this._defaultConfig.APIKey;
+        config.Deployment = this._defaultConfig.DefaultEmbeddingModel;
+        config.Endpoint = this._defaultConfig.DefaultEndpoint?.ToString();
+        config.Auth = AzureOpenAIConfig.AuthTypes.APIKey;
     }
 
     private void ConfigureQueueDependency(IKernelMemoryBuilder builder)
@@ -200,8 +223,10 @@ internal sealed class ServiceConfiguration
                 case string x when x.Equals("AzureOpenAI", StringComparison.OrdinalIgnoreCase):
                 case string y when y.Equals("AzureOpenAIEmbedding", StringComparison.OrdinalIgnoreCase):
                 {
+                    var azureOpenAIEmbeddingConfig = new AzureOpenAIConfig();
+                    this.ConfigureAzureOpenAIEmbedding(azureOpenAIEmbeddingConfig);
                     var instance = this.GetServiceInstance<ITextEmbeddingGenerator>(builder,
-                        s => s.AddAzureOpenAIEmbeddingGeneration(this.GetServiceConfig<AzureOpenAIConfig>("AzureOpenAIEmbedding")));
+                        s => s.AddAzureOpenAIEmbeddingGeneration(azureOpenAIEmbeddingConfig));
                     builder.AddIngestionEmbeddingGenerator(instance);
                     break;
                 }
@@ -307,7 +332,10 @@ internal sealed class ServiceConfiguration
         {
             case string x when x.Equals("AzureOpenAI", StringComparison.OrdinalIgnoreCase):
             case string y when y.Equals("AzureOpenAIEmbedding", StringComparison.OrdinalIgnoreCase):
-                builder.Services.AddAzureOpenAIEmbeddingGeneration(this.GetServiceConfig<AzureOpenAIConfig>("AzureOpenAIEmbedding"));
+                var azureOpenAIEmbeddingConfig = new AzureOpenAIConfig();
+                this.ConfigureAzureOpenAIEmbedding(azureOpenAIEmbeddingConfig);
+                //builder.Services.AddAzureOpenAIEmbeddingGeneration(this.GetServiceConfig<AzureOpenAIConfig>("AzureOpenAIEmbedding"));
+                builder.Services.AddAzureOpenAIEmbeddingGeneration(azureOpenAIEmbeddingConfig);
                 break;
 
             case string x when x.Equals("OpenAI", StringComparison.OrdinalIgnoreCase):
@@ -362,7 +390,9 @@ internal sealed class ServiceConfiguration
         {
             case string x when x.Equals("AzureOpenAI", StringComparison.OrdinalIgnoreCase):
             case string y when y.Equals("AzureOpenAIText", StringComparison.OrdinalIgnoreCase):
-                builder.Services.AddAzureOpenAITextGeneration(this.GetServiceConfig<AzureOpenAIConfig>("AzureOpenAIText"));
+                var azureOpenAITextConfig = new AzureOpenAIConfig();
+                this.ConfigureAzureOpenAIText(azureOpenAITextConfig);
+                builder.Services.AddAzureOpenAITextGeneration(azureOpenAITextConfig);
                 break;
 
             case string x when x.Equals("OpenAI", StringComparison.OrdinalIgnoreCase):
