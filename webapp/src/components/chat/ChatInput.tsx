@@ -216,8 +216,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
     const shouldDisableBotCancellation = (chatState: ChatState) => {
         if (chatState.botResponseStatus !== 'Generating bot response') {
             return true;
-        }
-        else {
+        } else {
             const lastMessage = chatState.messages[chatState.messages.length - 1];
             if (lastMessage.userName === 'Bot') {
                 return lastMessage.content.length < 1;
@@ -225,7 +224,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
                 return true;
             }
         }
-    }
+    };
 
     return (
         <div className={classes.root}>
