@@ -291,7 +291,11 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
                             title="Attach file"
                             aria-label="Attach file button"
                         />
-                        {chatState.importingDocuments && chatState.importingDocuments.length > 0 && <Spinner size="tiny" />}
+                        {
+                            chatState.importingDocuments &&
+                            chatState.importingDocuments.length > 0 &&
+                            <Spinner size="tiny" />
+                        }
                     </div>
                     <div className={classes.essentials}>
                         {recognizer && (
