@@ -17,6 +17,12 @@ const useClasses = makeStyles({
     },
 });
 
+/**
+ * A component that displays a loading spinner overlay when the app is in a loading state.
+ * Uses the Fluent UI Spinner component for the loading indicator.
+ *
+ * @component
+ */
 const LoadingSpinner = () => {
     const classes = useClasses();
 
