@@ -16,6 +16,7 @@ import { ChatMessageType } from '../../libs/models/ChatMessage';
 import { useAppDispatch, useAppSelector } from '../../redux/app/hooks';
 import { RootState } from '../../redux/app/store';
 import { addAlert } from '../../redux/features/app/appSlice';
+import { ChatState } from '../../redux/features/conversations/ChatState';
 import { editConversationInput, updateBotResponseStatus } from '../../redux/features/conversations/conversationsSlice';
 import { getErrorDetails } from '../utils/TextUtils';
 import { SpeechService } from './../../libs/services/SpeechService';
@@ -211,6 +212,21 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
         return true;
     };
 
+    // Aborting connection may cause issues if done before the bot has generated any text whatsoever.
+    const shouldDisableBotCancellation = (chatState: ChatState) => {
+        if (chatState.botResponseStatus !== 'Generating bot response') {
+            return true;
+        }
+        else {
+            const lastMessage = chatState.messages[chatState.messages.length - 1];
+            if (lastMessage.userName === 'Bot') {
+                return lastMessage.content.length < 1;
+            } else {
+                return true;
+            }
+        }
+    }
+
     return (
         <div className={classes.root}>
             <div className={classes.typingIndicator}>
@@ -312,6 +328,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
                                 abortController?.abort();
                                 setAbortController(undefined);
                             }}
+                            disabled={shouldDisableBotCancellation(chatState)}
                             title="Cancel message button"
                             aria-label="Cancel button"
                         />

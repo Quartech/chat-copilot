@@ -1262,9 +1262,11 @@ public class ChatPlugin
     )
     {
         var chatMessage = CopilotChatMessage.CreateBotResponseMessage(chatId, content, prompt, citations, tokenUsage);
-        await this
-            ._messageRelayHubContext.Clients.Group(chatId)
-            .SendAsync("ReceiveMessage", chatId, userId, chatMessage, cancellationToken);
+        if (!cancellationToken.IsCancellationRequested) {
+            await this
+                ._messageRelayHubContext.Clients.Group(chatId)
+                .SendAsync("ReceiveMessage", chatId, userId, chatMessage, cancellationToken);
+        }
         return chatMessage;
     }
 
