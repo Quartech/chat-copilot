@@ -3,6 +3,7 @@ import { AuthHelper } from '../..//libs/auth/AuthHelper';
 import { AppState, useClasses } from '../../App';
 import Header from '../header/Header';
 import Alerts from '../shared/Alerts';
+import LoadingSpinner from '../shared/LoadingSpinner';
 import { BackendProbe, ChatView, Error, Loading } from '../views';
 
 const Chat = ({
@@ -26,6 +27,7 @@ const Chat = ({
     return (
         <div className={classes.container}>
             <Alerts />
+            <LoadingSpinner />
             <Header appState={appState} setAppState={setAppState} showPluginsAndSettings={true} />
             {appState === AppState.ProbeForBackend && <BackendProbe onBackendFound={onBackendFound} />}
             {appState === AppState.SettingUserInfo && (

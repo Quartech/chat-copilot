@@ -15,12 +15,9 @@ import {
 } from '@fluentui/react-components';
 import { Info20Regular } from '@fluentui/react-icons';
 import React, { useEffect, useId, useState } from 'react';
-import { useDispatch } from 'react-redux';
 import { useSpecialization } from '../../../libs/hooks';
-import { AlertType } from '../../../libs/models/AlertType';
 import { useAppSelector } from '../../../redux/app/hooks';
 import { RootState } from '../../../redux/app/store';
-import { addAlert } from '../../../redux/features/app/appSlice';
 import { ImageUploaderPreview } from '../../files/ImageUploaderPreview';
 
 interface ISpecializationFile {
@@ -97,7 +94,6 @@ const Rows = 8;
  */
 export const SpecializationManager: React.FC = () => {
     const classes = useClasses();
-    const dispatch = useDispatch();
     const specialization = useSpecialization();
 
     const { specializations, specializationIndexes, chatCompletionDeployments, selectedId } = useAppSelector(
@@ -168,13 +164,6 @@ export const SpecializationManager: React.FC = () => {
                 documentCount,
             });
         }
-        const message = `Specialization {${name}} saved successfully.`;
-        dispatch(
-            addAlert({
-                type: AlertType.Success,
-                message,
-            }),
-        );
     };
 
     const resetSpecialization = () => {
@@ -225,15 +214,8 @@ export const SpecializationManager: React.FC = () => {
     }, [editMode, selectedId, specializations]);
 
     const onDeleteSpecialization = () => {
-        void specialization.deleteSpecialization(id);
+        void specialization.deleteSpecialization(id, name);
         resetSpecialization();
-        const message = `Specialization {${name}} deleted successfully.`;
-        dispatch(
-            addAlert({
-                type: AlertType.Warning,
-                message,
-            }),
-        );
     };
 
     /**
