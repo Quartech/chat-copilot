@@ -285,6 +285,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
                             chatState.disabled ||
                             (chatState.importingDocuments && chatState.importingDocuments.length > 0)
                         }
+                        size="large"
                         appearance="transparent"
                         icon={<AttachRegular />}
                         onClick={() => documentFileRef.current?.click()}
@@ -296,6 +297,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
                 <div className={classes.essentials}>
                     {recognizer && (
                         <Button
+                            size="large"
                             appearance="transparent"
                             disabled={chatState.disabled || isListening}
                             icon={<MicRegular />}
@@ -304,6 +306,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
                     )}
                     <Button
                         title="Submit"
+                        size="large"
                         aria-label="Submit message"
                         appearance="transparent"
                         icon={<SendRegular />}
