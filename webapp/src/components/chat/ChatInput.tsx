@@ -45,7 +45,7 @@ const useClasses = makeStyles({
         width: '100%',
     },
     textarea: {
-        maxHeight: '80px',
+        resize: 'none',
     },
     controls: {
         display: 'flex',
