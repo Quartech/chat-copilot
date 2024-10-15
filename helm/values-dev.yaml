@@ -5,6 +5,13 @@ image:
 # webapp specific values
 ###############
 
+fe:
+  env:
+    - name: "REACT_APP_BACKEND_URI"
+      value: "https://q-pilot-dev.api.pegasus.quartechlab.com/"
+    - name: "REACT_APP_ENVIRONMENT"
+      value: "development"
+
 webapp:
   image:
     tag: "dev"

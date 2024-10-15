@@ -53,6 +53,7 @@ public class ChatController : ControllerBase, IDisposable
 
     private const string ChatPluginName = nameof(ChatPlugin);
     private const string ChatFunctionName = "Chat";
+    private const string SilentChatFunctionName = "ChatSilent";
     private const string GeneratingResponseClientCall = "ReceiveBotResponseStatus";
 
     public ChatController(
@@ -85,6 +86,7 @@ public class ChatController : ControllerBase, IDisposable
     /// <param name="authInfo">Auth info for the current request.</param>
     /// <param name="ask">Prompt along with its parameters.</param>
     /// <param name="chatId">Chat ID.</param>
+    /// <param name="silent">Query param that will determine whether this exchange will be processed as part of the overall conversation or not.</param>
     /// <returns>Results containing the response from the model.</returns>
     [Route("chats/{chatId:guid}/messages")]
     [HttpPost]
@@ -101,7 +103,8 @@ public class ChatController : ControllerBase, IDisposable
         [FromServices] ChatParticipantRepository chatParticipantRepository,
         [FromServices] IAuthInfo authInfo,
         [FromBody] Ask ask,
-        [FromRoute] Guid chatId
+        [FromRoute] Guid chatId,
+        [FromQuery] bool silent = false
     )
     {
         this._logger.LogDebug("Chat message received.");
@@ -129,9 +132,9 @@ public class ChatController : ControllerBase, IDisposable
 
         // Register hosted plugins that have been enabled
         await this.RegisterHostedFunctionsAsync(kernel, chat!.EnabledPlugins);
-
+        string ChatFunction = silent ? SilentChatFunctionName : ChatFunctionName;
         // Get the function to invoke
-        KernelFunction? chatFunction = kernel.Plugins.GetFunction(ChatPluginName, ChatFunctionName);
+        KernelFunction? chatFunction = kernel.Plugins.GetFunction(ChatPluginName, ChatFunction);
 
         // Run the function.
         FunctionResult? result = null;
@@ -143,18 +146,27 @@ public class ChatController : ControllerBase, IDisposable
                 : null;
 
             result = await kernel.InvokeAsync(chatFunction!, contextVariables, cts?.Token ?? default);
-            this._telemetryService.TrackPluginFunction(ChatPluginName, ChatFunctionName, true);
+            this._telemetryService.TrackPluginFunction(ChatPluginName, ChatFunction, true);
         }
         catch (Exception ex)
         {
             if (ex is OperationCanceledException || ex.InnerException is OperationCanceledException)
             {
                 // Log the timeout and return a 504 response
-                this._logger.LogError("The {FunctionName} operation timed out.", ChatFunctionName);
-                return this.StatusCode(StatusCodes.Status504GatewayTimeout, $"The chat {ChatFunctionName} timed out.");
+                this._logger.LogError("The {FunctionName} operation timed out.", ChatFunction);
+                return this.StatusCode(StatusCodes.Status504GatewayTimeout, $"The chat {ChatFunction} timed out.");
             }
 
-            this._telemetryService.TrackPluginFunction(ChatPluginName, ChatFunctionName, false);
+            if (
+                ex is HttpOperationException
+                && ex.Message.Contains("Service request failed.", System.StringComparison.OrdinalIgnoreCase)
+            )
+            {
+                this._logger.LogError("Something went wrong while the AI chat service processed the request.");
+                return this.StatusCode(StatusCodes.Status500InternalServerError, "Service request failed.");
+            }
+
+            this._telemetryService.TrackPluginFunction(ChatPluginName, ChatFunction, false);
 
             throw;
         }

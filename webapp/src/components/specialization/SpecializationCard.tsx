@@ -12,14 +12,17 @@ import {
 import { MoreHorizontal20Regular } from '@fluentui/react-icons';
 import * as React from 'react';
 import { useChat } from '../../libs/hooks';
+import { AlertType } from '../../libs/models/AlertType';
 import { ISpecialization } from '../../libs/models/Specialization';
 import { useAppDispatch, useAppSelector } from '../../redux/app/hooks';
 import { RootState } from '../../redux/app/store';
+import { setChatSpecialization } from '../../redux/features/admin/adminSlice';
+import { addAlert } from '../../redux/features/app/appSlice';
 import {
     editConversationSpecialization,
     editConversationSystemDescription,
+    updateSuggestions,
 } from '../../redux/features/conversations/conversationsSlice';
-import { setChatSpecialization } from '../../redux/features/admin/adminSlice';
 
 const useStyles = makeStyles({
     main: {
@@ -43,10 +46,11 @@ const useStyles = makeStyles({
         textOverflow: 'ellipsis',
     },
 
-    smallRadius: { borderRadius: tokens.borderRadiusSmall },
+    cardImage: { borderRadius: tokens.borderRadiusSmall, objectFit: 'contain' },
 
-    grayBackground: {
+    cardPreview: {
         backgroundColor: tokens.colorNeutralBackground3,
+        height: '100px',
     },
 
     logoBadge: {
@@ -85,19 +89,36 @@ export const SpecializationCard: React.FC<SpecializationItemProps> = ({ speciali
     const { specializations } = useAppSelector((state: RootState) => state.admin);
     // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     const onAddChat = () => {
-        void chat.editChatSpecialization(selectedId, specialization.id).finally(() => {
-            const specializationMatch = specializations.find((spec) => spec.id === specialization.id);
-            if (specializationMatch) {
-                dispatch(setChatSpecialization(specializationMatch));
-            }
-            dispatch(editConversationSpecialization({ id: selectedId, specializationId: specialization.id }));
-            dispatch(
-                editConversationSystemDescription({
-                    id: selectedId,
-                    newSystemDescription: specialization.roleInformation,
-                }),
+        void chat
+            .selectSpecializationAndBeginChat(specialization.id, selectedId)
+            .then(() => {
+                const specializationMatch = specializations.find((spec) => spec.id === specialization.id);
+                if (specializationMatch) {
+                    dispatch(setChatSpecialization(specializationMatch));
+                }
+                dispatch(editConversationSpecialization({ id: selectedId, specializationId: specialization.id }));
+                dispatch(
+                    editConversationSystemDescription({
+                        id: selectedId,
+                        newSystemDescription: specialization.roleInformation,
+                    }),
+                );
+            })
+            .catch(() => {
+                dispatch(
+                    addAlert({ message: 'Unable to select the specified specialization.', type: AlertType.Error }),
+                );
+            })
+            .then(() =>
+                chat
+                    .getSuggestions({ chatId: selectedId, specializationId: specialization.id })
+                    .then((response) => {
+                        dispatch(updateSuggestions({ id: selectedId, chatSuggestionMessage: response }));
+                    })
+                    .catch((reason) => {
+                        console.error(`Failed to retrieve suggestions: ${reason}`);
+                    }),
             );
-        });
     };
 
     const truncate = (str: string) => {
@@ -112,16 +133,16 @@ export const SpecializationCard: React.FC<SpecializationItemProps> = ({ speciali
     return (
         <div className={styles.root} key={cardDivId}>
             <Card className={styles.card} data-testid="addNewBotMenuItem" onClick={onAddChat} key={cardId}>
-                <CardPreview className={styles.grayBackground}>
+                <CardPreview className={styles.cardPreview}>
                     <img
-                        className={styles.smallRadius}
+                        className={styles.cardImage}
                         src={getimagefilepath(specialization.imageFilePath)}
                         alt="Presentation Preview"
                     />
                 </CardPreview>
 
                 <CardHeader
-                    header={<Text weight="semibold"> {specialization.name}</Text>}
+                    header={<Text weight="semibold">{specialization.name}</Text>}
                     description={<Caption1 className={styles.caption}>{truncate(specialization.description)}</Caption1>}
                     action={
                         <div

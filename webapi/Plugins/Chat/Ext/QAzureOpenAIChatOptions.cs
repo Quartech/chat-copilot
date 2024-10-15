@@ -12,62 +12,71 @@ namespace CopilotChat.WebApi.Plugins.Chat.Ext;
 public class QAzureOpenAIChatOptions
 {
     public const string PropertyName = "QAzureOpenAIChatConfig";
+    public bool Enabled { get; set; } = false;
+    public string DefaultModel { get; set; } = "";
 
     public string DefaultSpecializationDescription { get; set; } = "";
     public string DefaultSpecializationImage { get; set; } = "";
     public string DefaultSpecializationIcon { get; set; } = "";
     public string AdminGroupMembershipId { get; set; } = "";
+    public bool DefaultRestrictResultScope { get; set; } = false;
+    public int DefaultStrictness { get; set; } = 0;
+    public int DefaultDocumentCount { get; set; } = 0;
+
+    [Required]
+    public IList<OpenAIDeploymentConnection> OpenAIDeploymentConnections { get; set; } =
+        new List<OpenAIDeploymentConnection>();
+
+    [Required]
+    public IList<AISearchDeploymentConnection> AISearchDeploymentConnections { get; set; } =
+        new List<AISearchDeploymentConnection>();
 
     [Required]
     public IList<QSpecializationIndex> SpecializationIndexes { get; set; } = new List<QSpecializationIndex>();
 
-    public bool Enabled { get; set; } = false;
-    public AzureConfig AzureConfig { get; set; } = new AzureConfig();
-}
+    [Required]
+    public BlobStorageOption BlobStorage { get; set; } = new BlobStorageOption();
 
-/// <summary>
-/// Normalized representation of Azure configuration.
-/// </summary>
-public class AzureConfig
-{
-#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
-    public Uri? Endpoint { get; set; } = null;
-#pragma warning restore CS8618
-    public string APIKey { get; set; } = string.Empty;
-    public VectorizationSourceOption VectorizationSource { get; set; } = new VectorizationSourceOption();
-}
+    public class OpenAIDeploymentConnection
+    {
+        public string Name { get; set; } = string.Empty;
+        public Uri? Endpoint { get; set; } = null;
+        public string APIKey { get; set; } = string.Empty;
+        public IList<string> ChatCompletionDeployments { get; set; } = new List<string>();
+        public IList<string> EmbeddingDeployments { get; set; } = new List<string>();
+    }
 
-/// <summary>
-/// Normalized representation of specialization Index
-/// </summary>
-public class QSpecializationIndex
-{
-    public string IndexName { get; set; } = string.Empty;
-    public string QueryType { get; set; } = string.Empty;
-    public string SemanticConfiguration { get; set; } = "default";
-    public bool RestrictResultScope { get; set; } = true;
-    public FieldMappingOption? FieldMapping { get; set; } = new FieldMappingOption();
-}
+    public class AISearchDeploymentConnection
+    {
+        public string Name { get; set; } = string.Empty;
+        public Uri? Endpoint { get; set; } = null;
+        public string APIKey { get; set; } = string.Empty;
+    }
 
-/// <summary>
-/// Normalized representation of Field Mapping option
-/// </summary>
-public class FieldMappingOption
-{
-#pragma warning disable CA1056 // URI-like properties should not be strings
-    public string UrlFieldName { get; set; } = "url";
-#pragma warning restore CA1056 // URI-like properties should not be strings
-    public string TitleFieldName { get; set; } = "title";
-    public string FilepathFieldName { get; set; } = "filepath";
-}
+    public class QSpecializationIndex
+    {
+        public string IndexName { get; set; } = string.Empty;
+        public string QueryType { get; set; } = string.Empty;
+        public string SemanticConfiguration { get; set; } = "default";
+        public bool RestrictResultScope { get; set; } = true;
 
-/// <summary>
-/// Normalized representation of Vectorization source.
-/// </summary>
-public class VectorizationSourceOption
-{
-#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
-    public Uri Endpoint { get; set; }
-#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
-    public string APIKey { get; set; } = string.Empty;
+        public string AISearchDeploymentConnection { get; set; } = string.Empty;
+        public string OpenAIDeploymentConnection { get; set; } = string.Empty;
+        public string EmbeddingDeployment { get; set; } = string.Empty;
+        public FieldMappingOption? FieldMapping { get; set; } = new FieldMappingOption();
+    }
+
+    public class FieldMappingOption
+    {
+#pragma warning disable CA1056
+        public string UrlFieldName { get; set; } = "url";
+        public string TitleFieldName { get; set; } = "title";
+        public string FilepathFieldName { get; set; } = "filepath";
+    }
+
+    public class BlobStorageOption
+    {
+        public string ConnectionString { get; set; } = string.Empty;
+        public string SpecializationContainerName { get; set; } = "specialization";
+    }
 }

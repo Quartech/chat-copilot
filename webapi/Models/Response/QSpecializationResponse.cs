@@ -48,6 +48,18 @@ public class QSpecializationResponse
     public string? IndexName { get; set; } = string.Empty;
 
     /// <summary>
+    /// Initial chat response of the specialization
+    /// </summary>
+    [JsonPropertyName("initialChatMessage")]
+    public string? InitialChatMessage { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Deployment of the specialization
+    /// </summary>
+    [JsonPropertyName("deployment")]
+    public string? Deployment { get; set; } = string.Empty;
+
+    /// <summary>
     /// Image FilePath of the specialization.
     /// </summary>
     [JsonPropertyName("imageFilePath")]
@@ -68,6 +80,24 @@ public class QSpecializationResponse
     /// <summary>
     /// List of group memberships for the user.
     /// </summary>
+    [JsonPropertyName("restrictResultScope")]
+    public bool? RestrictResultScope { get; set; } = false;
+
+    /// <summary>
+    /// List of group memberships for the user.
+    /// </summary>
+    [JsonPropertyName("strictness")]
+    public int? Strictness { get; set; } = 0;
+
+    /// <summary>
+    /// List of group memberships for the user.
+    /// </summary>
+    [JsonPropertyName("documentCount")]
+    public int? DocumentCount { get; set; } = 0;
+
+    /// <summary>
+    /// List of group memberships for the user.
+    /// </summary>
     public IList<string> GroupMemberships { get; set; } = new List<string>();
 
     /// <summary>
@@ -83,29 +113,18 @@ public class QSpecializationResponse
         this.ImageFilePath = specializationSource.ImageFilePath;
         this.IconFilePath = specializationSource.IconFilePath;
         this.isActive = specializationSource.IsActive;
+        this.RestrictResultScope = specializationSource.RestrictResultScope;
+        this.Strictness = specializationSource.Strictness;
+        this.DocumentCount = specializationSource.DocumentCount;
         this.GroupMemberships = specializationSource.GroupMemberships;
+        this.InitialChatMessage = specializationSource.InitialChatMessage;
         if (specializationSource.IndexName != null)
         {
             this.IndexName = specializationSource.IndexName;
         }
-    }
-
-    /// <summary>
-    /// Creates new instance from default specialization dictionary.
-    /// </summary>
-    public QSpecializationResponse(Dictionary<string, string> specializationProps)
-    {
-        this.Id = specializationProps["id"];
-        this.Label = specializationProps["label"];
-        this.Name = specializationProps["name"];
-        this.Description = specializationProps["description"];
-        this.RoleInformation = specializationProps["roleInformation"];
-        this.ImageFilePath = specializationProps["imageFilePath"];
-        this.IconFilePath = specializationProps["iconFilePath"];
-        if (specializationProps.TryGetValue("indexName", out string? value))
+        if (specializationSource.Deployment != null)
         {
-            this.IndexName = value;
+            this.Deployment = specializationSource.Deployment;
         }
-        this.isActive = true;
     }
 }

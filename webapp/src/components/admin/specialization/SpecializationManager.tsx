@@ -1,9 +1,32 @@
+import {
+    Button,
+    Checkbox,
+    CheckboxOnChangeData,
+    Dropdown,
+    Input,
+    makeStyles,
+    Option,
+    shorthands,
+    Slider,
+    SliderOnChangeData,
+    Textarea,
+    tokens,
+    Tooltip,
+} from '@fluentui/react-components';
+import { Info20Regular } from '@fluentui/react-icons';
 import React, { useEffect, useId, useState } from 'react';
-
-import { Button, Dropdown, Input, makeStyles, Option, shorthands, Textarea, tokens } from '@fluentui/react-components';
+import { useDispatch } from 'react-redux';
 import { useSpecialization } from '../../../libs/hooks';
+import { AlertType } from '../../../libs/models/AlertType';
 import { useAppSelector } from '../../../redux/app/hooks';
 import { RootState } from '../../../redux/app/store';
+import { addAlert } from '../../../redux/features/app/appSlice';
+import { ImageUploaderPreview } from '../../files/ImageUploaderPreview';
+
+interface ISpecializationFile {
+    file: File | null;
+    src: string | null;
+}
 
 const useClasses = makeStyles({
     root: {
@@ -42,13 +65,44 @@ const useClasses = makeStyles({
         },
         ...shorthands.padding('10px'),
     },
+    fileUploadContainer: {
+        display: 'flex',
+        flexDirection: 'row',
+        ...shorthands.gap(tokens.spacingHorizontalXXXL),
+    },
+    imageContainer: {
+        display: 'flex',
+        flexDirection: 'column',
+        ...shorthands.gap(tokens.spacingVerticalSNudge),
+    },
+    slidersContainer: {
+        display: 'flex',
+        flexDirection: 'column',
+        ...shorthands.gap(tokens.spacingVerticalSNudge),
+        ...shorthands.marginInline('10px'),
+    },
+    slider: {
+        display: 'flex',
+        ...shorthands.gap(tokens.spacingVerticalSNudge),
+        alignItems: 'center',
+    },
 });
 
 const Rows = 8;
 
+/**
+ * Specialization Manager component.
+ *
+ * @returns {*}
+ */
 export const SpecializationManager: React.FC = () => {
-    const specialization = useSpecialization();
     const classes = useClasses();
+    const dispatch = useDispatch();
+    const specialization = useSpecialization();
+
+    const { specializations, specializationIndexes, chatCompletionDeployments, selectedId } = useAppSelector(
+        (state: RootState) => state.admin,
+    );
 
     const [editMode, setEditMode] = useState(false);
 
@@ -57,15 +111,27 @@ export const SpecializationManager: React.FC = () => {
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
     const [roleInformation, setRoleInformation] = useState('');
+    const [initialChatMessage, setInitialChatMessage] = useState('');
     const [indexName, setIndexName] = useState('');
-    const [imageFilePath, setImageFilePath] = useState('');
-    const [iconFilePath, setIconFilePath] = useState('');
+    const [deployment, setDeployment] = useState('');
     const [membershipId, setMembershipId] = useState<string[]>([]);
+    const [imageFile, setImageFile] = useState<ISpecializationFile>({ file: null, src: null });
+    const [iconFile, setIconFile] = useState<ISpecializationFile>({ file: null, src: null });
+    const [restrictResultScope, setRestrictResultScope] = useState(false);
+    const [strictness, setStrictness] = useState(0);
+    const [documentCount, setDocumentCount] = useState(0);
 
+    const [isValid, setIsValid] = useState(false);
     const dropdownId = useId();
 
-    const { specializations, specializationIndexes, selectedId } = useAppSelector((state: RootState) => state.admin);
-
+    /**
+     * Save specialization by creating or updating.
+     *
+     * Note: When we save a specialization we send the actual files (image / icon) to the server.
+     * On fetch we get the file paths from the Specialization payload and display them.
+     *
+     * @returns {void}
+     */
     const onSaveSpecialization = () => {
         if (editMode) {
             void specialization.updateSpecialization(id, {
@@ -74,11 +140,17 @@ export const SpecializationManager: React.FC = () => {
                 description,
                 roleInformation,
                 indexName,
-                imageFilePath,
-                iconFilePath,
+                imageFile: imageFile.file,
+                iconFile: iconFile.file,
+                deleteImage: !imageFile.src, // Set the delete flag if the src is null
+                deleteIcon: !iconFile.src, // Set the delete flag if the src is null,
+                deployment,
                 groupMemberships: membershipId,
+                initialChatMessage,
+                restrictResultScope,
+                strictness,
+                documentCount,
             });
-            resetSpecialization();
         } else {
             void specialization.createSpecialization({
                 label,
@@ -86,12 +158,23 @@ export const SpecializationManager: React.FC = () => {
                 description,
                 roleInformation,
                 indexName,
-                imageFilePath,
-                iconFilePath,
+                imageFile: imageFile.file,
+                iconFile: iconFile.file,
+                deployment,
                 groupMemberships: membershipId,
+                initialChatMessage,
+                restrictResultScope,
+                strictness,
+                documentCount,
             });
-            resetSpecialization();
         }
+        const message = `Specialization {${name}} saved successfully.`;
+        dispatch(
+            addAlert({
+                type: AlertType.Success,
+                message,
+            }),
+        );
     };
 
     const resetSpecialization = () => {
@@ -101,9 +184,14 @@ export const SpecializationManager: React.FC = () => {
         setDescription('');
         setRoleInformation('');
         setMembershipId([]);
-        setImageFilePath('');
-        setIconFilePath('');
+        setImageFile({ file: null, src: null });
+        setIconFile({ file: null, src: null });
         setIndexName('');
+        setDeployment('');
+        setInitialChatMessage('');
+        setRestrictResultScope(false);
+        setStrictness(3);
+        setDocumentCount(5);
     };
 
     useEffect(() => {
@@ -117,9 +205,18 @@ export const SpecializationManager: React.FC = () => {
                 setDescription(specializationObj.description);
                 setRoleInformation(specializationObj.roleInformation);
                 setMembershipId(specializationObj.groupMemberships);
-                setImageFilePath(specializationObj.imageFilePath);
-                setIconFilePath(specializationObj.iconFilePath);
-                setIndexName(specializationObj.indexName ?? '');
+                setDeployment(specializationObj.deployment);
+                setInitialChatMessage(specializationObj.initialChatMessage);
+                setRestrictResultScope(specializationObj.restrictResultScope);
+                setStrictness(specializationObj.strictness);
+                setDocumentCount(specializationObj.documentCount);
+                /**
+                 * Set the image and icon file paths
+                 * Note: The file is set to null because we only retrieve the file path from the server
+                 */
+                setImageFile({ file: null, src: specializationObj.imageFilePath });
+                setIconFile({ file: null, src: specializationObj.iconFilePath });
+                setIndexName(specializationObj.indexName);
             }
         } else {
             setEditMode(false);
@@ -127,17 +224,44 @@ export const SpecializationManager: React.FC = () => {
         }
     }, [editMode, selectedId, specializations]);
 
-    const onDeleteChat = () => {
+    const onDeleteSpecialization = () => {
         void specialization.deleteSpecialization(id);
         resetSpecialization();
+        const message = `Specialization {${name}} deleted successfully.`;
+        dispatch(
+            addAlert({
+                type: AlertType.Warning,
+                message,
+            }),
+        );
     };
 
-    const [isValid, setIsValid] = useState(false);
+    /**
+     * Callback function for handling changes to the "Limit responses to you data content" checkbox.
+     */
+    const onChangeRestrictResultScope = (_event?: React.ChangeEvent<HTMLInputElement>, data?: CheckboxOnChangeData) => {
+        setRestrictResultScope(!!data?.checked);
+    };
+
+    /**
+     * Callback function for handling changes to the "Strictness" slider.
+     */
+    const onChangeStrictness = (_event?: React.ChangeEvent<HTMLInputElement>, data?: SliderOnChangeData) => {
+        setStrictness(data?.value ?? 0);
+    };
+
+    /**
+     * Callback function for handling changes to the "Retrieved Documents" slider.
+     */
+    const onChangeDocumentCount = (_event?: React.ChangeEvent<HTMLInputElement>, data?: SliderOnChangeData) => {
+        setDocumentCount(data?.value ?? 0);
+    };
+
     useEffect(() => {
-        const isValid = !!label && !!name && !!roleInformation;
+        const isValid = !!label && !!name && !!roleInformation && membershipId.length > 0;
         setIsValid(isValid);
         return () => {};
-    }, [specializations, selectedId, label, name, roleInformation]);
+    }, [specializations, selectedId, label, name, roleInformation, membershipId]);
 
     return (
         <div className={classes.scrollableContainer}>
@@ -169,7 +293,6 @@ export const SpecializationManager: React.FC = () => {
                 <Dropdown
                     clearable
                     id="index-name"
-                    aria-labelledby={dropdownId}
                     onOptionSelect={(_control, data) => {
                         setIndexName(data.optionValue ?? '');
                     }}
@@ -179,6 +302,63 @@ export const SpecializationManager: React.FC = () => {
                         <Option key={specializationIndex}>{specializationIndex}</Option>
                     ))}
                 </Dropdown>
+                <label htmlFor="deployment">Deployment</label>
+                <Dropdown
+                    clearable
+                    id="deployment"
+                    aria-labelledby={dropdownId}
+                    onOptionSelect={(_control, data) => {
+                        setDeployment(data.optionValue ?? '');
+                    }}
+                    value={deployment}
+                >
+                    {chatCompletionDeployments.map((deployment) => (
+                        <Option key={deployment} value={deployment}>
+                            {deployment}
+                        </Option>
+                    ))}
+                </Dropdown>
+                <div>
+                    <Checkbox
+                        label="Limit responses to your data content"
+                        checked={restrictResultScope}
+                        onChange={onChangeRestrictResultScope}
+                    />
+                    <Tooltip
+                        content={'Enabling this will limit responses specific to your data content'}
+                        relationship="label"
+                    >
+                        <Button icon={<Info20Regular />} appearance="transparent" />
+                    </Tooltip>
+                </div>
+                <div className={classes.slidersContainer}>
+                    <label htmlFor="strictness">Strictness (1-5)</label>
+                    <div id="strictness" className={classes.slider}>
+                        <Slider min={1} max={5} value={strictness} onChange={onChangeStrictness} />
+                        <span>{strictness}</span>
+                        <Tooltip
+                            content={
+                                'Strictness sets the threshold to categorize documents as relevant to your queries. Raising strictness means a higher threshold for relevance and filtering out more documents that are less relevant for responses. Very high strictness could cause failure to generate responses due to limited available documents. The default strictness is 3.'
+                            }
+                            relationship="label"
+                        >
+                            <Button icon={<Info20Regular />} appearance="transparent" />
+                        </Tooltip>
+                    </div>
+                    <label htmlFor="documentCount">Retrieved Documents (3-20)</label>
+                    <div id="documentCount" className={classes.slider}>
+                        <Slider min={3} max={20} value={documentCount} onChange={onChangeDocumentCount} />
+                        <span>{documentCount}</span>
+                        <Tooltip
+                            content={
+                                'This specifies the number of top-scoring documents from your data index used to generate responses. You want to increase the value when you have short documents or want to provide more context. The default value is 5. Note: if you set the value to 20 but only have 10 documents in your index, only 10 will be used.'
+                            }
+                            relationship="label"
+                        >
+                            <Button icon={<Info20Regular />} appearance="transparent" />
+                        </Tooltip>
+                    </div>
+                </div>
                 <label htmlFor="description">
                     Short Description<span className={classes.required}>*</span>
                 </label>
@@ -205,6 +385,19 @@ export const SpecializationManager: React.FC = () => {
                         setRoleInformation(data.value);
                     }}
                 />
+                <label htmlFor="initialMessage">
+                    Initial Chat Message<span className={classes.required}>*</span>
+                </label>
+                <Textarea
+                    id="initialMessage"
+                    required
+                    resize="vertical"
+                    value={initialChatMessage}
+                    rows={2}
+                    onChange={(_event, data) => {
+                        setInitialChatMessage(data.value);
+                    }}
+                />
                 <label htmlFor="membership">
                     Entra Membership IDs<span className={classes.required}>*</span>
                 </label>
@@ -213,27 +406,38 @@ export const SpecializationManager: React.FC = () => {
                     required
                     value={membershipId.join(', ')}
                     onChange={(_event, data) => {
+                        if (!data.value) {
+                            setMembershipId([]);
+                            return;
+                        }
                         setMembershipId(data.value.split(', '));
                     }}
                 />
-                <label htmlFor="image-url">Image URL</label>
-                <Input
-                    id="image-url"
-                    value={imageFilePath}
-                    onChange={(_event, data) => {
-                        setImageFilePath(data.value);
-                    }}
-                />
-                <label htmlFor="image-url">Bot Icon URL</label>
-                <Input
-                    id="icon-url"
-                    value={iconFilePath}
-                    onChange={(_event, data) => {
-                        setIconFilePath(data.value);
-                    }}
-                />
+                <div className={classes.fileUploadContainer}>
+                    <div className={classes.imageContainer}>
+                        <label htmlFor="image-url">Specialization Image</label>
+                        <ImageUploaderPreview
+                            buttonLabel="Upload Image"
+                            file={imageFile.file ?? imageFile.src}
+                            onFileUpdate={(file, src) => {
+                                setImageFile({ file, src });
+                            }}
+                        />
+                    </div>
+                    <div className={classes.imageContainer}>
+                        <label htmlFor="image-url">Specialization Icon</label>
+                        <ImageUploaderPreview
+                            buttonLabel="Upload Icon"
+                            file={iconFile.file ?? iconFile.src}
+                            onFileUpdate={(file, src) => {
+                                // Set the src to null if the file is falsy ie: '' or null
+                                setIconFile({ file, src: src || null });
+                            }}
+                        />
+                    </div>
+                </div>
                 <div className={classes.controls}>
-                    <Button appearance="secondary" disabled={!id} onClick={onDeleteChat}>
+                    <Button appearance="secondary" disabled={!id} onClick={onDeleteSpecialization}>
                         Delete
                     </Button>
 

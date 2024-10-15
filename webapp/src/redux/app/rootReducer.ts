@@ -1,12 +1,12 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 import { AnyAction, combineReducers, createAction, Reducer } from '@reduxjs/toolkit';
+import adminReducer from '../features/admin/adminSlice';
 import appReducer from '../features/app/appSlice';
 import conversationsReducer from '../features/conversations/conversationsSlice';
 import pluginsReducer from '../features/plugins/pluginsSlice';
-import usersReducer from '../features/users/usersSlice';
 import searchReducer from '../features/search/searchSlice';
-import adminReducer from '../features/admin/adminSlice';
+import usersReducer from '../features/users/usersSlice';
 
 import { RootState } from './store';
 

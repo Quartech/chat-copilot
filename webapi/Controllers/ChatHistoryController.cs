@@ -37,6 +37,7 @@ public class ChatHistoryController : ControllerBase
 {
     private const string ChatEditedClientCall = "ChatEdited";
     private const string ChatDeletedClientCall = "ChatDeleted";
+    private const string ChatHistoryDeletedClientCall = "ChatHistoryDeleted";
     private const string GetChatRoute = "GetChatRoute";
 
     private readonly ILogger<ChatHistoryController> _logger;
@@ -80,7 +81,10 @@ public class ChatHistoryController : ControllerBase
         this._participantRepository = participantRepository;
         this._sourceRepository = sourceRepository;
         this._promptOptions = promptsOptions.Value;
-        this._qSpecializationService = new QSpecializationService(specializationSourceRepository);
+        this._qSpecializationService = new QSpecializationService(
+            specializationSourceRepository,
+            specializationOptions.Value
+        );
         this._authInfo = authInfo;
     }
 
@@ -101,7 +105,12 @@ public class ChatHistoryController : ControllerBase
         }
         // Create a new chat session
         var systemDescription = this._promptOptions.SystemDescription;
-        var newChat = new ChatSession(chatParameters.Title, systemDescription, chatParameters.specializationId);
+        var newChat = new ChatSession(
+            chatParameters.Title,
+            systemDescription,
+            chatParameters.specializationId,
+            chatParameters.Id
+        );
         await this._sessionRepository.CreateAsync(newChat);
         ChatSession? chat = null;
         if (await this._sessionRepository.TryFindByIdAsync(newChat.Id, callback: v => chat = v))
@@ -111,10 +120,19 @@ public class ChatHistoryController : ControllerBase
             await this._sessionRepository.UpsertAsync(chat);
         }
         //Save prompt - End
+
+        Specialization? specialization = null;
+        if (chatParameters.specializationId != "general")
+        {
+            specialization = await this._qSpecializationService.GetSpecializationAsync(chatParameters.specializationId);
+        }
+        var initialMessage =
+            specialization != null ? specialization.InitialChatMessage : this._promptOptions.InitialBotMessage;
+
         // Create initial bot message
         var chatMessage = CopilotChatMessage.CreateBotResponseMessage(
             newChat.Id,
-            this._promptOptions.InitialBotMessage,
+            initialMessage,
             string.Empty, // The initial bot message doesn't need a prompt.
             null,
             TokenUtils.EmptyTokenUsages()
@@ -401,9 +419,78 @@ public class ChatHistoryController : ControllerBase
     }
 
     /// <summary>
+    /// Delete the chat history of a chat session.
+    /// </summary>
+    [Route("chats/{chatId:guid}/history")]
+    [HttpDelete]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [Authorize(Policy = AuthPolicyName.RequireChatParticipant)]
+    public async Task<IActionResult> DeleteChatSessionHistoryAsync(
+        [FromServices] IHubContext<MessageRelayHub> messageRelayHubContext,
+        Guid chatId,
+        CancellationToken cancellationToken
+    )
+    {
+        var chatIdString = chatId.ToString();
+        ChatSession? chat = null;
+        try
+        {
+            // Make sure the chat session exists
+            chat = await this._sessionRepository.FindByIdAsync(chatIdString);
+        }
+        catch (KeyNotFoundException)
+        {
+            return this.NotFound($"No chat session found for chat id '{chatId}'.");
+        }
+
+        // Delete chat messages in chat session.
+        try
+        {
+            // Create and store the tasks for deleting chat messages.
+            var messages = await this._messageRepository.FindByChatIdAsync(chatIdString);
+
+            var deleteTasks = new List<Task>();
+            foreach (var message in messages)
+            {
+                deleteTasks.Add(this._messageRepository.DeleteAsync(message));
+            }
+            await Task.WhenAll(deleteTasks.ToArray());
+
+            // Create deleted chat history bot message
+            var chatMessage = CopilotChatMessage.CreateBotResponseMessage(
+                chat.Id,
+                this._promptOptions.ChatHistoryDeletedMessage,
+                string.Empty,
+                null,
+                TokenUtils.EmptyTokenUsages()
+            );
+            await this._messageRepository.CreateAsync(chatMessage);
+
+            await messageRelayHubContext
+                .Clients.Group(chatIdString)
+                .SendAsync(
+                    ChatHistoryDeletedClientCall,
+                    chatIdString,
+                    chatMessage,
+                    cancellationToken: cancellationToken
+                );
+        }
+        catch (AggregateException)
+        {
+            return this.StatusCode(500, $"Failed to delete chat history for chat id '{chatId}'.");
+        }
+
+        return this.NoContent();
+    }
+
+    /// <summary>
     /// Deletes all associated resources (messages, memories, participants) associated with a chat session.
     /// </summary>
     /// <param name="chatId">The chat id.</param>
+    /// <param name="shouldDeleteParticipants">Flag to determine if participants should be deleted.</param>
     private async Task DeleteChatResourcesAsync(string chatId, CancellationToken cancellationToken)
     {
         var cleanupTasks = new List<Task>();

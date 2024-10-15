@@ -11,6 +11,7 @@ using CopilotChat.WebApi.Options;
 using CopilotChat.WebApi.Plugins.Chat.Ext;
 using CopilotChat.WebApi.Services;
 using CopilotChat.WebApi.Storage;
+using CopilotChat.WebApi.Utilities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -42,11 +43,14 @@ public class SpecializationController : ControllerBase
     )
     {
         this._logger = logger;
-        this._qspecializationService = new QSpecializationService(specializationSourceRepository);
         this._qAzureOpenAIChatOptions = specializationOptions.Value;
         this._qAzureOpenAIChatExtension = new QAzureOpenAIChatExtension(
             specializationOptions.Value,
             specializationSourceRepository
+        );
+        this._qspecializationService = new QSpecializationService(
+            specializationSourceRepository,
+            specializationOptions.Value
         );
         this._promptOptions = promptsOptions.Value;
     }
@@ -69,8 +73,8 @@ public class SpecializationController : ControllerBase
             QSpecializationResponse qSpecializationResponse = new(specialization);
             specializationResponses.Add(qSpecializationResponse);
         }
-        var defaultSpecializationProps = this.GetDefaultSpecializationDict();
-        specializationResponses.Add(new QSpecializationResponse(defaultSpecializationProps));
+        var defaultSpecialization = this.GetDefaultSpecialization();
+        specializationResponses.Add(new QSpecializationResponse(defaultSpecialization));
         return this.Ok(specializationResponses);
     }
 
@@ -89,6 +93,21 @@ public class SpecializationController : ControllerBase
     }
 
     /// <summary>
+    /// Get all chat completion deployments.
+    /// </summary>
+    /// <returns>A list of chat completion deployments.</returns>
+    [HttpGet]
+    [Route("specialization/deployments")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public List<string> GetAllChatCompletionDeployments()
+    {
+        return this._qAzureOpenAIChatExtension.GetAllChatCompletionDeployments();
+    }
+
+    /// <summary>
     /// Creates a new specialization.
     /// </summary>
     /// <param name="authInfo">Auth info for the current request.</param>
@@ -103,24 +122,22 @@ public class SpecializationController : ControllerBase
     [ProducesResponseType(StatusCodes.Status504GatewayTimeout)]
     public async Task<IActionResult> CreateSpecializationAsync(
         [FromServices] IAuthInfo authInfo,
-        [FromBody] QSpecializationParameters qSpecializationParameters
+        [FromForm] QSpecializationMutate qSpecializationMutate
     )
     {
-        if (string.IsNullOrEmpty(qSpecializationParameters.ImageFilePath))
+        try
         {
-            qSpecializationParameters.ImageFilePath = this._qAzureOpenAIChatOptions.DefaultSpecializationImage;
-        }
-        if (string.IsNullOrEmpty(qSpecializationParameters.IconFilePath))
-        {
-            qSpecializationParameters.IconFilePath = this._qAzureOpenAIChatOptions.DefaultSpecializationIcon;
-        }
-        var _specializationsource = await this._qspecializationService.SaveSpecialization(qSpecializationParameters);
-        if (_specializationsource != null)
-        {
+            var _specializationsource = await this._qspecializationService.SaveSpecialization(qSpecializationMutate);
+
             QSpecializationResponse qSpecializationResponse = new(_specializationsource);
             return this.Ok(qSpecializationResponse);
         }
-        return this.StatusCode(500, $"Failed to create specialization for label '{qSpecializationParameters.label}'.");
+        catch (Azure.RequestFailedException ex)
+        {
+            this._logger.LogError(ex, "Specialization create threw an exception");
+
+            return this.StatusCode(500, $"Failed to create specialization for label '{qSpecializationMutate.Label}'.");
+        }
     }
 
     /// <summary>
@@ -135,21 +152,31 @@ public class SpecializationController : ControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> EditSpecializationAsync(
-        [FromBody] QSpecializationParameters qSpecializationParameters,
+        [FromForm] QSpecializationMutate qSpecializationMutate,
         [FromRoute] Guid specializationId
     )
     {
-        Specialization? specializationToEdit = await this._qspecializationService.UpdateSpecialization(
-            specializationId,
-            qSpecializationParameters
-        );
-        if (specializationToEdit != null)
+        try
         {
-            QSpecializationResponse qSpecializationResponse = new(specializationToEdit);
-            return this.Ok(qSpecializationResponse);
-        }
+            Specialization? specializationToEdit = await this._qspecializationService.UpdateSpecialization(
+                specializationId,
+                qSpecializationMutate
+            );
 
-        return this.StatusCode(500, $"Failed to update specialization for id '{specializationId}'.");
+            if (specializationToEdit != null)
+            {
+                QSpecializationResponse qSpecializationResponse = new(specializationToEdit);
+                return this.Ok(qSpecializationResponse);
+            }
+
+            return this.StatusCode(500, $"Failed to update specialization for id '{specializationId}'.");
+        }
+        catch (Azure.RequestFailedException ex)
+        {
+            this._logger.LogError(ex, "Specialization update threw an exception");
+
+            return this.StatusCode(500, $"Failed to edit specialization for id '{specializationId}'.");
+        }
     }
 
     /// <summary>
@@ -165,33 +192,52 @@ public class SpecializationController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> DisableSpecializationAsync(Guid specializationId)
     {
-        bool result = await this._qspecializationService.DeleteSpecialization(specializationId);
-        if (result)
+        try
         {
-            return this.Ok(specializationId);
+            Specialization specialization = await this._qspecializationService.GetSpecializationAsync(
+                specializationId.ToString()
+            );
+
+            bool result = await this._qspecializationService.DeleteSpecialization(specializationId);
+
+            if (result)
+            {
+                return this.Ok(specializationId);
+            }
+
+            return this.StatusCode(500, $"Failed to delete specialization for id '{specializationId}'.");
         }
-        return this.StatusCode(500, $"Failed to delete specialization for id '{specializationId}'.");
+        catch (Azure.RequestFailedException ex)
+        {
+            this._logger.LogError(ex, "Specialization delete threw an exception");
+
+            return this.StatusCode(500, $"Failed to delete specialization for id '{specializationId}'.");
+        }
     }
 
     /// <summary>
-    /// Gets the default specialization prtoperties
+    /// Gets the default specialization
     /// </summary>
-    /// <returns>The dictionary containing default specialization properties</returns>
-    private Dictionary<string, string> GetDefaultSpecializationDict()
+    /// <returns>An instance of <see cref="Specialization"/></returns>
+    private Specialization GetDefaultSpecialization()
     {
-        var defaultProps = new Dictionary<string, string>();
-        defaultProps.Add("id", "general");
-        defaultProps.Add("label", "general");
-        defaultProps.Add("name", "General");
-        defaultProps.Add(
-            "description",
-            string.IsNullOrEmpty(this._qAzureOpenAIChatOptions.DefaultSpecializationDescription)
+        var defaultSpecialization = new Specialization()
+        {
+            Id = "general",
+            Label = "general",
+            Name = "General",
+            Description = string.IsNullOrEmpty(this._qAzureOpenAIChatOptions.DefaultSpecializationDescription)
                 ? "This is a chat between an intelligent AI bot named Copilot and one or more participants. SK stands for Semantic Kernel, the AI platform used to build the bot."
-                : this._qAzureOpenAIChatOptions.DefaultSpecializationDescription
-        );
-        defaultProps.Add("roleInformation", this._promptOptions.SystemDescription);
-        defaultProps.Add("imageFilePath", this._qAzureOpenAIChatOptions.DefaultSpecializationImage);
-        defaultProps.Add("iconFilePath", this._qAzureOpenAIChatOptions.DefaultSpecializationIcon);
-        return defaultProps;
+                : this._qAzureOpenAIChatOptions.DefaultSpecializationDescription,
+            RoleInformation = this._promptOptions.SystemDescription,
+            ImageFilePath = ResourceUtils.GetImageAsDataUri(this._qAzureOpenAIChatOptions.DefaultSpecializationImage),
+            IconFilePath = ResourceUtils.GetImageAsDataUri(this._qAzureOpenAIChatOptions.DefaultSpecializationIcon),
+            Deployment = "gpt-4o",
+            RestrictResultScope = this._qAzureOpenAIChatOptions.DefaultRestrictResultScope,
+            Strictness = this._qAzureOpenAIChatOptions.DefaultStrictness,
+            DocumentCount = this._qAzureOpenAIChatOptions.DefaultDocumentCount,
+        };
+
+        return defaultSpecialization;
     }
 }
