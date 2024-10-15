@@ -9,10 +9,9 @@ public class RequestUtilsTest
     [TestMethod]
     public void GetSanitizedParameter_SanitizeParameterString()
     {
-        var expected = "ca138d45-9785-4ff3-9119-e77c5341ba95";
-        var parameterValue = $"ca138d45{Environment.NewLine}-9785-4ff3-9119-e77c5341ba95{Environment.NewLine}";
+        var expected = "request string parameter";
+        var parameterValue = $"request{Environment.NewLine} string parameter{Environment.NewLine}";
 
         Assert.AreEqual(expected, RequestUtils.GetSanitizedParameter(parameterValue));
     }
 }
-

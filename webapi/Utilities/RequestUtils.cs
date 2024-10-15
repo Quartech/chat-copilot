@@ -8,7 +8,7 @@ namespace CopilotChat.WebApi.Utilities;
 internal static class RequestUtils
 {
     /// <summary>
-    /// Remove Environment.NewLine from paramter values.
+    /// Remove Environment.NewLine from parameter values.
     /// </summary>
     /// <param name="parameterValue">String request parameter.</param>
     /// <returns>Parameter string with all Environment.NewLine characters removed.</returns>
