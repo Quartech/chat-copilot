@@ -147,19 +147,20 @@ export const useAppLoader = (): [AppState, Dispatch<SetStateAction<AppState>>] =
     };
 
     const loadInitialChat = async () => {
-        try {
-            const firstConvo = Object.values(conversations)[0];
-            await chat.loadChatMessagesByChatId(firstConvo.id);
-            dispatch(setSelectedConversation(firstConvo.id));
-        } catch (err) {
-            console.log((err as Error).message);
-            setAppState(AppState.ErrorLoadingChats);
+        const firstConvo = Object.values(conversations)[0];
+        if (firstConvo.createdOnServer) {
+            try {
+                await chat.loadChatMessagesByChatId(firstConvo.id);
+                dispatch(setSelectedConversation(firstConvo.id));
+            } catch (err) {
+                console.log((err as Error).message);
+                setAppState(AppState.ErrorLoadingChats);
+            }
         }
     };
 
     // Watches for changes in the application state and loads the app accordingly
     useEffect(() => {
-        console.log(`Called useEffect`);
         const loadApp = async () => {
             // If the app is in maintenance, we need to probe for the backend
             if (shouldProbeForBackend) {
