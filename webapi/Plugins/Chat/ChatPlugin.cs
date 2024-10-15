@@ -1130,7 +1130,6 @@ public class ChatPlugin
                     new List<CitationSource>()
                 );
             }
-
         }
 
         // Stream the message to the client
