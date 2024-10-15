@@ -2,9 +2,11 @@ import { makeStyles, mergeClasses, Persona, shorthands, Text, tokens } from '@fl
 import { ShieldTask16Regular } from '@fluentui/react-icons';
 import { FC, useState } from 'react';
 import { useChat } from '../../../libs/hooks';
+import { AlertType } from '../../../libs/models/AlertType';
 import { useAppDispatch, useAppSelector } from '../../../redux/app/hooks';
 import { RootState } from '../../../redux/app/store';
 import { setChatSpecialization } from '../../../redux/features/admin/adminSlice';
+import { addAlert } from '../../../redux/features/app/appSlice';
 import { FeatureKeys } from '../../../redux/features/app/AppState';
 import { setSelectedConversation } from '../../../redux/features/conversations/conversationsSlice';
 import { Breakpoints, SharedStyles } from '../../../styles';
@@ -128,7 +130,9 @@ export const ChatListItem: FC<IChatListItemProps> = ({
         }
         if (conversations[id].createdOnServer && conversations[id].messages.length < 1) {
             chat.loadChatMessagesByChatId(id).catch((e: Error) => {
-                console.error(`Could not retrieve chat messages. ${e.message}`);
+                dispatch(
+                    addAlert({ message: `Could not retrieve chat messages. ${e.message}`, type: AlertType.Error }),
+                );
             });
         } else {
             dispatch(setSelectedConversation(id));

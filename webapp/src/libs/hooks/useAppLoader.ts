@@ -177,7 +177,6 @@ export const useAppLoader = (): [AppState, Dispatch<SetStateAction<AppState>>] =
             // If the user is authenticated or AAD is disabled, we can load the chats
             if (canLoadChats) {
                 await loadChats();
-                console.log(`Finished loading chats.`);
                 return;
             }
 
