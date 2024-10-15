@@ -258,10 +258,11 @@ export const SpecializationManager: React.FC = () => {
     };
 
     useEffect(() => {
-        const isValid = !!label && !!name && !!roleInformation && membershipId.length > 0;
+        const isValid =
+            !!label && !!name && !!roleInformation && !!description && !!initialChatMessage && membershipId.length > 0;
         setIsValid(isValid);
         return () => {};
-    }, [specializations, selectedId, label, name, roleInformation, membershipId]);
+    }, [specializations, selectedId, label, name, roleInformation, membershipId, description, initialChatMessage]);
 
     return (
         <div className={classes.scrollableContainer}>

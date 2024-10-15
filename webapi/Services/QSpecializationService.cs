@@ -186,21 +186,24 @@ public class QSpecializationService : IQSpecializationService
 
         await this._specializationSourceRepository.DeleteAsync(specializationToDelete);
 
-        var imageFileUri = new Uri(specializationToDelete.ImageFilePath);
-        var iconFileUri = new Uri(specializationToDelete.IconFilePath);
-
-        // Remove the image file from the blob storage if it is a Blob Storage URI
-        if (await this._qBlobStorage.BlobExistsAsync(imageFileUri))
+        // Attempt to create URIs for image and icon
+        if (
+            Uri.TryCreate(specializationToDelete.ImageFilePath, UriKind.Absolute, out var imageFileUri)
+            && Uri.TryCreate(specializationToDelete.IconFilePath, UriKind.Absolute, out var iconFileUri)
+        )
         {
-            await this._qBlobStorage.DeleteBlobByURIAsync(imageFileUri);
-        }
+            // Delete image file from blob storage if it exists
+            if (await this._qBlobStorage.BlobExistsAsync(imageFileUri))
+            {
+                await this._qBlobStorage.DeleteBlobByURIAsync(imageFileUri);
+            }
 
-        // Remove the icon file from the blob storage if it is a Blob Storage URI
-        if (await this._qBlobStorage.BlobExistsAsync(iconFileUri))
-        {
-            await this._qBlobStorage.DeleteBlobByURIAsync(iconFileUri);
+            // Delete icon file from blob storage if it exists
+            if (await this._qBlobStorage.BlobExistsAsync(iconFileUri))
+            {
+                await this._qBlobStorage.DeleteBlobByURIAsync(iconFileUri);
+            }
         }
-
         return true;
     }
 
