@@ -125,7 +125,7 @@ public class QSpecializationService : IQSpecializationService
         // Update the image file and set the file path
         specializationToUpdate.ImageFilePath = await this.UpsertSpecializationBlobAsync(
             qSpecializationMutate.ImageFile,
-            new Uri(specializationToUpdate.ImageFilePath),
+            specializationToUpdate.ImageFilePath,
             Convert.ToBoolean(qSpecializationMutate.DeleteImageFile),
             ResourceUtils.GetImageAsDataUri(this._qAzureOpenAIChatOptions.DefaultSpecializationImage)
         );
@@ -133,7 +133,7 @@ public class QSpecializationService : IQSpecializationService
         // Update the icon file and set the file path
         specializationToUpdate.IconFilePath = await this.UpsertSpecializationBlobAsync(
             qSpecializationMutate.IconFile,
-            new Uri(specializationToUpdate.IconFilePath),
+            specializationToUpdate.IconFilePath,
             Convert.ToBoolean(qSpecializationMutate.DeleteIconFile),
             ResourceUtils.GetImageAsDataUri(this._qAzureOpenAIChatOptions.DefaultSpecializationIcon)
         );
@@ -208,17 +208,25 @@ public class QSpecializationService : IQSpecializationService
     /// Upsert the specialization blob and return filepath or blob storage URI.
     /// </summary>
     /// <param name="file">File to store in blob storage</param>
-    /// <param name="fileUri">File path URI</param>
+    /// <param name="fileUriString">File path URI</param>
     /// <param name="delete">Flag to delete the file from the blob storage</param>
     /// <param name="filePathDefault">File path default value</param>
     /// <returns>FilePath or Blob Storage URI</returns>
     private async Task<string> UpsertSpecializationBlobAsync(
         IFormFile? file,
-        System.Uri fileUri,
+        string fileUriString,
         bool delete = false,
         string filePathDefault = ""
     )
     {
+        bool uriIsValid = Uri.TryCreate(fileUriString, UriKind.Absolute, out Uri? fileUri);
+
+        // If the URI is not valid, return the default path immediately
+        if (!uriIsValid || fileUri == null)
+        {
+            return filePathDefault;
+        }
+
         var blobExists = await this._qBlobStorage.BlobExistsAsync(fileUri);
 
         // 1. File provided and a default file path is stored in the DB
@@ -242,6 +250,6 @@ public class QSpecializationService : IQSpecializationService
             return filePathDefault;
         }
 
-        return fileUri.ToString();
+        return fileUriString;
     }
 }
