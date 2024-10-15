@@ -738,7 +738,11 @@ public class ChatPlugin
         chatMessage.TokenUsage = this.GetTokenUsages(chatContext, chatMessage.Content);
 
         // Update the message on client and in chat history with final completion token usage
-        await this.UpdateMessageOnClient(chatMessage, cancellationToken);
+        if (!cancellationToken.IsCancellationRequested)
+        {
+            await this.UpdateMessageOnClient(chatMessage, cancellationToken);
+        }
+
         await this._chatMessageRepository.UpsertAsync(chatMessage);
 
         return chatMessage;
@@ -1102,32 +1106,39 @@ public class ChatPlugin
 
         // Create message on client
         CopilotChatMessage chatMessage;
-        if (specializationkey == "general")
+        if (!cancellationToken.IsCancellationRequested)
         {
-            chatMessage = await this.CreateBotMessageOnClient(
-                chatId,
-                userId,
-                JsonSerializer.Serialize(prompt),
-                string.Empty,
-                cancellationToken,
-                citations
-            );
-        }
-        else
-        {
-            chatMessage = await this.CreateBotMessageOnClient(
-                chatId,
-                userId,
-                JsonSerializer.Serialize(prompt),
-                string.Empty,
-                cancellationToken,
-                new List<CitationSource>()
-            );
+            if (specializationkey == "general")
+            {
+                chatMessage = await this.CreateBotMessageOnClient(
+                    chatId,
+                    userId,
+                    JsonSerializer.Serialize(prompt),
+                    string.Empty,
+                    cancellationToken,
+                    citations
+                );
+            }
+            else
+            {
+                chatMessage = await this.CreateBotMessageOnClient(
+                    chatId,
+                    userId,
+                    JsonSerializer.Serialize(prompt),
+                    string.Empty,
+                    cancellationToken,
+                    new List<CitationSource>()
+                );
+            }
         }
 
         // Stream the message to the client
         await foreach (var contentPiece in stream)
         {
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return chatMessage;
+            }
             accumulatedContent.Append(contentPiece.ToString());
             if (contentPiece.InnerContent is not null)
             {
@@ -1254,9 +1265,12 @@ public class ChatPlugin
     )
     {
         var chatMessage = CopilotChatMessage.CreateBotResponseMessage(chatId, content, prompt, citations, tokenUsage);
-        await this
-            ._messageRelayHubContext.Clients.Group(chatId)
-            .SendAsync("ReceiveMessage", chatId, userId, chatMessage, cancellationToken);
+        if (!cancellationToken.IsCancellationRequested)
+        {
+            await this
+                ._messageRelayHubContext.Clients.Group(chatId)
+                .SendAsync("ReceiveMessage", chatId, userId, chatMessage, cancellationToken);
+        }
         return chatMessage;
     }
 

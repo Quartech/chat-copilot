@@ -86,6 +86,7 @@ public class ChatController : ControllerBase, IDisposable
     /// <param name="authInfo">Auth info for the current request.</param>
     /// <param name="ask">Prompt along with its parameters.</param>
     /// <param name="chatId">Chat ID.</param>
+    /// <param name="requestAbortedToken">This token automatically binds to a token that will be triggered when the client closes the connection.</param>
     /// <param name="silent">Query param that will determine whether this exchange will be processed as part of the overall conversation or not.</param>
     /// <returns>Results containing the response from the model.</returns>
     [Route("chats/{chatId:guid}/messages")]
@@ -103,6 +104,7 @@ public class ChatController : ControllerBase, IDisposable
         [FromServices] IAuthInfo authInfo,
         [FromBody] Ask ask,
         [FromRoute] Guid chatId,
+        CancellationToken requestAbortedToken,
         [FromQuery] bool silent = false
     )
     {
@@ -139,21 +141,27 @@ public class ChatController : ControllerBase, IDisposable
         FunctionResult? result = null;
         try
         {
-            using CancellationTokenSource? cts = this._serviceOptions.TimeoutLimitInS is not null
-                // Create a cancellation token source with the timeout if specified
-                ? new CancellationTokenSource(TimeSpan.FromSeconds((double)this._serviceOptions.TimeoutLimitInS))
-                : null;
-
-            result = await kernel.InvokeAsync(chatFunction!, contextVariables, cts?.Token ?? default);
+            // using CancellationTokenSource? cts = this._serviceOptions.TimeoutLimitInS is not null
+            //     // Create a cancellation token source with the timeout if specified
+            //     ? new CancellationTokenSource(TimeSpan.FromSeconds((double)this._serviceOptions.TimeoutLimitInS))
+            //     : null;
+            // Commented out the above since we want the auto binded cancellation token instead of this timeout token.
+            // We don't even define the timeoutlimit anywhere so this was just resulting in an empty token anyways.
+            result = await kernel.InvokeAsync(chatFunction!, contextVariables, cancellationToken: requestAbortedToken);
             this._telemetryService.TrackPluginFunction(ChatPluginName, ChatFunction, true);
         }
         catch (Exception ex)
         {
-            if (ex is OperationCanceledException || ex.InnerException is OperationCanceledException)
+            if (
+                ex is OperationCanceledException
+                || ex.InnerException is OperationCanceledException
+                || ex is TaskCanceledException
+                || ex.InnerException is TaskCanceledException
+            )
             {
                 // Log the timeout and return a 504 response
-                this._logger.LogError("The {FunctionName} operation timed out.", ChatFunction);
-                return this.StatusCode(StatusCodes.Status504GatewayTimeout, $"The chat {ChatFunction} timed out.");
+                this._logger.LogError("The {FunctionName} operation was cancelled.", ChatFunction);
+                return this.StatusCode(StatusCodes.Status504GatewayTimeout, $"The chat {ChatFunction} was cancelled.");
             }
 
             if (
