@@ -1,9 +1,12 @@
 import { makeStyles, mergeClasses, Persona, shorthands, Text, tokens } from '@fluentui/react-components';
 import { ShieldTask16Regular } from '@fluentui/react-icons';
 import { FC, useState } from 'react';
+import { useChat } from '../../../libs/hooks';
+import { AlertType } from '../../../libs/models/AlertType';
 import { useAppDispatch, useAppSelector } from '../../../redux/app/hooks';
 import { RootState } from '../../../redux/app/store';
 import { setChatSpecialization } from '../../../redux/features/admin/adminSlice';
+import { addAlert } from '../../../redux/features/app/appSlice';
 import { FeatureKeys } from '../../../redux/features/app/AppState';
 import { setSelectedConversation } from '../../../redux/features/conversations/conversationsSlice';
 import { Breakpoints, SharedStyles } from '../../../styles';
@@ -104,6 +107,7 @@ export const ChatListItem: FC<IChatListItemProps> = ({
     specializationLabel,
 }) => {
     const classes = useClasses();
+    const chat = useChat();
     const dispatch = useAppDispatch();
     const { features } = useAppSelector((state: RootState) => state.app);
     const { specializations } = useAppSelector((state: RootState) => state.admin);
@@ -124,7 +128,15 @@ export const ChatListItem: FC<IChatListItemProps> = ({
                 dispatch(setChatSpecialization(foundSpecialization));
             }
         }
-        dispatch(setSelectedConversation(id));
+        if (conversations[id].createdOnServer && conversations[id].messages.length < 1) {
+            chat.loadChatMessagesByChatId(id).catch((e: Error) => {
+                dispatch(
+                    addAlert({ message: `Could not retrieve chat messages. ${e.message}`, type: AlertType.Error }),
+                );
+            });
+        } else {
+            dispatch(setSelectedConversation(id));
+        }
     };
 
     const time = timestampToDateString(timestamp);
