@@ -1,14 +1,14 @@
 import { useMsal } from '@azure/msal-react';
 import { useAppDispatch } from '../../redux/app/hooks';
-import { addAlert } from '../../redux/features/app/appSlice';
+import { addAlert, hideSpinner, showSpinner } from '../../redux/features/app/appSlice';
 
 import { getErrorDetails } from '../../components/utils/TextUtils';
 import {
     addSpecialization,
     editSpecialization,
     removeSpecialization,
-    setSpecializationIndexes,
     setChatCompletionDeployments,
+    setSpecializationIndexes,
     setSpecializations,
 } from '../../redux/features/admin/adminSlice';
 import { AuthHelper } from '../auth/AuthHelper';
@@ -61,18 +61,28 @@ export const useSpecialization = () => {
     };
 
     const createSpecialization = async (data: ISpecializationRequest) => {
+        dispatch(showSpinner());
         try {
             const accessToken = await AuthHelper.getSKaaSAccessToken(instance, inProgress);
             await specializationService.createSpecializationAsync(data, accessToken).then((result: ISpecialization) => {
                 dispatch(addSpecialization(result));
             });
+            dispatch(
+                addAlert({
+                    message: `Specialization {${data.name}} created successfully.`,
+                    type: AlertType.Success,
+                }),
+            );
         } catch (e: any) {
             const errorMessage = `Unable to load chats. Details: ${getErrorDetails(e)}`;
             dispatch(addAlert({ message: errorMessage, type: AlertType.Error }));
+        } finally {
+            dispatch(hideSpinner());
         }
     };
 
     const updateSpecialization = async (id: string, data: ISpecializationRequest) => {
+        dispatch(showSpinner());
         try {
             const accessToken = await AuthHelper.getSKaaSAccessToken(instance, inProgress);
             await specializationService
@@ -80,9 +90,17 @@ export const useSpecialization = () => {
                 .then((result: ISpecialization) => {
                     dispatch(editSpecialization(result));
                 });
+            dispatch(
+                addAlert({
+                    message: `Specialization {${data.name}} updated successfully.`,
+                    type: AlertType.Success,
+                }),
+            );
         } catch (e: any) {
             const errorMessage = `Unable to load chats. Details: ${getErrorDetails(e)}`;
             dispatch(addAlert({ message: errorMessage, type: AlertType.Error }));
+        } finally {
+            dispatch(hideSpinner());
         }
     };
 
@@ -100,11 +118,18 @@ export const useSpecialization = () => {
         }
     };
 
-    const deleteSpecialization = async (specializationId: string) => {
+    const deleteSpecialization = async (specializationId: string, specializationName: string) => {
+        dispatch(showSpinner());
         await specializationService
             .deleteSpecializationAsync(specializationId, await AuthHelper.getSKaaSAccessToken(instance, inProgress))
             .then(() => {
                 dispatch(removeSpecialization(specializationId));
+                dispatch(
+                    addAlert({
+                        message: `Specialization {${specializationName}} deleted successfully.`,
+                        type: AlertType.Warning,
+                    }),
+                );
             })
             .catch((e: any) => {
                 const errorDetails = (e as Error).message.includes('Failed to delete resources for chat id')
@@ -114,9 +139,12 @@ export const useSpecialization = () => {
                     addAlert({
                         message: `Unable to delete chat {${name}}. ${errorDetails}`,
                         type: AlertType.Error,
-                        onRetry: () => void deleteSpecialization(specializationId),
+                        onRetry: () => void deleteSpecialization(specializationId, specializationName),
                     }),
                 );
+            })
+            .finally(() => {
+                dispatch(hideSpinner());
             });
     };
 

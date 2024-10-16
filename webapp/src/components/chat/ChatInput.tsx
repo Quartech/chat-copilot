@@ -45,7 +45,7 @@ const useClasses = makeStyles({
         width: '100%',
     },
     textarea: {
-        maxHeight: '80px',
+        resize: 'none',
     },
     controls: {
         display: 'flex',
@@ -215,6 +215,36 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
                 <ChatStatus chatState={chatState} />
             </div>
             <div className={classes.content}>
+                <div className={classes.controls}>
+                    <div className={classes.functional}>
+                        {/* Hidden input for file upload. Only accept .txt and .pdf files for now. */}
+                        <input
+                            type="file"
+                            ref={documentFileRef}
+                            style={{ display: 'none' }}
+                            accept={Constants.app.importTypes}
+                            multiple={true}
+                            onChange={() => {
+                                void fileHandler.handleImport(selectedId, documentFileRef);
+                            }}
+                        />
+                        <Button
+                            disabled={
+                                chatState.disabled ||
+                                (chatState.importingDocuments && chatState.importingDocuments.length > 0)
+                            }
+                            size="large"
+                            appearance="transparent"
+                            icon={<AttachRegular />}
+                            onClick={() => documentFileRef.current?.click()}
+                            title="Attach file"
+                            aria-label="Attach file button"
+                        />
+                        {chatState.importingDocuments && chatState.importingDocuments.length > 0 && (
+                            <Spinner size="tiny" />
+                        )}
+                    </div>
+                </div>
                 <Textarea
                     title="Chat input"
                     aria-label="Chat input field. Click enter to submit input."
@@ -266,52 +296,29 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
                         }
                     }}
                 />
-            </div>
-            <div className={classes.controls}>
-                <div className={classes.functional}>
-                    {/* Hidden input for file upload. Only accept .txt and .pdf files for now. */}
-                    <input
-                        type="file"
-                        ref={documentFileRef}
-                        style={{ display: 'none' }}
-                        accept={Constants.app.importTypes}
-                        multiple={true}
-                        onChange={() => {
-                            void fileHandler.handleImport(selectedId, documentFileRef);
-                        }}
-                    />
-                    <Button
-                        disabled={
-                            chatState.disabled ||
-                            (chatState.importingDocuments && chatState.importingDocuments.length > 0)
-                        }
-                        appearance="transparent"
-                        icon={<AttachRegular />}
-                        onClick={() => documentFileRef.current?.click()}
-                        title="Attach file"
-                        aria-label="Attach file button"
-                    />
-                    {chatState.importingDocuments && chatState.importingDocuments.length > 0 && <Spinner size="tiny" />}
-                </div>
-                <div className={classes.essentials}>
-                    {recognizer && (
+                <div className={classes.controls}>
+                    <div className={classes.essentials}>
+                        {recognizer && (
+                            <Button
+                                size="large"
+                                appearance="transparent"
+                                disabled={chatState.disabled || isListening}
+                                icon={<MicRegular />}
+                                onClick={handleSpeech}
+                            />
+                        )}
                         <Button
+                            title="Submit"
+                            size="large"
+                            aria-label="Submit message"
                             appearance="transparent"
-                            disabled={chatState.disabled || isListening}
-                            icon={<MicRegular />}
-                            onClick={handleSpeech}
+                            icon={<SendRegular />}
+                            onClick={() => {
+                                handleSubmit(input);
+                            }}
+                            disabled={chatState.disabled || isSpecializationDisabled()}
                         />
-                    )}
-                    <Button
-                        title="Submit"
-                        aria-label="Submit message"
-                        appearance="transparent"
-                        icon={<SendRegular />}
-                        onClick={() => {
-                            handleSubmit(input);
-                        }}
-                        disabled={chatState.disabled || isSpecializationDisabled()}
-                    />
+                    </div>
                 </div>
             </div>
         </div>
