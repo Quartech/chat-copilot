@@ -15,12 +15,9 @@ import {
 } from '@fluentui/react-components';
 import { Info20Regular } from '@fluentui/react-icons';
 import React, { useEffect, useId, useState } from 'react';
-import { useDispatch } from 'react-redux';
 import { useSpecialization } from '../../../libs/hooks';
-import { AlertType } from '../../../libs/models/AlertType';
 import { useAppSelector } from '../../../redux/app/hooks';
 import { RootState } from '../../../redux/app/store';
-import { addAlert } from '../../../redux/features/app/appSlice';
 import { ImageUploaderPreview } from '../../files/ImageUploaderPreview';
 
 interface ISpecializationFile {
@@ -97,7 +94,6 @@ const Rows = 8;
  */
 export const SpecializationManager: React.FC = () => {
     const classes = useClasses();
-    const dispatch = useDispatch();
     const specialization = useSpecialization();
 
     const { specializations, specializationIndexes, chatCompletionDeployments, selectedId } = useAppSelector(
@@ -168,13 +164,6 @@ export const SpecializationManager: React.FC = () => {
                 documentCount,
             });
         }
-        const message = `Specialization {${name}} saved successfully.`;
-        dispatch(
-            addAlert({
-                type: AlertType.Success,
-                message,
-            }),
-        );
     };
 
     const resetSpecialization = () => {
@@ -225,15 +214,8 @@ export const SpecializationManager: React.FC = () => {
     }, [editMode, selectedId, specializations]);
 
     const onDeleteSpecialization = () => {
-        void specialization.deleteSpecialization(id);
+        void specialization.deleteSpecialization(id, name);
         resetSpecialization();
-        const message = `Specialization {${name}} deleted successfully.`;
-        dispatch(
-            addAlert({
-                type: AlertType.Warning,
-                message,
-            }),
-        );
     };
 
     /**
@@ -334,8 +316,8 @@ export const SpecializationManager: React.FC = () => {
                 </div>
                 <div className={classes.slidersContainer}>
                     <label htmlFor="strictness">Strictness (1-5)</label>
-                    <div id="strictness" className={classes.slider}>
-                        <Slider min={1} max={5} value={strictness} onChange={onChangeStrictness} />
+                    <div className={classes.slider}>
+                        <Slider id="strictness" min={1} max={5} value={strictness} onChange={onChangeStrictness} />
                         <span>{strictness}</span>
                         <Tooltip
                             content={
@@ -347,8 +329,14 @@ export const SpecializationManager: React.FC = () => {
                         </Tooltip>
                     </div>
                     <label htmlFor="documentCount">Retrieved Documents (3-20)</label>
-                    <div id="documentCount" className={classes.slider}>
-                        <Slider min={3} max={20} value={documentCount} onChange={onChangeDocumentCount} />
+                    <div className={classes.slider}>
+                        <Slider
+                            id="documentCount"
+                            min={3}
+                            max={20}
+                            value={documentCount}
+                            onChange={onChangeDocumentCount}
+                        />
                         <span>{documentCount}</span>
                         <Tooltip
                             content={
@@ -416,7 +404,7 @@ export const SpecializationManager: React.FC = () => {
                 />
                 <div className={classes.fileUploadContainer}>
                     <div className={classes.imageContainer}>
-                        <label htmlFor="image-url">Specialization Image</label>
+                        <label>Specialization Image</label>
                         <ImageUploaderPreview
                             buttonLabel="Upload Image"
                             file={imageFile.file ?? imageFile.src}
@@ -426,7 +414,7 @@ export const SpecializationManager: React.FC = () => {
                         />
                     </div>
                     <div className={classes.imageContainer}>
-                        <label htmlFor="image-url">Specialization Icon</label>
+                        <label>Specialization Icon</label>
                         <ImageUploaderPreview
                             buttonLabel="Upload Icon"
                             file={iconFile.file ?? iconFile.src}

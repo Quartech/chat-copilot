@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using CopilotChat.WebApi.Auth;
@@ -195,6 +196,21 @@ public class ChatHistoryController : ControllerBase
             ChatSession? chat = null;
             if (await this._sessionRepository.TryFindByIdAsync(chatParticipant.ChatId, callback: v => chat = v))
             {
+                if (
+                    Regex.IsMatch(
+                        chat!.Title,
+                        @"Q-Pilot @ [0-9]{1,2}\/[0-9]{1,2}\/[0-9]{1,4}, [0-9]{1,2}:[0-9]{1,2}:[0-9]{1,2} [A,P]M"
+                    )
+                )
+                {
+                    var messagesInThisChat = await this._messageRepository.FindByChatIdAsync(chatParticipant.ChatId);
+                    var firstUserMessage = messagesInThisChat.Where(m => m.UserId != "Bot").MinBy(m => m.Timestamp);
+                    if (firstUserMessage != null)
+                    {
+                        chat!.Title = firstUserMessage.Content;
+                    }
+                }
+
                 chats.Add(chat!);
             }
             else

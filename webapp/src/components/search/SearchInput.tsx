@@ -153,6 +153,7 @@ export const SearchInput: React.FC<SearchInputProps> = ({ onSubmit, defaultSpeci
                         }}
                     /> */}
                     <Button
+                        size="large"
                         title="Submit"
                         aria-label="Search"
                         appearance="transparent"
