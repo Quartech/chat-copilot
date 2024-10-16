@@ -16,7 +16,6 @@ import { useAppDispatch, useAppSelector } from '../../redux/app/hooks';
 import { useChat } from '../../libs/hooks';
 import { RootState } from '../../redux/app/store';
 import { FeatureKeys } from '../../redux/features/app/AppState';
-import { Alerts } from '../shared/Alerts';
 import { ChatRoom } from './ChatRoom';
 import { ParticipantsList } from './controls/ParticipantsList';
 import { ShareBotMenu } from './controls/ShareBotMenu';
@@ -73,11 +72,6 @@ const useClasses = makeStyles({
     controls: {
         display: 'flex',
         alignItems: 'center',
-    },
-    alerts: {
-        display: 'flex',
-        flexDirection: 'column',
-        ...shorthands.margin(0, '72px'),
     },
 });
 
@@ -218,11 +212,6 @@ export const ChatWindow: React.FC = () => {
                 />
             )}
             {selectedTab === ChatWindowTabEnum.PERSONA && <PersonaTab />}
-            {selectedTab !== ChatWindowTabEnum.CHAT && (
-                <div className={classes.alerts}>
-                    <Alerts />
-                </div>
-            )}
         </div>
     );
 };

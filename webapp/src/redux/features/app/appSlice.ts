@@ -4,6 +4,7 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { Constants } from '../../../Constants';
 import { ServiceInfo } from '../../../libs/models/ServiceInfo';
 import { TokenUsage, TokenUsageFunctionNameMap } from '../../../libs/models/TokenUsage';
+import { getUUID } from '../../../libs/utils/HelperMethods';
 import { ActiveUserInfo, Alert, AppState, FeatureKeys, initialState } from './AppState';
 /**
  * Modified to support specialization.
@@ -19,17 +20,25 @@ export const appSlice = createSlice({
             state.alerts = action.payload;
         },
         addAlert: (state: AppState, action: PayloadAction<Alert>) => {
-            if (
-                action.payload.id == Constants.app.CONNECTION_ALERT_ID ||
-                isServerConnectionError(action.payload.message)
-            ) {
+            const isConnectionAlert =
+                action.payload.id === Constants.app.CONNECTION_ALERT_ID ||
+                isServerConnectionError(action.payload.message);
+
+            if (isConnectionAlert) {
                 updateConnectionStatus(state, action.payload);
             } else {
-                addNewAlert(state.alerts, action.payload);
+                const alert = {
+                    ...action.payload,
+                    id: getUUID(),
+                };
+                addNewAlert(state.alerts, alert);
             }
         },
-        removeAlert: (state: AppState, action: PayloadAction<number>) => {
-            state.alerts.splice(action.payload, 1);
+        removeAlert: (state: AppState, action: PayloadAction<string | undefined>) => {
+            const index = state.alerts.findIndex((alert) => alert.id === action.payload);
+            if (index !== -1) {
+                state.alerts.splice(index, 1);
+            }
         },
         updateActiveUserInfo: (state: AppState, action: PayloadAction<Partial<ActiveUserInfo>>) => {
             state.activeUserInfo = Object.assign({}, state.activeUserInfo, action.payload);
@@ -87,6 +96,12 @@ export const appSlice = createSlice({
         setAuthConfig: (state: AppState, action: PayloadAction<AppState['authConfig']>) => {
             state.authConfig = action.payload;
         },
+        showSpinner: (state: AppState) => {
+            state.isLoading = true;
+        },
+        hideSpinner: (state: AppState) => {
+            state.isLoading = false;
+        },
     },
 });
 
@@ -102,6 +117,8 @@ export const {
     setMaintenance,
     setAuthConfig,
     setFeatureFlag,
+    showSpinner,
+    hideSpinner,
 } = appSlice.actions;
 
 export default appSlice.reducer;

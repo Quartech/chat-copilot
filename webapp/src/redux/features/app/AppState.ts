@@ -46,6 +46,7 @@ export interface AppState {
     settings: Setting[];
     serviceInfo: ServiceInfo;
     isMaintenance: boolean;
+    isLoading: boolean;
 }
 
 export enum FeatureKeys {
@@ -141,4 +142,5 @@ export const initialState: AppState = {
         isContentSafetyEnabled: false,
     },
     isMaintenance: false,
+    isLoading: false,
 };

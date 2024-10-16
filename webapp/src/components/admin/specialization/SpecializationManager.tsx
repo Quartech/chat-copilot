@@ -1,5 +1,3 @@
-import React, { useEffect, useId, useState } from 'react';
-
 import {
     Button,
     Checkbox,
@@ -17,6 +15,7 @@ import {
     Tooltip,
 } from '@fluentui/react-components';
 import { Info20Regular } from '@fluentui/react-icons';
+import React, { useEffect, useId, useState } from 'react';
 import { useSpecialization } from '../../../libs/hooks';
 import { useAppSelector } from '../../../redux/app/hooks';
 import { RootState } from '../../../redux/app/store';
@@ -98,8 +97,8 @@ const Rows = 8;
  * @returns {*}
  */
 export const SpecializationManager: React.FC = () => {
-    const specialization = useSpecialization();
     const classes = useClasses();
+    const specialization = useSpecialization();
 
     const { specializations, specializationIndexes, chatCompletionDeployments, selectedId } = useAppSelector(
         (state: RootState) => state.admin,
@@ -228,8 +227,8 @@ export const SpecializationManager: React.FC = () => {
         }
     }, [editMode, selectedId, specializations]);
 
-    const onDeleteChat = () => {
-        void specialization.deleteSpecialization(id);
+    const onDeleteSpecialization = () => {
+        void specialization.deleteSpecialization(id, name);
         resetSpecialization();
     };
 
@@ -314,10 +313,11 @@ export const SpecializationManager: React.FC = () => {
     };
 
     useEffect(() => {
-        const isValid = !!label && !!name && !!roleInformation && membershipId.length > 0;
+        const isValid =
+            !!label && !!name && !!roleInformation && !!description && !!initialChatMessage && membershipId.length > 0;
         setIsValid(isValid);
         return () => {};
-    }, [specializations, selectedId, label, name, roleInformation, membershipId]);
+    }, [specializations, selectedId, label, name, roleInformation, membershipId, description, initialChatMessage]);
 
     return (
         <div className={classes.scrollableContainer}>
@@ -399,6 +399,10 @@ export const SpecializationManager: React.FC = () => {
                             max={5}
                             className={classes.input}
                         ></Input>
+                    </div>
+                    <div className={classes.slider}>
+                        <Slider id="strictness" min={1} max={5} value={strictness} onChange={onChangeStrictness} />
+                        <span>{strictness}</span>
                         <Tooltip
                             content={
                                 'Strictness sets the threshold to categorize documents as relevant to your queries. Raising strictness means a higher threshold for relevance and filtering out more documents that are less relevant for responses. Very high strictness could cause failure to generate responses due to limited available documents. The default strictness is 3.'
@@ -419,6 +423,16 @@ export const SpecializationManager: React.FC = () => {
                             type="number"
                             className={classes.input}
                         ></Input>
+                    </div>
+                    <div className={classes.slider}>
+                        <Slider
+                            id="documentCount"
+                            min={3}
+                            max={20}
+                            value={documentCount}
+                            onChange={onChangeDocumentCount}
+                        />
+                        <span>{documentCount}</span>
                         <Tooltip
                             content={
                                 'This specifies the number of top-scoring documents from your data index used to generate responses. You want to increase the value when you have short documents or want to provide more context. The default value is 5. Note: if you set the value to 20 but only have 10 documents in your index, only 10 will be used.'
@@ -535,7 +549,7 @@ export const SpecializationManager: React.FC = () => {
                 />
                 <div className={classes.fileUploadContainer}>
                     <div className={classes.imageContainer}>
-                        <label htmlFor="image-url">Specialization Image</label>
+                        <label>Specialization Image</label>
                         <ImageUploaderPreview
                             buttonLabel="Upload Image"
                             file={imageFile.file ?? imageFile.src}
@@ -545,7 +559,7 @@ export const SpecializationManager: React.FC = () => {
                         />
                     </div>
                     <div className={classes.imageContainer}>
-                        <label htmlFor="image-url">Specialization Icon</label>
+                        <label>Specialization Icon</label>
                         <ImageUploaderPreview
                             buttonLabel="Upload Icon"
                             file={iconFile.file ?? iconFile.src}
@@ -557,7 +571,7 @@ export const SpecializationManager: React.FC = () => {
                     </div>
                 </div>
                 <div className={classes.controls}>
-                    <Button appearance="secondary" disabled={!id} onClick={onDeleteChat}>
+                    <Button appearance="secondary" disabled={!id} onClick={onDeleteSpecialization}>
                         Delete
                     </Button>
 

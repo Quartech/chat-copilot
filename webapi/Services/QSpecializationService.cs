@@ -127,7 +127,7 @@ public class QSpecializationService : IQSpecializationService
         // Update the image file and set the file path
         specializationToUpdate.ImageFilePath = await this.UpsertSpecializationBlobAsync(
             qSpecializationMutate.ImageFile,
-            new Uri(specializationToUpdate.ImageFilePath),
+            specializationToUpdate.ImageFilePath,
             Convert.ToBoolean(qSpecializationMutate.DeleteImageFile),
             ResourceUtils.GetImageAsDataUri(this._qAzureOpenAIChatOptions.DefaultSpecializationImage)
         );
@@ -135,7 +135,7 @@ public class QSpecializationService : IQSpecializationService
         // Update the icon file and set the file path
         specializationToUpdate.IconFilePath = await this.UpsertSpecializationBlobAsync(
             qSpecializationMutate.IconFile,
-            new Uri(specializationToUpdate.IconFilePath),
+            specializationToUpdate.IconFilePath,
             Convert.ToBoolean(qSpecializationMutate.DeleteIconFile),
             ResourceUtils.GetImageAsDataUri(this._qAzureOpenAIChatOptions.DefaultSpecializationIcon)
         );
@@ -192,21 +192,24 @@ public class QSpecializationService : IQSpecializationService
 
         await this._specializationSourceRepository.DeleteAsync(specializationToDelete);
 
-        var imageFileUri = new Uri(specializationToDelete.ImageFilePath);
-        var iconFileUri = new Uri(specializationToDelete.IconFilePath);
-
-        // Remove the image file from the blob storage if it is a Blob Storage URI
-        if (await this._qBlobStorage.BlobExistsAsync(imageFileUri))
+        // Attempt to create URIs for image and icon
+        if (
+            Uri.TryCreate(specializationToDelete.ImageFilePath, UriKind.Absolute, out var imageFileUri)
+            && Uri.TryCreate(specializationToDelete.IconFilePath, UriKind.Absolute, out var iconFileUri)
+        )
         {
-            await this._qBlobStorage.DeleteBlobByURIAsync(imageFileUri);
-        }
+            // Delete image file from blob storage if it exists
+            if (await this._qBlobStorage.BlobExistsAsync(imageFileUri))
+            {
+                await this._qBlobStorage.DeleteBlobByURIAsync(imageFileUri);
+            }
 
-        // Remove the icon file from the blob storage if it is a Blob Storage URI
-        if (await this._qBlobStorage.BlobExistsAsync(iconFileUri))
-        {
-            await this._qBlobStorage.DeleteBlobByURIAsync(iconFileUri);
+            // Delete icon file from blob storage if it exists
+            if (await this._qBlobStorage.BlobExistsAsync(iconFileUri))
+            {
+                await this._qBlobStorage.DeleteBlobByURIAsync(iconFileUri);
+            }
         }
-
         return true;
     }
 
@@ -214,17 +217,25 @@ public class QSpecializationService : IQSpecializationService
     /// Upsert the specialization blob and return filepath or blob storage URI.
     /// </summary>
     /// <param name="file">File to store in blob storage</param>
-    /// <param name="fileUri">File path URI</param>
+    /// <param name="fileUriString">File path URI</param>
     /// <param name="delete">Flag to delete the file from the blob storage</param>
     /// <param name="filePathDefault">File path default value</param>
     /// <returns>FilePath or Blob Storage URI</returns>
     private async Task<string> UpsertSpecializationBlobAsync(
         IFormFile? file,
-        System.Uri fileUri,
+        string fileUriString,
         bool delete = false,
         string filePathDefault = ""
     )
     {
+        bool uriIsValid = Uri.TryCreate(fileUriString, UriKind.Absolute, out Uri? fileUri);
+
+        // If the URI is not valid, return the default path immediately
+        if (!uriIsValid || fileUri == null)
+        {
+            return filePathDefault;
+        }
+
         var blobExists = await this._qBlobStorage.BlobExistsAsync(fileUri);
 
         // 1. File provided and a default file path is stored in the DB
@@ -248,6 +259,6 @@ public class QSpecializationService : IQSpecializationService
             return filePathDefault;
         }
 
-        return fileUri.ToString();
+        return fileUriString;
     }
 }

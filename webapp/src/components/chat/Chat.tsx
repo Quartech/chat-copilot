@@ -1,8 +1,10 @@
 import React from 'react';
 import { AuthHelper } from '../..//libs/auth/AuthHelper';
 import { AppState, useClasses } from '../../App';
-import { BackendProbe, ChatView, Error, Loading } from '../views';
 import Header from '../header/Header';
+import Alerts from '../shared/Alerts';
+import LoadingSpinner from '../shared/LoadingSpinner';
+import { BackendProbe, ChatView, Error, Loading } from '../views';
 
 const Chat = ({
     classes,
@@ -24,6 +26,8 @@ const Chat = ({
     }, [setAppState]);
     return (
         <div className={classes.container}>
+            <Alerts />
+            <LoadingSpinner />
             <Header appState={appState} setAppState={setAppState} showPluginsAndSettings={true} />
             {appState === AppState.ProbeForBackend && <BackendProbe onBackendFound={onBackendFound} />}
             {appState === AppState.SettingUserInfo && (
