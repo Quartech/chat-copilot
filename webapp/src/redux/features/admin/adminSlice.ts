@@ -47,6 +47,23 @@ export const adminSlice = createSlice({
             );
             state.specializations = updatedSpecializations;
         },
+        swapSpecializationOrder: (state: AdminState, action: PayloadAction<{ fromId: string; toId: string }>) => {
+            const { fromId, toId } = action.payload;
+            const fromIndex = state.specializations.findIndex((s) => s.id === fromId);
+            const toIndex = state.specializations.findIndex((s) => s.id === toId);
+
+            if (fromIndex === -1 || toIndex === -1 || fromId === toId) {
+                return state;
+            }
+
+            const newSpecializations = [...state.specializations];
+            [newSpecializations[fromIndex], newSpecializations[toIndex]] = [
+                newSpecializations[toIndex],
+                newSpecializations[fromIndex],
+            ];
+
+            return { ...state, specializations: newSpecializations };
+        },
     },
 });
 
@@ -60,6 +77,7 @@ export const {
     addSpecialization,
     editSpecialization,
     removeSpecialization,
+    swapSpecializationOrder,
 } = adminSlice.actions;
 
 export default adminSlice.reducer;
