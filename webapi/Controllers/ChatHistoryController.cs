@@ -126,8 +126,9 @@ public class ChatHistoryController : ControllerBase
         {
             specialization = await this._qSpecializationService.GetSpecializationAsync(chatParameters.specializationId);
         }
-        var initialMessage =
-            specialization != null ? specialization.InitialChatMessage : this._promptOptions.InitialBotMessage;
+        var initialMessage = string.IsNullOrEmpty(specialization?.InitialChatMessage)
+            ? this._promptOptions.InitialBotMessage
+            : specialization.InitialChatMessage;
 
         // Create initial bot message
         var chatMessage = CopilotChatMessage.CreateBotResponseMessage(

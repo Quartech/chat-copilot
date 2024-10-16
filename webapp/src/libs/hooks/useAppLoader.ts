@@ -1,18 +1,19 @@
-import { useAppDispatch, useAppSelector } from '../../redux/app/hooks';
-import { setFeatureFlag, setServiceInfo, updateActiveUserInfo } from '../../redux/features/app/appSlice';
-import { useSettings } from './useSettings';
-import { FeatureKeys } from '../../redux/features/app/AppState';
 import { useIsAuthenticated, useMsal } from '@azure/msal-react';
-import { RootState } from '../../redux/app/store';
-import { AppState } from '../../App';
-import { Dispatch, SetStateAction, useEffect, useState } from 'react';
 import { jwtDecode } from 'jwt-decode';
+import { Dispatch, SetStateAction, useEffect, useState } from 'react';
+import { AppState } from '../../App';
+import { useAppDispatch, useAppSelector } from '../../redux/app/hooks';
+import { RootState } from '../../redux/app/store';
+import { setFeatureFlag, setServiceInfo, updateActiveUserInfo } from '../../redux/features/app/appSlice';
+import { FeatureKeys } from '../../redux/features/app/AppState';
+import { setSelectedConversation } from '../../redux/features/conversations/conversationsSlice';
 import { AuthHelper } from '../auth/AuthHelper';
-import { useSpecialization } from './useSpecialization';
+import { UserSettingsResponse } from '../models/UserSettings';
+import { GraphService } from '../services/GraphService';
 import { useChat } from './useChat';
 import { useFile } from './useFile';
-import { GraphService } from '../services/GraphService';
-import { UserSettingsResponse } from '../models/UserSettings';
+import { useSettings } from './useSettings';
+import { useSpecialization } from './useSpecialization';
 
 /**
  * Hook to load the application state.
@@ -32,6 +33,7 @@ export const useAppLoader = (): [AppState, Dispatch<SetStateAction<AppState>>] =
     const file = useFile();
 
     const { isMaintenance } = useAppSelector((state: RootState) => state.app);
+    const { conversations } = useAppSelector((state: RootState) => state.conversations);
 
     // The current state of the application.
     const [appState, setAppState] = useState(AppState.ProbeForBackend);
@@ -40,6 +42,7 @@ export const useAppLoader = (): [AppState, Dispatch<SetStateAction<AppState>>] =
     const shouldProbeForBackend = isMaintenance && appState !== AppState.ProbeForBackend;
     const canLoadUser = isAuthenticated && appState === AppState.SettingUserInfo;
     const canLoadChats = (isAuthenticated || !AuthHelper.isAuthAAD()) && appState === AppState.LoadingChats;
+    const canLoadInitialConversation = appState === AppState.Chat;
 
     /**
      * Set the loaded settings for the user.
@@ -143,6 +146,19 @@ export const useAppLoader = (): [AppState, Dispatch<SetStateAction<AppState>>] =
         }
     };
 
+    const loadInitialChat = async () => {
+        const firstConvo = Object.values(conversations)[0];
+        if (firstConvo.createdOnServer) {
+            try {
+                await chat.loadChatMessagesByChatId(firstConvo.id);
+                dispatch(setSelectedConversation(firstConvo.id));
+            } catch (err) {
+                console.log((err as Error).message);
+                setAppState(AppState.ErrorLoadingChats);
+            }
+        }
+    };
+
     // Watches for changes in the application state and loads the app accordingly
     useEffect(() => {
         const loadApp = async () => {
@@ -163,13 +179,18 @@ export const useAppLoader = (): [AppState, Dispatch<SetStateAction<AppState>>] =
                 await loadChats();
                 return;
             }
+
+            if (canLoadInitialConversation) {
+                await loadInitialChat();
+                return;
+            }
         };
 
         void loadApp();
 
         // Disabling dependencies for loadUser, loadSettings, and loadChats to prevent infinite loops
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [canLoadChats, canLoadUser, shouldProbeForBackend]);
+    }, [canLoadChats, canLoadUser, shouldProbeForBackend, canLoadInitialConversation]);
 
     return [appState, setAppState];
 };
