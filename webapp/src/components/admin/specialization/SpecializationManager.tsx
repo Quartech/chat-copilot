@@ -399,10 +399,6 @@ export const SpecializationManager: React.FC = () => {
                             max={5}
                             className={classes.input}
                         ></Input>
-                    </div>
-                    <div className={classes.slider}>
-                        <Slider id="strictness" min={1} max={5} value={strictness} onChange={onChangeStrictness} />
-                        <span>{strictness}</span>
                         <Tooltip
                             content={
                                 'Strictness sets the threshold to categorize documents as relevant to your queries. Raising strictness means a higher threshold for relevance and filtering out more documents that are less relevant for responses. Very high strictness could cause failure to generate responses due to limited available documents. The default strictness is 3.'
@@ -423,16 +419,6 @@ export const SpecializationManager: React.FC = () => {
                             type="number"
                             className={classes.input}
                         ></Input>
-                    </div>
-                    <div className={classes.slider}>
-                        <Slider
-                            id="documentCount"
-                            min={3}
-                            max={20}
-                            value={documentCount}
-                            onChange={onChangeDocumentCount}
-                        />
-                        <span>{documentCount}</span>
                         <Tooltip
                             content={
                                 'This specifies the number of top-scoring documents from your data index used to generate responses. You want to increase the value when you have short documents or want to provide more context. The default value is 5. Note: if you set the value to 20 but only have 10 documents in your index, only 10 will be used.'
