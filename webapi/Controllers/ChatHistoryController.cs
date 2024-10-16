@@ -196,7 +196,12 @@ public class ChatHistoryController : ControllerBase
             ChatSession? chat = null;
             if (await this._sessionRepository.TryFindByIdAsync(chatParticipant.ChatId, callback: v => chat = v))
             {
-                if (Regex.IsMatch(chat!.Title, @"/Q-Pilot @ [0-9]{1,2}\/[0-9]{1,2}\/[0-9]{1,4}, [0-9]{1,2}:[0-9]{1,2}:[0-9]{1,2} [A,P]M/"))
+                if (
+                    Regex.IsMatch(
+                        chat!.Title,
+                        @"/Q-Pilot @ [0-9]{1,2}\/[0-9]{1,2}\/[0-9]{1,4}, [0-9]{1,2}:[0-9]{1,2}:[0-9]{1,2} [A,P]M/"
+                    )
+                )
                 {
                     var messagesInThisChat = await this._messageRepository.FindByChatIdAsync(chatParticipant.ChatId);
                     var firstUserMessage = messagesInThisChat.Where(m => m.UserId != "Bot").MinBy(m => m.Timestamp);
