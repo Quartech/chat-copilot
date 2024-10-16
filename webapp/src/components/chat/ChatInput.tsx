@@ -297,34 +297,6 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
                     }}
                 />
                 <div className={classes.controls}>
-                    <div className={classes.functional}>
-                        {/* Hidden input for file upload. Only accept .txt and .pdf files for now. */}
-                        <input
-                            type="file"
-                            ref={documentFileRef}
-                            style={{ display: 'none' }}
-                            accept={Constants.app.importTypes}
-                            multiple={true}
-                            onChange={() => {
-                                void fileHandler.handleImport(selectedId, documentFileRef);
-                            }}
-                        />
-                        <Button
-                            disabled={
-                                chatState.disabled ||
-                                (chatState.importingDocuments && chatState.importingDocuments.length > 0)
-                            }
-                            size="large"
-                            appearance="transparent"
-                            icon={<AttachRegular />}
-                            onClick={() => documentFileRef.current?.click()}
-                            title="Attach file"
-                            aria-label="Attach file button"
-                        />
-                        {chatState.importingDocuments && chatState.importingDocuments.length > 0 && (
-                            <Spinner size="tiny" />
-                        )}
-                    </div>
                     <div className={classes.essentials}>
                         {recognizer && (
                             <Button
