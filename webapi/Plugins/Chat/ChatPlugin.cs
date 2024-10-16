@@ -117,7 +117,7 @@ public class ChatPlugin
         IOptions<QAzureOpenAIChatOptions> qAzureOpenAIChatOptions,
         ILogger logger,
         AzureContentSafety? contentSafety = null,
-        bool isUserIntentExtractionEnabled = true
+        bool isUserIntentExtractionEnabled = false
     ) // Parameter for feature flag
     {
         this._logger = logger;
