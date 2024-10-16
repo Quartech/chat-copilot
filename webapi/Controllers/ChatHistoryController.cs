@@ -195,6 +195,12 @@ public class ChatHistoryController : ControllerBase
             ChatSession? chat = null;
             if (await this._sessionRepository.TryFindByIdAsync(chatParticipant.ChatId, callback: v => chat = v))
             {
+                var messagesInThisChat = await this._messageRepository.FindByChatIdAsync(chatParticipant.ChatId);
+                var firstUserMessage = messagesInThisChat.Where(m => m.UserId != "Bot").MinBy(m => m.Timestamp);
+                if (firstUserMessage != null)
+                {
+                    chat!.Title = firstUserMessage.Content;
+                }
                 chats.Add(chat!);
             }
             else
