@@ -199,7 +199,7 @@ public class ChatHistoryController : ControllerBase
                 if (
                     Regex.IsMatch(
                         chat!.Title,
-                        @"/Q-Pilot @ [0-9]{1,2}\/[0-9]{1,2}\/[0-9]{1,4}, [0-9]{1,2}:[0-9]{1,2}:[0-9]{1,2} [A,P]M/"
+                        @"Q-Pilot @ [0-9]{1,2}\/[0-9]{1,2}\/[0-9]{1,4}, [0-9]{1,2}:[0-9]{1,2}:[0-9]{1,2} [A,P]M"
                     )
                 )
                 {
