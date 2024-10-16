@@ -81,6 +81,12 @@ public class QAzureOpenAIChatExtension
             var openAIDeploymentConnection = this._qAzureOpenAIChatOptions.OpenAIDeploymentConnections.FirstOrDefault(
                 c => c.Name == qSpecializationIndex.OpenAIDeploymentConnection
             );
+            if (aiSearchDeploymentConnection == null || openAIDeploymentConnection == null)
+            {
+                throw new InvalidOperationException(
+                    "Configuration error: AI Search Deployment Connection or OpenAI Deployment Connection is missing."
+                );
+            }
             if (openAIDeploymentConnection.Endpoint == null || openAIDeploymentConnection.APIKey == null)
             {
                 throw new InvalidOperationException("OpenAI Deployment Connection or its endpoint  is missing.");
@@ -89,12 +95,6 @@ public class QAzureOpenAIChatExtension
                 openAIDeploymentConnection.Endpoint,
                 qSpecializationIndex
             );
-            if (aiSearchDeploymentConnection == null || openAIDeploymentConnection == null)
-            {
-                throw new InvalidOperationException(
-                    "Configuration error: AI Search Deployment Connection or OpenAI Deployment Connection is missing."
-                );
-            }
             return new AzureChatExtensionsOptions()
             {
                 Extensions =

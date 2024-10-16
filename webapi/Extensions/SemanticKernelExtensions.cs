@@ -239,14 +239,11 @@ internal static class SemanticKernelExtensions
         {
             case string x when x.Equals("AzureOpenAI", StringComparison.OrdinalIgnoreCase):
             case string y when y.Equals("AzureOpenAIEmbedding", StringComparison.OrdinalIgnoreCase):
-                var azureAIOptions = memoryOptions.GetServiceConfig<AzureOpenAIConfig>(
-                    configuration,
-                    "AzureOpenAIEmbedding"
-                );
+                var chatOptions = provider.GetRequiredService<IOptions<QAzureOpenAIChatOptions>>().Value;
                 return new ChatArchiveEmbeddingConfig
                 {
                     AIService = ChatArchiveEmbeddingConfig.AIServiceType.AzureOpenAIEmbedding,
-                    DeploymentOrModelId = azureAIOptions.Deployment,
+                    DeploymentOrModelId = chatOptions.DefaultEmbeddingModel,
                 };
 
             case string x when x.Equals("OpenAI", StringComparison.OrdinalIgnoreCase):
