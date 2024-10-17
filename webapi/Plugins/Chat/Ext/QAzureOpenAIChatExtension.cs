@@ -64,9 +64,7 @@ public class QAzureOpenAIChatExtension
             return null;
         }
 
-        QAzureOpenAIChatOptions.QSpecializationIndex? qSpecializationIndex = this.GetSpecializationIndexByName(
-            specialization.IndexName
-        );
+        var qSpecializationIndex = this.GetSpecializationIndexByName(specialization.IndexName);
         if (qSpecializationIndex == null)
         {
             return null;

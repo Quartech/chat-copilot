@@ -117,7 +117,7 @@ public class ChatPlugin
         IOptions<QAzureOpenAIChatOptions> qAzureOpenAIChatOptions,
         ILogger logger,
         AzureContentSafety? contentSafety = null,
-        bool isUserIntentExtractionEnabled = false
+        bool isUserIntentExtractionEnabled = true
     ) // Parameter for feature flag
     {
         this._logger = logger;
@@ -1131,109 +1131,132 @@ public class ChatPlugin
                 : new List<CitationSource>();
 
         // Stream the message to the client
-        await foreach (var contentPiece in stream)
+        try
         {
-            accumulatedContent.Append(contentPiece.ToString());
-            if (contentPiece.InnerContent is not null)
+            await foreach (var contentPiece in stream)
             {
-                Azure.AI.OpenAI.StreamingChatCompletionsUpdate actx = (Azure.AI.OpenAI.StreamingChatCompletionsUpdate)
-                    contentPiece.InnerContent;
-                if (actx.AzureExtensionsContext != null && actx.AzureExtensionsContext.Citations != null)
+                accumulatedContent.Append(contentPiece.ToString());
+                if (contentPiece.InnerContent is not null)
                 {
-                    foreach (
-                        AzureChatExtensionDataSourceResponseCitation citation in actx.AzureExtensionsContext.Citations
-                    )
+                    Azure.AI.OpenAI.StreamingChatCompletionsUpdate actx =
+                        (Azure.AI.OpenAI.StreamingChatCompletionsUpdate)contentPiece.InnerContent;
+                    if (actx.AzureExtensionsContext != null && actx.AzureExtensionsContext.Citations != null)
                     {
-                        var sourceName = citation.Filepath;
-                        var link = citation.Filepath;
-                        if (citationCountMap.TryGetValue(sourceName, out int count))
+                        foreach (
+                            AzureChatExtensionDataSourceResponseCitation citation in actx.AzureExtensionsContext.Citations
+                        )
                         {
-                            citationCountMap[sourceName]++;
-                            sourceName = $"{sourceName} - Part {citationCountMap[sourceName]}";
-                        }
-                        else
-                        {
-                            citationCountMap[sourceName] = 1;
-                            // Check if this is the only occurrence
-                            if (actx.AzureExtensionsContext.Citations.Count(c => c.Filepath == citation.Filepath) > 1)
+                            var sourceName = citation.Filepath;
+                            var link = citation.Filepath;
+                            if (citationCountMap.TryGetValue(sourceName, out int count))
                             {
-                                sourceName = $"{sourceName} - Part 1";
+                                citationCountMap[sourceName]++;
+                                sourceName = $"{sourceName} - Part {citationCountMap[sourceName]}";
                             }
-                        }
-                        // Collect citation here
-                        string fileExtension = Path.GetExtension(link).TrimStart('.').ToLower(); // Extract and normalize the file extension
-                        string contentType = fileExtension switch
-                        {
-                            "pdf" => "application/pdf", // PDF files
-                            "doc" => "application/msword", // Microsoft Word documents
-                            "docx" => "application/vnd.openxmlformats-officedocument.wordprocessingml.document", // Microsoft Word (OpenXML)
-                            "jpg" => "image/jpeg", // JPEG images
-                            "jpeg" => "image/jpeg", // JPEG images
-                            "png" => "image/png", // PNG images
-                            "gif" => "image/gif", // GIF images
-                            "csv" => "text/csv", // CSV files
-                            _ =>
-                                "application/octet-stream" // Default content type for unknown extensions
-                            ,
-                        };
-
-                        responseCitations.Add(
-                            new CitationSource
+                            else
                             {
-                                Link = link,
-                                SourceName = sourceName,
-                                Snippet = citation.Content,
-                                SourceContentType = contentType, // Use the dynamically determined content type
+                                citationCountMap[sourceName] = 1;
+                                // Check if this is the only occurrence
+                                if (
+                                    actx.AzureExtensionsContext.Citations.Count(c => c.Filepath == citation.Filepath)
+                                    > 1
+                                )
+                                {
+                                    sourceName = $"{sourceName} - Part 1";
+                                }
                             }
-                        );
+                            // Collect citation here
+                            string fileExtension = Path.GetExtension(link).TrimStart('.').ToLower(); // Extract and normalize the file extension
+                            string contentType = fileExtension switch
+                            {
+                                "pdf" => "application/pdf", // PDF files
+                                "doc" => "application/msword", // Microsoft Word documents
+                                "docx" => "application/vnd.openxmlformats-officedocument.wordprocessingml.document", // Microsoft Word (OpenXML)
+                                "jpg" => "image/jpeg", // JPEG images
+                                "jpeg" => "image/jpeg", // JPEG images
+                                "png" => "image/png", // PNG images
+                                "gif" => "image/gif", // GIF images
+                                "csv" => "text/csv", // CSV files
+                                _ =>
+                                    "application/octet-stream" // Default content type for unknown extensions
+                                ,
+                            };
+
+                            responseCitations.Add(
+                                new CitationSource
+                                {
+                                    Link = link,
+                                    SourceName = sourceName,
+                                    Snippet = citation.Content,
+                                    SourceContentType = contentType, // Use the dynamically determined content type
+                                }
+                            );
+                        }
                     }
                 }
-            }
 
-            // Filter citations to include only those referenced in the current content piece
-            var referencedCitations = new HashSet<string>();
-            var matches = citationPattern.Matches(accumulatedContent.ToString());
-            foreach (Match match in matches)
-            {
-                if (match.Groups.Count > 1)
+                // Filter citations to include only those referenced in the current content piece
+                var referencedCitations = new HashSet<string>();
+                var matches = citationPattern.Matches(accumulatedContent.ToString());
+                foreach (Match match in matches)
                 {
-                    var referenceIndex = int.Parse(match.Groups[1].Value.AsSpan(3), CultureInfo.InvariantCulture) - 1; // Extract the index from "docX"
-                    if (referenceIndex >= 0 && referenceIndex < responseCitations.Count)
+                    if (match.Groups.Count > 1)
                     {
-                        referencedCitations.Add(responseCitations[referenceIndex].SourceName);
+                        var referenceIndex =
+                            int.Parse(match.Groups[1].Value.AsSpan(3), CultureInfo.InvariantCulture) - 1; // Extract the index from "docX"
+                        if (referenceIndex >= 0 && referenceIndex < responseCitations.Count)
+                        {
+                            referencedCitations.Add(responseCitations[referenceIndex].SourceName);
+                        }
                     }
                 }
-            }
 
-            var filteredCitations = responseCitations
-                .Where(citation => referencedCitations.Contains(citation.SourceName))
-                .ToList();
+                var filteredCitations = responseCitations
+                    .Where(citation => referencedCitations.Contains(citation.SourceName))
+                    .ToList();
 
-            // Replace citations with superscript numbers in the current content piece
-            var processedContentPiece = citationPattern.Replace(
-                contentPiece.ToString(),
-                match =>
+                // Replace citations with superscript numbers in the current content piece
+                var processedContentPiece = citationPattern.Replace(
+                    contentPiece.ToString(),
+                    match =>
+                    {
+                        var citationKey = match.Groups[1].Value;
+                        if (!citationIndexMap.TryGetValue(citationKey, out int value))
+                        {
+                            value = citationIndexMap.Count + 1;
+                            citationIndexMap[citationKey] = value;
+                        }
+                        return $"^{value}^";
+                    }
+                );
+
+                // Update the message content and citations on the client
+                chatMessage.Content += processedContentPiece;
+
+                // Determine citations based on specialization
+                if (this._qSpecialization?.Id != this._qAzureOpenAIChatExtension.DefaultSpecialization)
                 {
-                    var citationKey = match.Groups[1].Value;
-                    if (!citationIndexMap.TryGetValue(citationKey, out int value))
-                    {
-                        value = citationIndexMap.Count + 1;
-                        citationIndexMap[citationKey] = value;
-                    }
-                    return $"^{value}^";
+                    chatMessage.Citations = filteredCitations;
                 }
-            );
 
-            // Update the message content and citations on the client
-            chatMessage.Content += processedContentPiece;
-
-            // Determine citations based on specialization
-            if (this._qSpecialization?.Id != this._qAzureOpenAIChatExtension.DefaultSpecialization)
-            {
-                chatMessage.Citations = filteredCitations;
+                // Update the message on the client with the new content and possibly updated citations
+                await this.UpdateMessageOnClient(chatMessage, cancellationToken);
             }
+        }
+        catch (Exception ex) when (ex.Message.Contains("max_tokens was reached", StringComparison.Ordinal))
+        {
+            Console.WriteLine($"Token limit reached. Error details: {ex.Message}");
 
-            // Update the message on the client with the new content and possibly updated citations
+            /*
+            Handling 'max_tokens was reached' error:
+            - This error typically occurs on first request when the response token limit is set too low for the model to generate a coherent response.
+            - It seems there might be some initial token overhead or info caching that causes this.
+            - Instead of failing the entire operation, we return a message to maintain user experience.
+            - This approach assumes that subsequent requests will work due to possible cached information.
+            - The exact cause is not fully understood but I suspect the impact of semantic memories on token consumption might be a contributing factor.
+            */
+
+            chatMessage.Content = "Please try again; the first request hit a token limit.";
             await this.UpdateMessageOnClient(chatMessage, cancellationToken);
         }
 
