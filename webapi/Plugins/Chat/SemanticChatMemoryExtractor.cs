@@ -30,6 +30,7 @@ internal static class SemanticChatMemoryExtractor
     /// <param name="cancellationToken">The cancellation token.</param>
     public static async Task ExtractSemanticChatMemoryAsync(
         string chatId,
+        int responseTokenLimit,
         IKernelMemory memoryClient,
         Kernel kernel,
         KernelArguments kernelArguments,
@@ -50,7 +51,12 @@ internal static class SemanticChatMemoryExtractor
                     );
                     continue;
                 }
-                var semanticMemory = await ExtractCognitiveMemoryAsync(memoryType, memoryName, logger);
+                var semanticMemory = await ExtractCognitiveMemoryAsync(
+                    memoryType,
+                    memoryName,
+                    responseTokenLimit,
+                    logger
+                );
                 foreach (var item in semanticMemory.Items)
                 {
                     await CreateMemoryAsync(memoryName, item.ToFormattedString());
@@ -72,7 +78,12 @@ internal static class SemanticChatMemoryExtractor
         /// <summary>
         /// Extracts the semantic chat memory from the chat session.
         /// </summary>
-        async Task<SemanticChatMemory> ExtractCognitiveMemoryAsync(string memoryType, string memoryName, ILogger logger)
+        async Task<SemanticChatMemory> ExtractCognitiveMemoryAsync(
+            string memoryType,
+            string memoryName,
+            int responseTokenLimit,
+            ILogger logger
+        )
         {
             if (!options.MemoryMap.TryGetValue(memoryName, out var memoryPrompt))
             {
@@ -81,7 +92,7 @@ internal static class SemanticChatMemoryExtractor
 
             // Token limit for chat history
             var tokenLimit = options.CompletionTokenLimit;
-            var remainingToken = tokenLimit - options.ResponseTokenLimit - TokenUtils.TokenCount(memoryPrompt);
+            var remainingToken = tokenLimit - responseTokenLimit - TokenUtils.TokenCount(memoryPrompt);
 
             var memoryExtractionArguments = new KernelArguments(kernelArguments);
             memoryExtractionArguments["tokenLimit"] = remainingToken.ToString(new NumberFormatInfo());

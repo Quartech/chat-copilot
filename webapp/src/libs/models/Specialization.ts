@@ -13,6 +13,8 @@ export interface ISpecialization {
     restrictResultScope: boolean;
     strictness: number;
     documentCount: number;
+    pastMessagesIncludedCount: number;
+    maxResponseTokenLimit: number;
     initialChatMessage: string;
 }
 
@@ -36,6 +38,8 @@ export interface ISpecializationRequest {
     restrictResultScope: boolean;
     strictness: number;
     documentCount: number;
+    pastMessagesIncludedCount: number;
+    maxResponseTokenLimit: number;
 }
 
 export interface ISpecializationToggleRequest {
