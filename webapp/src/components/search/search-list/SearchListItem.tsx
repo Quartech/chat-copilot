@@ -1,10 +1,9 @@
 import { makeStyles, mergeClasses, shorthands, tokens } from '@fluentui/react-components';
 
-import { FC } from 'react';
+import { FC, useId } from 'react';
 import { useAppDispatch } from '../../../redux/app/hooks';
-import { Breakpoints, SharedStyles } from '../../../styles';
 import { setSelectedSearchItem } from '../../../redux/features/search/searchSlice';
-import { useId } from 'react';
+import { Breakpoints, SharedStyles } from '../../../styles';
 
 const useClasses = makeStyles({
     root: {
@@ -77,16 +76,17 @@ const useClasses = makeStyles({
 
 interface ISearchListItemProps {
     label: string;
-    id: string;
+    id: number;
+    filename: string;
     isSelected: boolean;
 }
 
-export const SearchListItem: FC<ISearchListItemProps> = ({ label, id, isSelected }) => {
+export const SearchListItem: FC<ISearchListItemProps> = ({ label, id, filename, isSelected }) => {
     const classes = useClasses();
     const dispatch = useAppDispatch();
 
     const onClick = (_ev: any) => {
-        dispatch(setSelectedSearchItem(id));
+        dispatch(setSelectedSearchItem({ id, filename }));
     };
 
     return (
@@ -97,7 +97,7 @@ export const SearchListItem: FC<ISearchListItemProps> = ({ label, id, isSelected
             title={label}
             aria-label={label}
         >
-            {label}
+            <p dangerouslySetInnerHTML={{ __html: label }} />
         </div>
     );
 };
