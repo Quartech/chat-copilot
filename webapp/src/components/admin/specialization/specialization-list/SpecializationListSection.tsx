@@ -3,10 +3,9 @@
 import { makeStyles, shorthands, Text, tokens } from '@fluentui/react-components';
 import React from 'react';
 import { DropTargetMonitor, useDrop } from 'react-dnd';
-import { useDispatch } from 'react-redux';
+import { useSpecialization } from '../../../../libs/hooks';
 import { useAppSelector } from '../../../../redux/app/hooks';
 import { RootState } from '../../../../redux/app/store';
-import { swapSpecializationOrder } from '../../../../redux/features/admin/adminSlice';
 import { Breakpoints } from '../../../../styles';
 import { SpecializationListItem } from './SpecializationListItem';
 
@@ -42,7 +41,7 @@ interface IChatListSectionProps {
  */
 export const SpecializationListSection: React.FC<IChatListSectionProps> = ({ header }) => {
     const classes = useClasses();
-    const dispatch = useDispatch();
+    const specialization = useSpecialization();
     const { specializations, selectedId } = useAppSelector((state: RootState) => state.admin);
 
     const dropRef = React.useRef<HTMLDivElement | null>(null);
@@ -50,11 +49,14 @@ export const SpecializationListSection: React.FC<IChatListSectionProps> = ({ hea
     const [, drop] = useDrop({
         accept: 'Specialization',
         drop: (item: { id: string }, monitor: DropTargetMonitor) => {
-            const dragId = item.id;
-            const hoverId = getHoverId(monitor, dropRef.current);
+            const fromId = item.id;
+            const toId = getHoverId(monitor, dropRef.current);
+            if (fromId === toId) return;
 
-            if (dragId !== hoverId) {
-                dispatch(swapSpecializationOrder({ fromId: dragId, toId: hoverId }));
+            const fromOrder = specializations.find((s) => s.id === fromId)?.order ?? 0;
+            const toOrder = specializations.find((s) => s.id === toId)?.order ?? 0;
+            if (fromOrder !== toOrder) {
+                void specialization.swapSpecializationOrder({ fromId, fromOrder, toId, toOrder });
             }
         },
     });
@@ -90,20 +92,23 @@ export const SpecializationListSection: React.FC<IChatListSectionProps> = ({ hea
                     drop(element);
                 }}
             >
-                {specializations.map((specialization) => {
-                    if (specialization.id === 'general') return null;
-                    const isSelected = specialization.id === selectedId;
-                    return (
-                        <SpecializationListItem
-                            key={specialization.id}
-                            specializationId={specialization.id}
-                            label={specialization.label}
-                            name={specialization.name}
-                            specializationMode={specialization.isActive}
-                            isSelected={isSelected}
-                        />
-                    );
-                })}
+                {specializations
+                    .slice()
+                    .sort((a, b) => a.order - b.order)
+                    .map((specialization) => {
+                        if (specialization.id === 'general') return null;
+                        const isSelected = specialization.id === selectedId;
+                        return (
+                            <SpecializationListItem
+                                key={specialization.id}
+                                specializationId={specialization.id}
+                                label={specialization.label}
+                                name={specialization.name}
+                                specializationMode={specialization.isActive}
+                                isSelected={isSelected}
+                            />
+                        );
+                    })}
             </div>
         </div>
     ) : null;

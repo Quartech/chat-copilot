@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { ISpecialization } from '../../../libs/models/Specialization';
+import { ISpecialization, ISpecializationSwapOrder } from '../../../libs/models/Specialization';
 import { AdminState, initialState } from './AdminState';
 
 export const adminSlice = createSlice({
@@ -47,20 +47,21 @@ export const adminSlice = createSlice({
             );
             state.specializations = updatedSpecializations;
         },
-        swapSpecializationOrder: (state: AdminState, action: PayloadAction<{ fromId: string; toId: string }>) => {
-            const { fromId, toId } = action.payload;
-            const fromIndex = state.specializations.findIndex((s) => s.id === fromId);
-            const toIndex = state.specializations.findIndex((s) => s.id === toId);
+        swapSpecialization: (state: AdminState, action: PayloadAction<ISpecializationSwapOrder>) => {
+            const { fromId, fromOrder, toId, toOrder } = action.payload;
 
-            if (fromIndex === -1 || toIndex === -1 || fromId === toId) {
+            if (fromId === toId || fromOrder === -1 || toOrder === -1 || fromOrder === toOrder) {
                 return state;
             }
 
             const newSpecializations = [...state.specializations];
-            [newSpecializations[fromIndex], newSpecializations[toIndex]] = [
-                newSpecializations[toIndex],
-                newSpecializations[fromIndex],
-            ];
+            for (let i = 0; i < newSpecializations.length; i++) {
+                if (newSpecializations[i].id === fromId) {
+                    newSpecializations[i] = { ...newSpecializations[i], order: toOrder };
+                } else if (newSpecializations[i].id === toId) {
+                    newSpecializations[i] = { ...newSpecializations[i], order: fromOrder };
+                }
+            }
 
             return { ...state, specializations: newSpecializations };
         },
@@ -77,7 +78,7 @@ export const {
     addSpecialization,
     editSpecialization,
     removeSpecialization,
-    swapSpecializationOrder,
+    swapSpecialization,
 } = adminSlice.actions;
 
 export default adminSlice.reducer;

@@ -43,3 +43,10 @@ export interface ISpecializationRequest {
 export interface ISpecializationToggleRequest {
     isActive: boolean;
 }
+
+export interface ISpecializationSwapOrder {
+    fromId: string;
+    fromOrder: number;
+    toId: string;
+    toOrder: number;
+}

@@ -10,10 +10,11 @@ import {
     setChatCompletionDeployments,
     setSpecializationIndexes,
     setSpecializations,
+    swapSpecialization,
 } from '../../redux/features/admin/adminSlice';
 import { AuthHelper } from '../auth/AuthHelper';
 import { AlertType } from '../models/AlertType';
-import { ISpecialization, ISpecializationRequest } from '../models/Specialization';
+import { ISpecialization, ISpecializationRequest, ISpecializationSwapOrder } from '../models/Specialization';
 import { SpecializationService } from '../services/SpecializationService';
 
 export const useSpecialization = () => {
@@ -148,6 +149,20 @@ export const useSpecialization = () => {
             });
     };
 
+    const swapSpecializationOrder = async (specializationSwapOrder: ISpecializationSwapOrder) => {
+        dispatch(swapSpecialization(specializationSwapOrder));
+        try {
+            await specializationService.swapSpecializationOrder(
+                specializationSwapOrder,
+                await AuthHelper.getSKaaSAccessToken(instance, inProgress),
+            );
+        } catch (e: any) {
+            console.log(e);
+            const errorMessage = `Failed to swap specialization order. Details: ${getErrorDetails(e)}`;
+            dispatch(addAlert({ message: errorMessage, type: AlertType.Error }));
+        }
+    };
+
     return {
         loadSpecializations,
         loadSpecializationIndexes,
@@ -156,5 +171,6 @@ export const useSpecialization = () => {
         updateSpecialization,
         toggleSpecialization,
         deleteSpecialization,
+        swapSpecializationOrder,
     };
 };
