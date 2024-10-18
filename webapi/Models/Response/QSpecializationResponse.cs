@@ -101,6 +101,11 @@ public class QSpecializationResponse
     public IList<string> GroupMemberships { get; set; } = new List<string>();
 
     /// <summary>
+    /// Order of the specialization.
+    /// </summary>
+    public int? Order { get; set; } = 0;
+
+    /// <summary>
     /// Creates new instance from SpecializationSource.
     /// </summary>
     public QSpecializationResponse(Specialization specializationSource)
@@ -118,6 +123,7 @@ public class QSpecializationResponse
         this.DocumentCount = specializationSource.DocumentCount;
         this.GroupMemberships = specializationSource.GroupMemberships;
         this.InitialChatMessage = specializationSource.InitialChatMessage;
+        this.Order = specializationSource.Order;
         if (specializationSource.IndexName != null)
         {
             this.IndexName = specializationSource.IndexName;

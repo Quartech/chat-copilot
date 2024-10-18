@@ -93,7 +93,8 @@ public class QSpecializationService : IQSpecializationService
                 qSpecializationMutate.DocumentCount,
                 imageFilePath,
                 iconFilePath,
-                qSpecializationMutate.GroupMemberships.Split(',')
+                qSpecializationMutate.GroupMemberships.Split(','),
+                qSpecializationMutate.Order
             );
 
         await this._specializationSourceRepository.CreateAsync(specializationSource);
@@ -205,6 +206,11 @@ public class QSpecializationService : IQSpecializationService
             }
         }
         return true;
+    }
+
+    public async Task SwapSpecializationOrder(QSpecializationSwapOrder qSpecializationSwapOrder)
+    {
+
     }
 
     /// <summary>

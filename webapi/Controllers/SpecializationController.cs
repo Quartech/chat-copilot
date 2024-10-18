@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using CopilotChat.WebApi.Auth;
 using CopilotChat.WebApi.Models.Request;
@@ -75,7 +76,7 @@ public class SpecializationController : ControllerBase
         }
         var defaultSpecialization = this.GetDefaultSpecialization();
         specializationResponses.Add(new QSpecializationResponse(defaultSpecialization));
-        return this.Ok(specializationResponses);
+        return this.Ok(specializationResponses.OrderBy(spec => spec.Order ?? int.MaxValue).ToList());
     }
 
     /// <summary>
@@ -215,6 +216,23 @@ public class SpecializationController : ControllerBase
         }
     }
 
+    [HttpPost]
+    [Route("specializations/order")]
+    public async Task<IActionResult> SwapSpecializationOrderAsync([FromBody] QSpecializationSwapOrder qSpecializationSwapOrder)
+    {
+        try
+        {
+            await this._qspecializationService.SwapSpecializationOrder(qSpecializationSwapOrder);
+            return this.Ok("Specialization order updated successfully.");
+        }
+        catch(Azure.RequestFailedException ex)
+        {
+            this._logger.LogError(ex, "Specialization swap order threw an exception");
+
+            return this.StatusCode(500, $"Failed to swap specialization order for fromId '{qSpecializationSwapOrder.FromId}' and toId '{qSpecializationSwapOrder.ToId}'.");
+        }
+    }
+
     /// <summary>
     /// Gets the default specialization
     /// </summary>
@@ -236,6 +254,7 @@ public class SpecializationController : ControllerBase
             RestrictResultScope = this._qAzureOpenAIChatOptions.DefaultRestrictResultScope,
             Strictness = this._qAzureOpenAIChatOptions.DefaultStrictness,
             DocumentCount = this._qAzureOpenAIChatOptions.DefaultDocumentCount,
+            Order = 0,
         };
 
         return defaultSpecialization;

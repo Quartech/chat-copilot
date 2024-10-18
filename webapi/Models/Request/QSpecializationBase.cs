@@ -84,4 +84,10 @@ public class QSpecializationBase
     [JsonPropertyName("documentCount")]
     [Range(3, 20, ErrorMessage = "Document count must be between 3 and 20.")]
     public int? DocumentCount { get; set; }
+
+    /// <summary>
+    /// Document Count of the specialization
+    /// </summary>>
+    [JsonPropertyName("order")]
+    public int? Order { get; set; }
 }
