@@ -239,9 +239,8 @@ public class QSpecializationService : IQSpecializationService
         }
 
         // Swap the orders
-        var tempOrder = fromSpec.Order;
-        fromSpec.Order = toSpec.Order;
-        toSpec.Order = tempOrder;
+        fromSpec.Order = swapOrderModel.ToOrder;
+        toSpec.Order = swapOrderModel.FromOrder;
 
         await Task.WhenAll(
             this._specializationSourceRepository.UpsertAsync(fromSpec),
