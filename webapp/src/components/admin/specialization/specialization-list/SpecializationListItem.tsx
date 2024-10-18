@@ -112,9 +112,6 @@ export const SpecializationListItem: FC<ISpecializationListItemProps> = ({
                     <Text className={classes.specialization} title={label}>
                         {label}
                     </Text>
-                    <Text className={classes.specialization} title={label}>
-                        {specializationId}
-                    </Text>
                 </div>
                 <SpecializationListItemActions
                     specializationId={specializationId}

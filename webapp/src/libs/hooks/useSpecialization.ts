@@ -157,7 +157,6 @@ export const useSpecialization = () => {
                 await AuthHelper.getSKaaSAccessToken(instance, inProgress),
             );
         } catch (e: any) {
-            console.log(e);
             const errorMessage = `Failed to swap specialization order. Details: ${getErrorDetails(e)}`;
             dispatch(addAlert({ message: errorMessage, type: AlertType.Error }));
         }
