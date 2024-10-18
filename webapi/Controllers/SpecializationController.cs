@@ -76,7 +76,7 @@ public class SpecializationController : ControllerBase
         }
         var defaultSpecialization = this.GetDefaultSpecialization();
         specializationResponses.Add(new QSpecializationResponse(defaultSpecialization));
-        return this.Ok(specializationResponses.OrderBy(spec => spec.Order ?? int.MaxValue).ToList());
+        return this.Ok(specializationResponses);
     }
 
     /// <summary>
