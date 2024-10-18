@@ -75,11 +75,16 @@ export const ChatType: FC = () => {
                 <Tab data-testid="searchTab" id="search" value="search" aria-label="Search Tab" title="Search Tab">
                     Search - Beta
                 </Tab>
-                {hasAdmin && (
-                    <Tab data-testid="adminTab" id="admin" value="admin" aria-label="admin Tab" title="Admin Tab">
-                        Admin
-                    </Tab>
-                )}
+                <Tab
+                    disabled={!hasAdmin}
+                    data-testid="adminTab"
+                    id="admin"
+                    value="admin"
+                    aria-label="admin Tab"
+                    title="Admin Tab"
+                >
+                    Admin
+                </Tab>
             </TabList>
             {selectedTab === 'chat' && <ChatList />}
             {selectedTab === 'search' && <SearchList />}
