@@ -218,11 +218,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
             return true;
         } else {
             const lastMessage = chatState.messages[chatState.messages.length - 1];
-            if (lastMessage.userName === 'Bot') {
-                return lastMessage.content.length < 1;
-            } else {
-                return true;
-            }
+            return lastMessage.userName !== 'Bot' || lastMessage.content.length < 1;
         }
     };
 

@@ -1106,32 +1106,29 @@ public class ChatPlugin
 
         // Create message on client
         CopilotChatMessage chatMessage;
-        if (!cancellationToken.IsCancellationRequested)
-        {
-            if (specializationkey == "general")
-            {
-                chatMessage = await this.CreateBotMessageOnClient(
-                    chatId,
-                    userId,
-                    JsonSerializer.Serialize(prompt),
-                    string.Empty,
-                    cancellationToken,
-                    citations
-                );
-            }
-            else
-            {
-                chatMessage = await this.CreateBotMessageOnClient(
-                    chatId,
-                    userId,
-                    JsonSerializer.Serialize(prompt),
-                    string.Empty,
-                    cancellationToken,
-                    new List<CitationSource>()
-                );
-            }
-        }
 
+        if (specializationkey == "general")
+        {
+            chatMessage = await this.CreateBotMessageOnClient(
+                chatId,
+                userId,
+                JsonSerializer.Serialize(prompt),
+                string.Empty,
+                cancellationToken,
+                citations
+            );
+        }
+        else
+        {
+            chatMessage = await this.CreateBotMessageOnClient(
+                chatId,
+                userId,
+                JsonSerializer.Serialize(prompt),
+                string.Empty,
+                cancellationToken,
+                new List<CitationSource>()
+            );
+        }
         // Stream the message to the client
         await foreach (var contentPiece in stream)
         {
