@@ -48,12 +48,23 @@ export const SearchRoom: React.FC = () => {
     let metaData: ISearchMetaData = {};
 
     values.forEach((data) => {
-        data.matches.map((match) => {
-            if (match.id === selectedSearchItem) {
-                displayContent = match.content;
-                metaData = match.metadata;
-            }
-        });
+        // data.matches.map((match) => {
+        //     if (match.id === selectedSearchItem) {
+        //         displayContent = match.content;
+        //         metaData = match.metadata;
+        //     }
+        // });
+        if (data.filename === selectedSearchItem.filename) {
+            const regex = new RegExp(
+                `<PLACEHOLDER_${selectedSearchItem.id + 1}>(.*?)<\/PLACEHOLDER_${selectedSearchItem.id + 1}>`,
+            );
+            displayContent = [
+                data.placeholderMarkedText.replace(regex, (_match, p1: string) => {
+                    return `<mark>${p1}</mark>`;
+                }),
+            ];
+            metaData = data.matches[0].metadata;
+        }
     });
 
     const scrollViewTargetRef = React.useRef<HTMLDivElement>(null);
@@ -88,14 +99,14 @@ export const SearchRoom: React.FC = () => {
                             : <span>{metaData.source.url}</span>
                         </div>
                     )}
-                    {metaData.page_number !== undefined && (
+                    {/* {metaData.page_number !== undefined && (
                         <div>
                             <span>
                                 <b>Page Number</b>
                             </span>
                             : <span>{metaData.page_number}</span>
                         </div>
-                    )}
+                    )} */}
                 </div>
             </div>
             <div className={classes.input}></div>

@@ -12,6 +12,7 @@ const useClasses = makeStyles({
         display: 'flex',
         flexShrink: 0,
         width: '320px',
+        height: '100%',
         backgroundColor: tokens.colorNeutralBackground4,
         flexDirection: 'column',
         ...Breakpoints.small({
