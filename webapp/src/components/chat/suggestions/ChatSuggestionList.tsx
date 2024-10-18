@@ -25,11 +25,11 @@ interface ChatSuggestionListProps {
 export const ChatSuggestionList: React.FC<ChatSuggestionListProps> = ({
     onClickSuggestion,
 }: ChatSuggestionListProps) => {
-    const conversation = useAppSelector((state: RootState) => state.conversations);
+    const { conversations, selectedId } = useAppSelector((state: RootState) => state.conversations);
     const classes = useClasses();
     return (
         <div className={classes.root}>
-            {conversation.conversations[conversation.selectedId].suggestions.map((suggestion, idx) => (
+            {conversations[selectedId].suggestions.map((suggestion, idx) => (
                 <ChatSuggestion
                     onClick={onClickSuggestion}
                     key={`suggestions-${idx}`}

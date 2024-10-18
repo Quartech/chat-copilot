@@ -96,6 +96,12 @@ export const appSlice = createSlice({
         setAuthConfig: (state: AppState, action: PayloadAction<AppState['authConfig']>) => {
             state.authConfig = action.payload;
         },
+        showSpinner: (state: AppState) => {
+            state.isLoading = true;
+        },
+        hideSpinner: (state: AppState) => {
+            state.isLoading = false;
+        },
     },
 });
 
@@ -111,6 +117,8 @@ export const {
     setMaintenance,
     setAuthConfig,
     setFeatureFlag,
+    showSpinner,
+    hideSpinner,
 } = appSlice.actions;
 
 export default appSlice.reducer;

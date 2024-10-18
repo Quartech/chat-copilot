@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using CopilotChat.WebApi.Auth;
@@ -16,6 +17,7 @@ using CopilotChat.WebApi.Plugins.Chat.Ext;
 using CopilotChat.WebApi.Plugins.Utils;
 using CopilotChat.WebApi.Services;
 using CopilotChat.WebApi.Storage;
+using CopilotChat.WebApi.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -126,8 +128,9 @@ public class ChatHistoryController : ControllerBase
         {
             specialization = await this._qSpecializationService.GetSpecializationAsync(chatParameters.specializationId);
         }
-        var initialMessage =
-            specialization != null ? specialization.InitialChatMessage : this._promptOptions.InitialBotMessage;
+        var initialMessage = string.IsNullOrEmpty(specialization?.InitialChatMessage)
+            ? this._promptOptions.InitialBotMessage
+            : specialization.InitialChatMessage;
 
         // Create initial bot message
         var chatMessage = CopilotChatMessage.CreateBotResponseMessage(
@@ -142,7 +145,8 @@ public class ChatHistoryController : ControllerBase
         // Add the user to the chat session
         await this._participantRepository.CreateAsync(new ChatParticipant(this._authInfo.UserId, newChat.Id));
 
-        this._logger.LogDebug("Created chat session with id {0}.", newChat.Id);
+        var sanitizedChatId = RequestUtils.GetSanitizedParameter(newChat.Id);
+        this._logger.LogDebug("Created chat session with id {0}.", sanitizedChatId);
 
         return this.CreatedAtRoute(
             GetChatRoute,
@@ -194,6 +198,21 @@ public class ChatHistoryController : ControllerBase
             ChatSession? chat = null;
             if (await this._sessionRepository.TryFindByIdAsync(chatParticipant.ChatId, callback: v => chat = v))
             {
+                if (
+                    Regex.IsMatch(
+                        chat!.Title,
+                        @"Q-Pilot @ [0-9]{1,2}\/[0-9]{1,2}\/[0-9]{1,4}, [0-9]{1,2}:[0-9]{1,2}:[0-9]{1,2} [A,P]M"
+                    )
+                )
+                {
+                    var messagesInThisChat = await this._messageRepository.FindByChatIdAsync(chatParticipant.ChatId);
+                    var firstUserMessage = messagesInThisChat.Where(m => m.UserId != "Bot").MinBy(m => m.Timestamp);
+                    if (firstUserMessage != null)
+                    {
+                        chat!.Title = firstUserMessage.Content;
+                    }
+                }
+
                 chats.Add(chat!);
             }
             else

@@ -9,6 +9,7 @@ using CopilotChat.WebApi.Extensions;
 using CopilotChat.WebApi.Models.Request;
 using CopilotChat.WebApi.Options;
 using CopilotChat.WebApi.Storage;
+using CopilotChat.WebApi.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -66,8 +67,8 @@ public class ChatMemoryController : ControllerBase
     {
         // Sanitize the log input by removing new line characters.
         // https://github.com/microsoft/chat-copilot/security/code-scanning/1
-        var sanitizedChatId = GetSanitizedParameter(chatId);
-        var sanitizedMemoryType = GetSanitizedParameter(type);
+        var sanitizedChatId = RequestUtils.GetSanitizedParameter(chatId);
+        var sanitizedMemoryType = RequestUtils.GetSanitizedParameter(type);
 
         // Map the requested memoryType to the memory store container name
         if (!this._promptOptions.TryGetMemoryContainerName(type, out string memoryContainerName))
@@ -116,13 +117,4 @@ public class ChatMemoryController : ControllerBase
 
         return this.Ok(memories);
     }
-
-    #region Private
-
-    private static string GetSanitizedParameter(string parameterValue)
-    {
-        return parameterValue.Replace(Environment.NewLine, string.Empty, StringComparison.Ordinal);
-    }
-
-    # endregion
 }
