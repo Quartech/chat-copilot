@@ -87,7 +87,6 @@ export const SearchListItem: FC<ISearchListItemProps> = ({ label, id, filename, 
 
     const onClick = (_ev: any) => {
         dispatch(setSelectedSearchItem({ id, filename }));
-        document.getElementsByTagName('mark')[0].scrollIntoView();
     };
 
     return (

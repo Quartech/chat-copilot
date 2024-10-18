@@ -1,11 +1,11 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { initialState, SearchResponseTransform, SearchState } from './SearchState';
+import { initialState, SearchResponseFormatted, SearchState } from './SearchState';
 
 export const searchSlice = createSlice({
     name: 'search',
     initialState,
     reducers: {
-        setSearch: (state: SearchState, action: PayloadAction<SearchResponseTransform>) => {
+        setSearch: (state: SearchState, action: PayloadAction<SearchResponseFormatted>) => {
             state.searchData = action.payload;
         },
         setSelectedSearchItem: (state: SearchState, action: PayloadAction<{ filename: string; id: number }>) => {

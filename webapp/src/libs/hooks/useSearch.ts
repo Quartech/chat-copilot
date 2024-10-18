@@ -25,6 +25,7 @@ export const useSearch = () => {
     const { instance, inProgress } = useMsal();
     const searchService = new SearchService();
 
+    // We want to get every instance of a placeholder tag, plus a few tokens of context for display in the sidebar.
     const findPlaceholderWithContext = (text: string, contextWords = 4) => {
         const pattern = /<PLACEHOLDER_\d+>(.*?)<\/PLACEHOLDER_\d+>/gi;
 
@@ -32,7 +33,6 @@ export const useSearch = () => {
         const matches = [];
         let match;
 
-        // Use exec to find all occurrences
         while ((match = pattern.exec(text)) !== null) {
             // Calculate the context tokens before and after the match
             const startTokens = text.slice(0, match.index).trim().split(/\s+/);
@@ -56,10 +56,11 @@ export const useSearch = () => {
     const replaceMarksWithPlaceholders = (inputString: string, startingIncrement = 0) => {
         let count = startingIncrement;
 
-        // Regex to match <span>anytextthere</span>
+        // Regex to match <mark>anytextthere</mark>
         const regex = /<mark>(.*?)<\/mark>/g;
 
         // Replace function that increments the count and keeps the inner text
+        // So for every <mark></mark>, we instead get <PLACEHOLDER_1></PLACEHOLDER_1>, <PLACEHOLDER_2></PLACEHOLDER_2>, etc...
         const result = inputString.replace(regex, (_match, p1) => {
             count++;
             return `<PLACEHOLDER_${count}>${p1}</PLACEHOLDER_${count}>`;

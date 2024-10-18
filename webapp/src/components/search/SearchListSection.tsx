@@ -10,7 +10,7 @@ import {
 import React, { useId } from 'react';
 import { useAppSelector } from '../../redux/app/hooks';
 import { RootState } from '../../redux/app/store';
-import { SearchValueExtended } from '../../redux/features/search/SearchState';
+import { SearchValueFormatted } from '../../redux/features/search/SearchState';
 import { Breakpoints } from '../../styles';
 import { SearchListItem } from './search-list/SearchListItem';
 
@@ -36,7 +36,7 @@ const useClasses = makeStyles({
 });
 
 interface ISearchListSectionProps {
-    value: SearchValueExtended;
+    value: SearchValueFormatted;
     index: number;
 }
 

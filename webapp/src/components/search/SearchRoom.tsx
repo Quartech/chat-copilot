@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 import { makeStyles, shorthands, tokens } from '@fluentui/react-components';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useSearch } from '../../libs/hooks/useSearch';
 import { ISearchMetaData } from '../../libs/models/SearchResponse';
 import { useAppSelector } from '../../redux/app/hooks';
@@ -48,13 +48,9 @@ export const SearchRoom: React.FC = () => {
     let metaData: ISearchMetaData = {};
 
     values.forEach((data) => {
-        // data.matches.map((match) => {
-        //     if (match.id === selectedSearchItem) {
-        //         displayContent = match.content;
-        //         metaData = match.metadata;
-        //     }
-        // });
         if (data.filename === selectedSearchItem.filename) {
+            //The placeholder tags exist to make it easy to find the currently selected text in the string and highlight it by replacing
+            //the placeholder tag with a mark tag.
             const regex = new RegExp(
                 `<PLACEHOLDER_${selectedSearchItem.id + 1}>(.*?)<\/PLACEHOLDER_${selectedSearchItem.id + 1}>`,
             );
@@ -72,6 +68,16 @@ export const SearchRoom: React.FC = () => {
     const handleSubmit = async (specialization: string, value: string) => {
         await search.getResponse(specialization, value);
     };
+
+    useEffect(() => {
+        //Every time the current mark tagged element changes, try to scroll that element into view, as it may be
+        //off screen when the document is large.
+        const elements = document.getElementsByTagName('mark');
+        if (elements.length > 0) {
+            const element = elements[0];
+            element.scrollIntoView({ block: 'center', behavior: 'smooth' });
+        }
+    }, [selectedSearchItem]);
 
     return (
         <div className={classes.root}>

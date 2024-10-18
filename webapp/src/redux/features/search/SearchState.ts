@@ -2,7 +2,7 @@ import { ISearchValue } from '../../../libs/models/SearchResponse';
 
 export interface SearchState {
     selected: boolean;
-    searchData: SearchResponseTransform;
+    searchData: SearchResponseFormatted;
     selectedSearchItem: { filename: string; id: number };
     selectedSpecializationId: string;
 }
@@ -14,14 +14,17 @@ export const initialState: SearchState = {
     selectedSpecializationId: '',
 };
 
+//Raw response data from search API
 export interface SearchResponse {
     count: number;
     value: ISearchValue[];
 }
 
-export type SearchValueExtended = ISearchValue & { placeholderMarkedText: string; entryPointList: string[] };
+//Search value, augmented with extra data that makes it easier to enumerate every match and distinguish <mark>'s
+export type SearchValueFormatted = ISearchValue & { placeholderMarkedText: string; entryPointList: string[] };
 
-export interface SearchResponseTransform {
+//Search response, augmented with SearchValueFormatted overtop of the original ISearchValue
+export interface SearchResponseFormatted {
     count: number;
-    value: SearchValueExtended[];
+    value: SearchValueFormatted[];
 }
