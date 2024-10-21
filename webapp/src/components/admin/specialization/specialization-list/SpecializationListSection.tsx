@@ -40,7 +40,7 @@ export const SpecializationListSection: React.FC<IChatListSectionProps> = ({ hea
             <Text className={classes.header}>{header}</Text>
             {specializations.map((specialization) => {
                 const isSelected = specialization.id === selectedId;
-                return specialization.id != 'general' ? (
+                return (
                     <SpecializationListItem
                         key={specialization.id}
                         specializationId={specialization.id}
@@ -49,7 +49,7 @@ export const SpecializationListSection: React.FC<IChatListSectionProps> = ({ hea
                         specializationMode={specialization.isActive}
                         isSelected={isSelected}
                     />
-                ) : null;
+                );
             })}
         </div>
     ) : null;

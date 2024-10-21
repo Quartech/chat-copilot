@@ -18,6 +18,11 @@ public class Specialization : IStorageEntity
     public string Id { get; set; }
 
     /// <summary>
+    /// Type of the specialization.
+    /// </summary>
+    public SpecializationType Type { get; set; }
+
+    /// <summary>
     /// Short representation of specialization.
     /// </summary>
     public string Label { get; set; }
@@ -116,6 +121,7 @@ public class Specialization : IStorageEntity
     public Specialization() { }
 
     public Specialization(
+        SpecializationType Type,
         string Label,
         string Name,
         string Description,
@@ -132,6 +138,7 @@ public class Specialization : IStorageEntity
     )
     {
         this.Id = Guid.NewGuid().ToString();
+        this.Type = Type;
         this.Label = Label;
         this.Name = Name;
         this.Description = Description;

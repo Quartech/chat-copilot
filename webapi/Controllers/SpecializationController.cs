@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using CopilotChat.WebApi.Auth;
 using CopilotChat.WebApi.Models.Request;
@@ -66,15 +67,20 @@ public class SpecializationController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<OkObjectResult> GetAllSpecializations()
     {
-        var specializationResponses = new List<QSpecializationResponse>();
-        IEnumerable<Specialization> specializations = await this._qspecializationService.GetAllSpecializations();
-        foreach (Specialization specialization in specializations)
+        var specializations = await this._qspecializationService.GetAllSpecializations();
+
+        var specializationResponses = specializations.Select(s => new QSpecializationResponse(s)).ToList();
+
+        // Check if the "general" specialization exists in the retrieved list
+        var generalSpecialization = specializationResponses.FirstOrDefault(s => s.Id == "general");
+
+        if (generalSpecialization == null)
         {
-            QSpecializationResponse qSpecializationResponse = new(specialization);
-            specializationResponses.Add(qSpecializationResponse);
+            // If "general" specialization is not found, get the default
+            var defaultSpecialization = this.GetDefaultSpecialization();
+            specializationResponses.Add(new QSpecializationResponse(defaultSpecialization));
         }
-        var defaultSpecialization = this.GetDefaultSpecialization();
-        specializationResponses.Add(new QSpecializationResponse(defaultSpecialization));
+
         return this.Ok(specializationResponses);
     }
 
@@ -223,8 +229,9 @@ public class SpecializationController : ControllerBase
     {
         var defaultSpecialization = new Specialization()
         {
-            Id = "general",
-            Label = "general",
+            Id = Guid.NewGuid().ToString(),
+            Type = SpecializationType.General,
+            Label = "General",
             Name = "General",
             Description = string.IsNullOrEmpty(this._qAzureOpenAIChatOptions.DefaultSpecializationDescription)
                 ? "This is a chat between an intelligent AI bot named Copilot and one or more participants. SK stands for Semantic Kernel, the AI platform used to build the bot."
@@ -236,6 +243,8 @@ public class SpecializationController : ControllerBase
             RestrictResultScope = this._qAzureOpenAIChatOptions.DefaultRestrictResultScope,
             Strictness = this._qAzureOpenAIChatOptions.DefaultStrictness,
             DocumentCount = this._qAzureOpenAIChatOptions.DefaultDocumentCount,
+            InitialChatMessage = this._promptOptions.InitialBotMessage,
+            GroupMemberships = new List<string> { this._qAzureOpenAIChatOptions.AdminGroupMembershipId }
         };
 
         return defaultSpecialization;

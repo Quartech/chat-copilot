@@ -103,6 +103,7 @@ export const SpecializationManager: React.FC = () => {
     const [editMode, setEditMode] = useState(false);
 
     const [id, setId] = useState('');
+    const [type, setType] = useState('');
     const [label, setLabel] = useState('');
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
@@ -131,6 +132,7 @@ export const SpecializationManager: React.FC = () => {
     const onSaveSpecialization = () => {
         if (editMode) {
             void specialization.updateSpecialization(id, {
+                type,
                 label,
                 name,
                 description,
@@ -149,6 +151,7 @@ export const SpecializationManager: React.FC = () => {
             });
         } else {
             void specialization.createSpecialization({
+                type,
                 label,
                 name,
                 description,
@@ -168,6 +171,7 @@ export const SpecializationManager: React.FC = () => {
 
     const resetSpecialization = () => {
         setId('');
+        setType('Standard');
         setLabel('');
         setName('');
         setDescription('');
@@ -189,6 +193,7 @@ export const SpecializationManager: React.FC = () => {
             const specializationObj = specializations.find((specialization) => specialization.id === selectedId);
             if (specializationObj) {
                 setId(specializationObj.id);
+                setType(specializationObj.type);
                 setLabel(specializationObj.label);
                 setName(specializationObj.name);
                 setDescription(specializationObj.description);

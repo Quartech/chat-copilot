@@ -14,6 +14,7 @@ export const Specializations = [
     {
         // Basic settings
         id: '',
+        type: 'General',
         label: 'general',
         name: 'General',
         description: 'General',

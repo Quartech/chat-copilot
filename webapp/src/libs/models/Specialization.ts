@@ -1,5 +1,6 @@
 export interface ISpecialization {
     id: string;
+    type: string;
     label: string;
     name: string;
     description: string;
@@ -22,6 +23,7 @@ export interface ISpecialization {
  */
 export interface ISpecializationRequest {
     label: string;
+    type: string;
     name: string;
     description: string;
     roleInformation: string;

@@ -18,6 +18,12 @@ public class QSpecializationResponse
     public string Id { get; set; } = string.Empty;
 
     /// <summary>
+    /// Type of the specialization
+    /// </summary>
+    [JsonPropertyName("type")]
+    public string Type { get; set; } = string.Empty;
+
+    /// <summary>
     /// Label of the specialization
     /// </summary>
     [JsonPropertyName("label")]
@@ -106,6 +112,7 @@ public class QSpecializationResponse
     public QSpecializationResponse(Specialization specializationSource)
     {
         this.Id = specializationSource.Id;
+        this.Type = specializationSource.Type.ToString();
         this.Label = specializationSource.Label;
         this.Name = specializationSource.Name;
         this.Description = specializationSource.Description;
