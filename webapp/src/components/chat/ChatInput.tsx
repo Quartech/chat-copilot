@@ -320,12 +320,12 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
                                 onClick={handleSpeech}
                             />
                         )}
-                        {chatState.botResponseStatus ? (
+                        {chatState.botResponseStatus === 'Generating bot response' ? (
                             <Button
                                 appearance="transparent"
                                 icon={<RecordStopRegular />}
                                 onClick={() => {
-                                    abortController?.abort();
+                                    abortController?.abort('The operation was aborted.');
                                     setAbortController(undefined);
                                 }}
                                 disabled={shouldDisableBotCancellation(chatState)}

@@ -28,12 +28,14 @@ export const ChatStatus: React.FC<ChatStatusProps> = (props: ChatStatusProps) =>
     const { activeUserInfo } = useAppSelector((state: RootState) => state.app);
 
     // The last message either from the user or the bot
-    // const lastMessage = props.chatState.messages[props.chatState.messages.length - 1];
+    const lastMessage = props.chatState.messages[props.chatState.messages.length - 1];
     const botResponseStatus = () => {
         if (props.chatState.messages.length < 1) {
             return undefined;
         }
-        return props.chatState.botResponseStatus;
+        return (lastMessage.userId === 'Bot' || lastMessage.userName === 'Bot') && Boolean(lastMessage.content.length)
+            ? undefined
+            : props.chatState.botResponseStatus;
     };
 
     // The number of users typing in the chat

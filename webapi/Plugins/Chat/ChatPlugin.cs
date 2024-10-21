@@ -705,7 +705,10 @@ public class ChatPlugin
                 ),
             nameof(StreamResponseToClientAsync)
         );
-
+        if (!cancellationToken.IsCancellationRequested)
+        {
+            await this.UpdateBotResponseStatusOnClientAsync(chatId, "Finalizing bot response", cancellationToken);
+        }
         // Save the message into chat history
         this._logger.LogInformation("Saving message to chat history");
         await this._chatMessageRepository.UpsertAsync(chatMessage);
