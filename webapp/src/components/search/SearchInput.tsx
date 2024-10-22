@@ -6,7 +6,7 @@ import { AlertType } from '../../libs/models/AlertType';
 import { useAppDispatch, useAppSelector } from '../../redux/app/hooks';
 import { RootState } from '../../redux/app/store';
 import { addAlert } from '../../redux/features/app/appSlice';
-import { setSearch } from '../../redux/features/search/searchSlice';
+import { setSearch, setSelectedSearchItem } from '../../redux/features/search/searchSlice';
 
 const useClasses = makeStyles({
     root: {
@@ -75,15 +75,19 @@ export const SearchInput: React.FC<SearchInputProps> = ({ onSubmit, defaultSpeci
         if (value.trim() === '' || specialization.id.trim() === '') {
             return; // only submit if value is not empty
         }
-        onSubmit(specialization.id, value).catch((error) => {
-            const message = `Error submitting search input: ${(error as Error).message}`;
-            dispatch(
-                addAlert({
-                    type: AlertType.Error,
-                    message,
-                }),
-            );
-        });
+        onSubmit(specialization.id, value)
+            .then(() => {
+                dispatch(setSelectedSearchItem({ filename: '', id: 0 }));
+            })
+            .catch((error) => {
+                const message = `Error submitting search input: ${(error as Error).message}`;
+                dispatch(
+                    addAlert({
+                        type: AlertType.Error,
+                        message,
+                    }),
+                );
+            });
         //clearSearchInputState();
     };
 
