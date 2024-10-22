@@ -3,11 +3,12 @@ import {
     AccordionHeader,
     AccordionItem,
     AccordionPanel,
+    AccordionToggleEventHandler,
     makeStyles,
     shorthands,
     tokens,
 } from '@fluentui/react-components';
-import React, { useId } from 'react';
+import React, { useEffect, useId, useState } from 'react';
 import { useAppSelector } from '../../redux/app/hooks';
 import { RootState } from '../../redux/app/store';
 import { SearchValueFormatted } from '../../redux/features/search/SearchState';
@@ -46,10 +47,17 @@ export const SearchListSection: React.FC<ISearchListSectionProps> = ({ value, in
     //const matches = value.matches;
     const entryPoints = value.entryPointList;
     const accordionPanelId = useId();
+    const [openItems, setOpenItems] = useState<string[]>([]);
+    const handleToggle: AccordionToggleEventHandler<string> = (_event, data) => {
+        setOpenItems(data.openItems);
+    };
+    useEffect(() => {
+        setOpenItems([]);
+    }, [entryPoints]);
     //const searchListItemId = useId();
     return entryPoints.length > 0 ? (
         <div className={classes.root}>
-            <Accordion collapsible={true} multiple={true}>
+            <Accordion onToggle={handleToggle} openItems={openItems} collapsible={true} multiple={true}>
                 <AccordionItem value={index}>
                     <AccordionHeader>{value.filename}</AccordionHeader>
                     {entryPoints.map((match, idx) => {
