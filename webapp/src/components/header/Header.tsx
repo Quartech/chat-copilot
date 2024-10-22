@@ -1,13 +1,14 @@
 import { Subtitle1, Tag, makeStyles, tokens } from '@fluentui/react-components';
 import { FC } from 'react';
-import { useAppSelector } from '../../redux/app/hooks';
-import { PluginGallery } from '../open-api-plugins/PluginGallery';
-import { UserSettingsMenu } from '../header/UserSettingsMenu';
 import { AppState } from '../../App';
-import logo from '../../assets/quartech-icons/logo.png';
 import darkLogo from '../../assets/quartech-icons/dark_logo.png';
+import logo from '../../assets/quartech-icons/logo.png';
+import { Environment } from '../../libs/services/BaseService';
+import { useAppSelector } from '../../redux/app/hooks';
 import { RootState } from '../../redux/app/store';
 import { FeatureKeys } from '../../redux/features/app/AppState';
+import { UserSettingsMenu } from '../header/UserSettingsMenu';
+import { PluginGallery } from '../open-api-plugins/PluginGallery';
 
 const useStyles = makeStyles({
     header: {
@@ -69,6 +70,11 @@ const Header: FC<HeaderProps> = ({ appState, setAppState, showPluginsAndSettings
                 <Tag shape={'rounded'} size="small" appearance="brand" className={classes.betaTag}>
                     Beta
                 </Tag>
+                {Environment !== 'production' && (
+                    <Tag shape={'rounded'} size="small" appearance="outline" className={classes.betaTag}>
+                        {Environment.charAt(0).toUpperCase() + Environment.slice(1)}
+                    </Tag>
+                )}
             </div>
             <img src={isDarkMode ? darkLogo : logo} alt="Logo" className={classes.logo} />
             {showPluginsAndSettings && appState > AppState.SettingUserInfo && (

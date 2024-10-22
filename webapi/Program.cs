@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
+using CopilotChat.Shared;
 using CopilotChat.WebApi.Extensions;
 using CopilotChat.WebApi.Hubs;
 using CopilotChat.WebApi.Plugins.Chat.Ext;
@@ -50,14 +51,28 @@ public sealed class Program
             .AddChatCopilotAuthentication(builder.Configuration)
             .AddChatCopilotAuthorization();
 
-        // Configure and add semantic services
-        builder.AddBotConfig().AddSemanticKernelServices().AddSemanticMemoryServices();
-
         // Add SignalR as the real time relay service
         builder.Services.AddSignalR();
         var qAzureOpenAIChatOptions =
             builder.Configuration.GetSection(QAzureOpenAIChatOptions.PropertyName).Get<QAzureOpenAIChatOptions>()
             ?? new QAzureOpenAIChatOptions { Enabled = false };
+
+        var defaultConnection = qAzureOpenAIChatOptions.OpenAIDeploymentConnections.FirstOrDefault(conn =>
+            conn.Name.Equals(qAzureOpenAIChatOptions.DefaultConnection, StringComparison.OrdinalIgnoreCase)
+        );
+        if (defaultConnection == null)
+        {
+            throw new InvalidOperationException("Default connection not found. Please check the configuration.");
+        }
+        var defaultConfig = new DefaultConfiguration(
+            qAzureOpenAIChatOptions.DefaultModel,
+            qAzureOpenAIChatOptions.DefaultEmbeddingModel,
+            defaultConnection.APIKey,
+            defaultConnection.Endpoint
+        );
+        // Configure and add semantic services
+        builder.AddBotConfig().AddSemanticKernelServices().AddSemanticMemoryServices(defaultConfig);
+
         // Add AppInsights telemetry
         builder
             .Services.AddHttpContextAccessor()
