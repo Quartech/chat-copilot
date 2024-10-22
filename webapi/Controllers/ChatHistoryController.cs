@@ -17,6 +17,7 @@ using CopilotChat.WebApi.Plugins.Chat.Ext;
 using CopilotChat.WebApi.Plugins.Utils;
 using CopilotChat.WebApi.Services;
 using CopilotChat.WebApi.Storage;
+using CopilotChat.WebApi.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -144,7 +145,8 @@ public class ChatHistoryController : ControllerBase
         // Add the user to the chat session
         await this._participantRepository.CreateAsync(new ChatParticipant(this._authInfo.UserId, newChat.Id));
 
-        this._logger.LogDebug("Created chat session with id {0}.", newChat.Id);
+        var sanitizedChatId = RequestUtils.GetSanitizedParameter(newChat.Id);
+        this._logger.LogDebug("Created chat session with id {0}.", sanitizedChatId);
 
         return this.CreatedAtRoute(
             GetChatRoute,
