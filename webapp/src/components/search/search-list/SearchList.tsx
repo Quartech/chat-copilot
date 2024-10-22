@@ -12,7 +12,7 @@ const useClasses = makeStyles({
         display: 'flex',
         flexShrink: 0,
         width: '320px',
-        height: '100%',
+        height: 'calc(100% - 44px)', //44px fixed height for tab list above this element.
         backgroundColor: tokens.colorNeutralBackground4,
         flexDirection: 'column',
         ...Breakpoints.small({
