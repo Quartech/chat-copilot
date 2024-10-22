@@ -8,16 +8,34 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.Diagnostics;
+using CopilotChat.WebApi.Plugins.Chat.Ext;
+using System.Linq;
+using Microsoft.Extensions.Configuration;
 
 // ********************************************************
 // ************** SETUP ***********************************
 // ********************************************************
 
 var builder = WebApplication.CreateBuilder();
-
+var qAzureOpenAIChatOptions =
+            builder.Configuration.GetSection(QAzureOpenAIChatOptions.PropertyName).Get<QAzureOpenAIChatOptions>()
+            ?? new QAzureOpenAIChatOptions { Enabled = false };
+var defaultConnection = qAzureOpenAIChatOptions.OpenAIDeploymentConnections.FirstOrDefault(conn =>
+    conn.Name.Equals(qAzureOpenAIChatOptions.DefaultConnection, StringComparison.OrdinalIgnoreCase)
+);
+if (defaultConnection == null)
+{
+    throw new InvalidOperationException("Default connection not found. Please check the configuration.");
+}
+var defaultConfig = new DefaultConfiguration(
+    qAzureOpenAIChatOptions.DefaultModel,
+    qAzureOpenAIChatOptions.DefaultEmbeddingModel,
+    defaultConnection.APIKey,
+    defaultConnection.Endpoint
+);
 IKernelMemory memory =
     new KernelMemoryBuilder(builder.Services)
-        .FromAppSettings()
+        .FromAppSettings(defaultConfig)
         .WithCustomOcr(builder.Configuration)
         .Build();
 
