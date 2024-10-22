@@ -102,6 +102,12 @@ public class QSpecializationResponse
     public int? DocumentCount { get; set; } = 0;
 
     /// <summary>
+    /// IsGeneralAndMissingInDb determines whether the specialization is "general" and if the configuration is not in the database.
+    /// </summary>
+    [JsonPropertyName("isGeneralAndMissingInDb")]
+    public bool IsGeneralAndMissingInDb { get; set; } = false;
+
+    /// <summary>
     /// List of group memberships for the user.
     /// </summary>
     public IList<string> GroupMemberships { get; set; } = new List<string>();

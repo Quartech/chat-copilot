@@ -119,6 +119,7 @@ export const SpecializationManager: React.FC = () => {
     const [documentCount, setDocumentCount] = useState(0);
 
     const [isValid, setIsValid] = useState(false);
+    const [isGeneralAndMissingInDb, setIsGeneralAndMissingInDb] = useState(false);
     const dropdownId = useId();
 
     /**
@@ -130,7 +131,7 @@ export const SpecializationManager: React.FC = () => {
      * @returns {void}
      */
     const onSaveSpecialization = () => {
-        if (editMode) {
+        if (editMode && !isGeneralAndMissingInDb) {
             void specialization.updateSpecialization(id, {
                 type,
                 label,
@@ -150,22 +151,25 @@ export const SpecializationManager: React.FC = () => {
                 documentCount,
             });
         } else {
-            void specialization.createSpecialization({
-                type,
-                label,
-                name,
-                description,
-                roleInformation,
-                indexName,
-                imageFile: imageFile.file,
-                iconFile: iconFile.file,
-                deployment,
-                groupMemberships: membershipId,
-                initialChatMessage,
-                restrictResultScope,
-                strictness,
-                documentCount,
-            });
+            void specialization.createSpecialization(
+                {
+                    type,
+                    label,
+                    name,
+                    description,
+                    roleInformation,
+                    indexName,
+                    imageFile: imageFile.file,
+                    iconFile: iconFile.file,
+                    deployment,
+                    groupMemberships: membershipId,
+                    initialChatMessage,
+                    restrictResultScope,
+                    strictness,
+                    documentCount,
+                },
+                isGeneralAndMissingInDb,
+            );
         }
     };
 
@@ -185,6 +189,7 @@ export const SpecializationManager: React.FC = () => {
         setRestrictResultScope(false);
         setStrictness(3);
         setDocumentCount(5);
+        setIsGeneralAndMissingInDb(false);
     };
 
     useEffect(() => {
@@ -204,6 +209,7 @@ export const SpecializationManager: React.FC = () => {
                 setRestrictResultScope(specializationObj.restrictResultScope);
                 setStrictness(specializationObj.strictness);
                 setDocumentCount(specializationObj.documentCount);
+                setIsGeneralAndMissingInDb(specializationObj.isGeneralAndMissingInDb);
                 /**
                  * Set the image and icon file paths
                  * Note: The file is set to null because we only retrieve the file path from the server

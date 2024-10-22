@@ -60,12 +60,14 @@ export const useSpecialization = () => {
         }
     };
 
-    const createSpecialization = async (data: ISpecializationRequest) => {
+    const createSpecialization = async (data: ISpecializationRequest, isGeneralAndMissingInDb: boolean) => {
         dispatch(showSpinner());
         try {
             const accessToken = await AuthHelper.getSKaaSAccessToken(instance, inProgress);
             await specializationService.createSpecializationAsync(data, accessToken).then((result: ISpecialization) => {
-                dispatch(addSpecialization(result));
+                dispatch(
+                    addSpecialization({ specialization: result, isGeneralAndMissingInDb: isGeneralAndMissingInDb }),
+                );
             });
             dispatch(
                 addAlert({

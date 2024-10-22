@@ -28,8 +28,23 @@ export const adminSlice = createSlice({
         setSelectedKey: (state: AdminState, action: PayloadAction<string>) => {
             state.selectedId = action.payload;
         },
-        addSpecialization: (state: AdminState, action: PayloadAction<ISpecialization>) => {
-            state.specializations.push(action.payload);
+        addSpecialization: (
+            state: AdminState,
+            action: PayloadAction<{ specialization: ISpecialization; isGeneralAndMissingInDb: boolean }>,
+        ) => {
+            const { specialization, isGeneralAndMissingInDb } = action.payload;
+            if (isGeneralAndMissingInDb) {
+                const generalIndex = state.specializations.findIndex(
+                    (specialization) => specialization.id === 'general',
+                );
+                if (generalIndex !== -1) {
+                    state.specializations[generalIndex] = {
+                        ...specialization,
+                    };
+                }
+            } else {
+                state.specializations.push(specialization);
+            }
         },
         editSpecialization: (state: AdminState, action: PayloadAction<ISpecialization>) => {
             const specializations = state.specializations;

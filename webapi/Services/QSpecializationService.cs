@@ -80,23 +80,22 @@ public class QSpecializationService : IQSpecializationService
                 ? ResourceUtils.GetImageAsDataUri(this._qAzureOpenAIChatOptions.DefaultSpecializationIcon)
                 : await this._qBlobStorage.AddBlobAsync(qSpecializationMutate.IconFile);
 
-        Specialization specializationSource =
-            new(
-                qSpecializationMutate.Type,
-                qSpecializationMutate.Label,
-                qSpecializationMutate.Name,
-                qSpecializationMutate.Description,
-                qSpecializationMutate.RoleInformation,
-                qSpecializationMutate.InitialChatMessage,
-                qSpecializationMutate.IndexName,
-                qSpecializationMutate.Deployment,
-                qSpecializationMutate.RestrictResultScope,
-                qSpecializationMutate.Strictness,
-                qSpecializationMutate.DocumentCount,
-                imageFilePath,
-                iconFilePath,
-                qSpecializationMutate.GroupMemberships.Split(',')
-            );
+        var specializationSource = new Specialization(
+            qSpecializationMutate.Type,
+            qSpecializationMutate.Label,
+            qSpecializationMutate.Name,
+            qSpecializationMutate.Description,
+            qSpecializationMutate.RoleInformation,
+            qSpecializationMutate.InitialChatMessage,
+            qSpecializationMutate.IndexName,
+            qSpecializationMutate.Deployment,
+            qSpecializationMutate.RestrictResultScope,
+            qSpecializationMutate.Strictness,
+            qSpecializationMutate.DocumentCount,
+            imageFilePath,
+            iconFilePath,
+            qSpecializationMutate.GroupMemberships.Split(',')
+        );
 
         await this._specializationSourceRepository.CreateAsync(specializationSource);
 
@@ -117,68 +116,14 @@ public class QSpecializationService : IQSpecializationService
         QSpecializationMutate qSpecializationMutate
     )
     {
-        Specialization? specializationToUpdate = null;
+        Specialization? specializationToUpdate = await this._specializationSourceRepository.FindByIdAsync(
+            specializationId.ToString());
 
-        bool found = await this._specializationSourceRepository.TryFindByIdAsync(
-            specializationId.ToString(),
-            callback: specialization => specializationToUpdate = specialization
-        );
-
-        if (!found || specializationToUpdate == null)
+        if (specializationToUpdate == null)
         {
-            if (qSpecializationMutate.Type != SpecializationType.General)
-            {
-                throw new ArgumentException("Specialization not found and not of General type.", nameof(specializationId));
-            }
-            return await this.SaveSpecialization(qSpecializationMutate);
+            return null;
         }
 
-        return await this.UpdateSpecializationProperties(specializationToUpdate, qSpecializationMutate);
-    }
-
-    /// <summary>
-    /// Deletes the specialization.
-    /// </summary>
-    /// <param name="specializationId">Unique identifier of the specialization</param>
-    /// <returns>The task result contains the delete state</returns>
-    public async Task<bool> DeleteSpecialization(Guid specializationId)
-    {
-        Specialization? specializationToDelete = await this._specializationSourceRepository.FindByIdAsync(
-            specializationId.ToString()
-        );
-
-        await this._specializationSourceRepository.DeleteAsync(specializationToDelete);
-
-        // Attempt to create URIs for image and icon
-        if (
-            Uri.TryCreate(specializationToDelete.ImageFilePath, UriKind.Absolute, out var imageFileUri)
-            && Uri.TryCreate(specializationToDelete.IconFilePath, UriKind.Absolute, out var iconFileUri)
-        )
-        {
-            // Delete image file from blob storage if it exists
-            if (await this._qBlobStorage.BlobExistsAsync(imageFileUri))
-            {
-                await this._qBlobStorage.DeleteBlobByURIAsync(imageFileUri);
-            }
-
-            // Delete icon file from blob storage if it exists
-            if (await this._qBlobStorage.BlobExistsAsync(iconFileUri))
-            {
-                await this._qBlobStorage.DeleteBlobByURIAsync(iconFileUri);
-            }
-        }
-        return true;
-    }
-
-    /// <summary>
-    /// Updates the properties of an existing specialization.
-    /// This method handles file updates for images and icons, as well as other specialization properties.
-    /// </summary>
-    /// <param name="specializationToUpdate">The specialization object to update.</param>
-    /// <param name="qSpecializationMutate">The mutation model containing new values for the specialization.</param>
-    /// <returns>The updated specialization.</returns>
-    private async Task<Specialization> UpdateSpecializationProperties(Specialization specializationToUpdate, QSpecializationMutate qSpecializationMutate)
-    {
         // Update the image file and set the file path
         specializationToUpdate.ImageFilePath = await this.UpsertSpecializationBlobAsync(
             qSpecializationMutate.ImageFile,
@@ -214,6 +159,40 @@ public class QSpecializationService : IQSpecializationService
         await this._specializationSourceRepository.UpsertAsync(specializationToUpdate);
 
         return specializationToUpdate;
+    }
+
+    /// <summary>
+    /// Deletes the specialization.
+    /// </summary>
+    /// <param name="specializationId">Unique identifier of the specialization</param>
+    /// <returns>The task result contains the delete state</returns>
+    public async Task<bool> DeleteSpecialization(Guid specializationId)
+    {
+        Specialization? specializationToDelete = await this._specializationSourceRepository.FindByIdAsync(
+            specializationId.ToString()
+        );
+
+        await this._specializationSourceRepository.DeleteAsync(specializationToDelete);
+
+        // Attempt to create URIs for image and icon
+        if (
+            Uri.TryCreate(specializationToDelete.ImageFilePath, UriKind.Absolute, out var imageFileUri)
+            && Uri.TryCreate(specializationToDelete.IconFilePath, UriKind.Absolute, out var iconFileUri)
+        )
+        {
+            // Delete image file from blob storage if it exists
+            if (await this._qBlobStorage.BlobExistsAsync(imageFileUri))
+            {
+                await this._qBlobStorage.DeleteBlobByURIAsync(imageFileUri);
+            }
+
+            // Delete icon file from blob storage if it exists
+            if (await this._qBlobStorage.BlobExistsAsync(iconFileUri))
+            {
+                await this._qBlobStorage.DeleteBlobByURIAsync(iconFileUri);
+            }
+        }
+        return true;
     }
 
     /// <summary>

@@ -72,13 +72,13 @@ public class SpecializationController : ControllerBase
         var specializationResponses = specializations.Select(s => new QSpecializationResponse(s)).ToList();
 
         // Check if the "general" specialization exists in the retrieved list
-        var generalSpecialization = specializationResponses.FirstOrDefault(s => s.Id == "general");
+        var generalSpecialization = specializationResponses.FirstOrDefault(s => s.Type == SpecializationType.General.ToString());
 
         if (generalSpecialization == null)
         {
             // If "general" specialization is not found, get the default
             var defaultSpecialization = this.GetDefaultSpecialization();
-            specializationResponses.Add(new QSpecializationResponse(defaultSpecialization));
+            specializationResponses.Add(new QSpecializationResponse(defaultSpecialization) { IsGeneralAndMissingInDb = true });
         }
 
         return this.Ok(specializationResponses);
@@ -229,7 +229,7 @@ public class SpecializationController : ControllerBase
     {
         var defaultSpecialization = new Specialization()
         {
-            Id = Guid.NewGuid().ToString(),
+            Id = "general",
             Type = SpecializationType.General,
             Label = "General",
             Name = "General",

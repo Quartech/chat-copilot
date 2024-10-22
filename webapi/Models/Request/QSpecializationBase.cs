@@ -18,6 +18,9 @@ public class QSpecializationBase
     [JsonPropertyName("label")]
     public string Label { get; set; } = string.Empty;
 
+    /// <summary>
+    /// Type of the specialization
+    /// </summary>
     [JsonPropertyName("type")]
     public SpecializationType Type { get; set; } = SpecializationType.Standard;
 
