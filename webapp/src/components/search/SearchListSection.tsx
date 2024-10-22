@@ -1,18 +1,19 @@
 import {
+    Accordion,
+    AccordionHeader,
+    AccordionItem,
+    AccordionPanel,
+    AccordionToggleEventHandler,
     makeStyles,
     shorthands,
     tokens,
-    Accordion,
-    AccordionItem,
-    AccordionHeader,
-    AccordionPanel,
 } from '@fluentui/react-components';
+import React, { useEffect, useId, useState } from 'react';
 import { useAppSelector } from '../../redux/app/hooks';
 import { RootState } from '../../redux/app/store';
-import { ISearchValue } from '../../libs/models/SearchResponse';
+import { SearchValueFormatted } from '../../redux/features/search/SearchState';
 import { Breakpoints } from '../../styles';
 import { SearchListItem } from './search-list/SearchListItem';
-import React, { useId } from 'react';
 
 const useClasses = makeStyles({
     root: {
@@ -36,29 +37,44 @@ const useClasses = makeStyles({
 });
 
 interface ISearchListSectionProps {
-    value: ISearchValue;
+    value: SearchValueFormatted;
     index: number;
 }
 
 export const SearchListSection: React.FC<ISearchListSectionProps> = ({ value, index }) => {
     const classes = useClasses();
     const { selectedSearchItem } = useAppSelector((state: RootState) => state.search);
-    const matches = value.matches;
+    //const matches = value.matches;
+    const entryPoints = value.entryPointList;
     const accordionPanelId = useId();
+    const [openItems, setOpenItems] = useState<string[]>([]);
+    const handleToggle: AccordionToggleEventHandler<string> = (_event, data) => {
+        setOpenItems(data.openItems);
+    };
+    useEffect(() => {
+        setOpenItems([]);
+    }, [entryPoints]);
     //const searchListItemId = useId();
-    return matches.length > 0 ? (
+    return entryPoints.length > 0 ? (
         <div className={classes.root}>
-            <Accordion collapsible={true} multiple={true}>
+            <Accordion onToggle={handleToggle} openItems={openItems} collapsible={true} multiple={true}>
                 <AccordionItem value={index}>
                     <AccordionHeader>{value.filename}</AccordionHeader>
-                    {matches.map((match) => {
-                        const label = match.label;
-                        const id = match.id;
-                        const selectedItem = match.id === selectedSearchItem;
+                    {entryPoints.map((match, idx) => {
+                        const label = match;
+                        const id = idx;
+                        const selectedItem =
+                            selectedSearchItem.id == idx && value.filename == selectedSearchItem.filename;
 
                         return (
-                            <AccordionPanel key={'acc' + accordionPanelId + id}>
-                                <SearchListItem key={id} label={label} id={id} isSelected={selectedItem} />
+                            <AccordionPanel key={'acc' + accordionPanelId + String(id)}>
+                                <SearchListItem
+                                    key={id}
+                                    filename={value.filename}
+                                    label={label}
+                                    id={id}
+                                    isSelected={selectedItem}
+                                />
                             </AccordionPanel>
                         );
                     })}

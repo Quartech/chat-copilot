@@ -16,10 +16,11 @@ public static class KernelMemoryBuilderExtensions
     /// If directory is empty, use the current assembly folder
     /// </summary>
     /// <param name="builder">KernelMemory builder instance</param>
+    /// <param name="defaultConfig">Default configuration</param>
     /// <param name="settingsDirectory">Directory containing appsettings.json (incl. dev/prod)</param>
-    public static IKernelMemoryBuilder FromAppSettings(this IKernelMemoryBuilder builder, string? settingsDirectory = null)
+    public static IKernelMemoryBuilder FromAppSettings(this IKernelMemoryBuilder builder, DefaultConfiguration defaultConfig, string? settingsDirectory = null)
     {
-        return new ServiceConfiguration(settingsDirectory).PrepareBuilder(builder);
+        return new ServiceConfiguration(defaultConfig, settingsDirectory).PrepareBuilder(builder);
     }
 
     /// <summary>
@@ -31,8 +32,9 @@ public static class KernelMemoryBuilderExtensions
     public static IKernelMemoryBuilder FromMemoryConfiguration(
         this IKernelMemoryBuilder builder,
         KernelMemoryConfig memoryConfiguration,
-        IConfiguration servicesConfiguration)
+        IConfiguration servicesConfiguration,
+        DefaultConfiguration defaultConfig)
     {
-        return new ServiceConfiguration(servicesConfiguration, memoryConfiguration).PrepareBuilder(builder);
+        return new ServiceConfiguration(servicesConfiguration, memoryConfiguration, defaultConfig).PrepareBuilder(builder);
     }
 }
