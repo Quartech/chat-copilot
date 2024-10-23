@@ -96,14 +96,16 @@ public class QSpecializationResponse
     public int? DocumentCount { get; set; } = 0;
 
     /// <summary>
+    /// Order of the specialization.
+    /// </summary>
+    [JsonPropertyName("order")]
+    public int? Order { get; set; } = 0;
+
+
+    /// <summary>
     /// List of group memberships for the user.
     /// </summary>
     public IList<string> GroupMemberships { get; set; } = new List<string>();
-
-    /// <summary>
-    /// Order of the specialization.
-    /// </summary>
-    public int? Order { get; set; } = 0;
 
     /// <summary>
     /// Creates new instance from SpecializationSource.
