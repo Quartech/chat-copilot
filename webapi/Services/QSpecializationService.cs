@@ -103,7 +103,7 @@ public class QSpecializationService : IQSpecializationService
     }
 
     /// <summary>
-    /// Updates an existing specialization or creates a new General specialization if not found.
+    /// Updates an existing specialization.
     /// </summary>
     /// <param name="specializationId">Identifier of the specialization to update or create.</param>
     /// <param name="qSpecializationMutate">Contains updated details for the specialization.</param>
