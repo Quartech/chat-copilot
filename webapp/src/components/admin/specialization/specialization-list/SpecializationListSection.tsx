@@ -96,7 +96,6 @@ export const SpecializationListSection: React.FC<IChatListSectionProps> = ({ hea
                     .slice()
                     .sort((a, b) => a.order - b.order)
                     .map((specialization) => {
-                        if (specialization.id === 'general') return null;
                         const isSelected = specialization.id === selectedId;
                         return (
                             <SpecializationListItem
@@ -104,6 +103,7 @@ export const SpecializationListSection: React.FC<IChatListSectionProps> = ({ hea
                                 specializationId={specialization.id}
                                 label={specialization.label}
                                 name={specialization.name}
+                                type={specialization.type}
                                 specializationMode={specialization.isActive}
                                 isSelected={isSelected}
                             />

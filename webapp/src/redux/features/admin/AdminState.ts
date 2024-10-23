@@ -14,6 +14,7 @@ export const Specializations = [
     {
         // Basic settings
         id: '',
+        type: 'General',
         label: 'general',
         name: 'General',
         description: 'General',
@@ -29,6 +30,7 @@ export const Specializations = [
         documentCount: 20,
         initialChatMessage: '',
         order: 0,
+        isGeneralAndNotExistsInDb: false,
     },
 ];
 export const initialState: AdminState = {

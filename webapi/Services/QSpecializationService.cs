@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Threading.Tasks;
 using Azure.Storage.Blobs;
 using CopilotChat.WebApi.Models.Request;
@@ -79,23 +80,23 @@ public class QSpecializationService : IQSpecializationService
                 ? ResourceUtils.GetImageAsDataUri(this._qAzureOpenAIChatOptions.DefaultSpecializationIcon)
                 : await this._qBlobStorage.AddBlobAsync(qSpecializationMutate.IconFile);
 
-        Specialization specializationSource =
-            new(
-                qSpecializationMutate.Label,
-                qSpecializationMutate.Name,
-                qSpecializationMutate.Description,
-                qSpecializationMutate.RoleInformation,
-                qSpecializationMutate.InitialChatMessage,
-                qSpecializationMutate.IndexName,
-                qSpecializationMutate.Deployment,
-                qSpecializationMutate.RestrictResultScope,
-                qSpecializationMutate.Strictness,
-                qSpecializationMutate.DocumentCount,
-                imageFilePath,
-                iconFilePath,
-                qSpecializationMutate.GroupMemberships.Split(','),
-                qSpecializationMutate.Order
-            );
+        var specializationSource = new Specialization(
+            qSpecializationMutate.Type,
+            qSpecializationMutate.Label,
+            qSpecializationMutate.Name,
+            qSpecializationMutate.Description,
+            qSpecializationMutate.RoleInformation,
+            qSpecializationMutate.InitialChatMessage,
+            qSpecializationMutate.IndexName,
+            qSpecializationMutate.Deployment,
+            qSpecializationMutate.RestrictResultScope,
+            qSpecializationMutate.Strictness,
+            qSpecializationMutate.DocumentCount,
+            imageFilePath,
+            iconFilePath,
+            qSpecializationMutate.GroupMemberships.Split(','),
+            qSpecializationMutate.Order
+        );
 
         await this._specializationSourceRepository.CreateAsync(specializationSource);
 
@@ -103,11 +104,14 @@ public class QSpecializationService : IQSpecializationService
     }
 
     /// <summary>
-    /// Updates the specialization.
+    /// Updates an existing specialization.
     /// </summary>
-    /// <param name="specializationId">Unique identifier of the specialization</param>
-    /// <param name="qSpecializationMutate">Specialization mutate payload</param>
-    /// <returns>The task result contains the specialization source</returns>
+    /// <param name="specializationId">Identifier of the specialization to update or create.</param>
+    /// <param name="qSpecializationMutate">Contains updated details for the specialization.</param>
+    /// <returns>The updated or newly created specialization.</returns>
+    /// <exception cref="ArgumentException">
+    /// Thrown if the specialization does not exist and is not of type General.
+    /// </exception>
     public async Task<Specialization?> UpdateSpecialization(
         Guid specializationId,
         QSpecializationMutate qSpecializationMutate
@@ -119,7 +123,6 @@ public class QSpecializationService : IQSpecializationService
 
         if (specializationToUpdate == null)
         {
-            // Handle the case where no Specialization was found
             return null;
         }
 
@@ -127,7 +130,7 @@ public class QSpecializationService : IQSpecializationService
         specializationToUpdate.ImageFilePath = await this.UpsertSpecializationBlobAsync(
             qSpecializationMutate.ImageFile,
             specializationToUpdate.ImageFilePath,
-            Convert.ToBoolean(qSpecializationMutate.DeleteImageFile),
+            Convert.ToBoolean(qSpecializationMutate.DeleteImageFile, CultureInfo.InvariantCulture),
             ResourceUtils.GetImageAsDataUri(this._qAzureOpenAIChatOptions.DefaultSpecializationImage)
         );
 
@@ -135,39 +138,32 @@ public class QSpecializationService : IQSpecializationService
         specializationToUpdate.IconFilePath = await this.UpsertSpecializationBlobAsync(
             qSpecializationMutate.IconFile,
             specializationToUpdate.IconFilePath,
-            Convert.ToBoolean(qSpecializationMutate.DeleteIconFile),
+            Convert.ToBoolean(qSpecializationMutate.DeleteIconFile, CultureInfo.InvariantCulture),
             ResourceUtils.GetImageAsDataUri(this._qAzureOpenAIChatOptions.DefaultSpecializationIcon)
         );
 
-        specializationToUpdate.IsActive = Convert.ToBoolean(qSpecializationMutate.isActive);
-        specializationToUpdate.Name = !string.IsNullOrEmpty(qSpecializationMutate.Name)
-            ? qSpecializationMutate.Name
-            : specializationToUpdate.Name;
-        specializationToUpdate.Label = !string.IsNullOrEmpty(qSpecializationMutate.Label)
-            ? qSpecializationMutate.Label
-            : specializationToUpdate.Label;
-        specializationToUpdate.Description = !string.IsNullOrEmpty(qSpecializationMutate.Description)
-            ? qSpecializationMutate.Description
-            : specializationToUpdate.Description;
-        specializationToUpdate.RoleInformation = !string.IsNullOrEmpty(qSpecializationMutate.RoleInformation)
-            ? qSpecializationMutate.RoleInformation
-            : specializationToUpdate.RoleInformation;
-        specializationToUpdate.InitialChatMessage = !string.IsNullOrEmpty(qSpecializationMutate.InitialChatMessage)
-            ? qSpecializationMutate.InitialChatMessage
-            : specializationToUpdate.InitialChatMessage;
-        specializationToUpdate.IndexName = qSpecializationMutate.IndexName ?? specializationToUpdate.IndexName;
-
-        // Group memberships (mutate payload) are a comma separated list of UUIDs.
-        specializationToUpdate.GroupMemberships = !string.IsNullOrEmpty(qSpecializationMutate.GroupMemberships)
-            ? qSpecializationMutate.GroupMemberships.Split(',')
-            : specializationToUpdate.GroupMemberships;
-
+        specializationToUpdate.IsActive = Convert.ToBoolean(
+            qSpecializationMutate.isActive,
+            CultureInfo.InvariantCulture
+        );
+        specializationToUpdate.Name = qSpecializationMutate.Name ?? specializationToUpdate.Name;
+        specializationToUpdate.Label = qSpecializationMutate.Label ?? specializationToUpdate.Label;
+        specializationToUpdate.Description = qSpecializationMutate.Description ?? specializationToUpdate.Description;
+        specializationToUpdate.RoleInformation =
+            qSpecializationMutate.RoleInformation ?? specializationToUpdate.RoleInformation;
+        specializationToUpdate.InitialChatMessage =
+            qSpecializationMutate.InitialChatMessage ?? specializationToUpdate.InitialChatMessage;
         specializationToUpdate.Deployment = qSpecializationMutate.Deployment ?? specializationToUpdate.Deployment;
         specializationToUpdate.RestrictResultScope =
             qSpecializationMutate.RestrictResultScope ?? specializationToUpdate.RestrictResultScope;
         specializationToUpdate.Strictness = qSpecializationMutate.Strictness ?? specializationToUpdate.Strictness;
         specializationToUpdate.DocumentCount =
             qSpecializationMutate.DocumentCount ?? specializationToUpdate.DocumentCount;
+
+        // Group memberships (mutate payload) are a comma separated list of UUIDs.
+        specializationToUpdate.GroupMemberships = !string.IsNullOrEmpty(qSpecializationMutate.GroupMemberships)
+            ? qSpecializationMutate.GroupMemberships.Split(',')
+            : specializationToUpdate.GroupMemberships;
 
         await this._specializationSourceRepository.UpsertAsync(specializationToUpdate);
 

@@ -103,6 +103,7 @@ export const SpecializationManager: React.FC = () => {
     const [editMode, setEditMode] = useState(false);
 
     const [id, setId] = useState('');
+    const [type, setType] = useState('');
     const [label, setLabel] = useState('');
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
@@ -119,7 +120,10 @@ export const SpecializationManager: React.FC = () => {
     const [order, setOrder] = useState(0);
 
     const [isValid, setIsValid] = useState(false);
+    const [isGeneralAndNotExistsInDb, setIsGeneralAndNotExistsInDb] = useState(false);
     const dropdownId = useId();
+
+    const isGeneralType = type === 'General';
 
     /**
      * Save specialization by creating or updating.
@@ -130,8 +134,9 @@ export const SpecializationManager: React.FC = () => {
      * @returns {void}
      */
     const onSaveSpecialization = () => {
-        if (editMode) {
+        if (editMode && !isGeneralAndNotExistsInDb) {
             void specialization.updateSpecialization(id, {
+                type,
                 label,
                 name,
                 description,
@@ -150,27 +155,32 @@ export const SpecializationManager: React.FC = () => {
                 order,
             });
         } else {
-            void specialization.createSpecialization({
-                label,
-                name,
-                description,
-                roleInformation,
-                indexName,
-                imageFile: imageFile.file,
-                iconFile: iconFile.file,
-                deployment,
-                groupMemberships: membershipId,
-                initialChatMessage,
-                restrictResultScope,
-                strictness,
-                documentCount,
-                order: specializations.length,
-            });
+            void specialization.createSpecialization(
+                {
+                    type,
+                    label,
+                    name,
+                    description,
+                    roleInformation,
+                    indexName,
+                    imageFile: imageFile.file,
+                    iconFile: iconFile.file,
+                    deployment,
+                    groupMemberships: membershipId,
+                    initialChatMessage,
+                    restrictResultScope,
+                    strictness,
+                    documentCount,
+                    order: specializations.length,
+                },
+                isGeneralAndNotExistsInDb,
+            );
         }
     };
 
     const resetSpecialization = () => {
         setId('');
+        setType('Standard');
         setLabel('');
         setName('');
         setDescription('');
@@ -184,6 +194,7 @@ export const SpecializationManager: React.FC = () => {
         setRestrictResultScope(false);
         setStrictness(3);
         setDocumentCount(5);
+        setIsGeneralAndNotExistsInDb(false);
     };
 
     useEffect(() => {
@@ -192,6 +203,7 @@ export const SpecializationManager: React.FC = () => {
             const specializationObj = specializations.find((specialization) => specialization.id === selectedId);
             if (specializationObj) {
                 setId(specializationObj.id);
+                setType(specializationObj.type);
                 setLabel(specializationObj.label);
                 setName(specializationObj.name);
                 setDescription(specializationObj.description);
@@ -202,6 +214,7 @@ export const SpecializationManager: React.FC = () => {
                 setRestrictResultScope(specializationObj.restrictResultScope);
                 setStrictness(specializationObj.strictness);
                 setDocumentCount(specializationObj.documentCount);
+                setIsGeneralAndNotExistsInDb(specializationObj.isGeneralAndNotExistsInDb);
                 /**
                  * Set the image and icon file paths
                  * Note: The file is set to null because we only retrieve the file path from the server
@@ -264,6 +277,7 @@ export const SpecializationManager: React.FC = () => {
                     onChange={(_event, data) => {
                         setName(data.value);
                     }}
+                    disabled={isGeneralType}
                 />
                 <label htmlFor="label">
                     Label<span className={classes.required}>*</span>
@@ -275,20 +289,25 @@ export const SpecializationManager: React.FC = () => {
                     onChange={(_event, data) => {
                         setLabel(data.value);
                     }}
+                    disabled={isGeneralType}
                 />
-                <label htmlFor="index-name">Enrichment Index</label>
-                <Dropdown
-                    clearable
-                    id="index-name"
-                    onOptionSelect={(_control, data) => {
-                        setIndexName(data.optionValue ?? '');
-                    }}
-                    value={indexName}
-                >
-                    {specializationIndexes.map((specializationIndex) => (
-                        <Option key={specializationIndex}>{specializationIndex}</Option>
-                    ))}
-                </Dropdown>
+                {!isGeneralType && (
+                    <>
+                        <label htmlFor="index-name">Enrichment Index</label>
+                        <Dropdown
+                            clearable
+                            id="index-name"
+                            onOptionSelect={(_control, data) => {
+                                setIndexName(data.optionValue ?? '');
+                            }}
+                            value={indexName}
+                        >
+                            {specializationIndexes.map((specializationIndex) => (
+                                <Option key={specializationIndex}>{specializationIndex}</Option>
+                            ))}
+                        </Dropdown>
+                    </>
+                )}
                 <label htmlFor="deployment">Deployment</label>
                 <Dropdown
                     clearable
@@ -430,9 +449,11 @@ export const SpecializationManager: React.FC = () => {
                     </div>
                 </div>
                 <div className={classes.controls}>
-                    <Button appearance="secondary" disabled={!id} onClick={onDeleteSpecialization}>
-                        Delete
-                    </Button>
+                    {!isGeneralType && (
+                        <Button appearance="secondary" disabled={!id} onClick={onDeleteSpecialization}>
+                            Delete
+                        </Button>
+                    )}
 
                     <Button appearance="primary" disabled={!isValid} onClick={onSaveSpecialization}>
                         Save

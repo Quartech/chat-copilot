@@ -52,6 +52,7 @@ export class SpecializationService extends BaseService {
         const formData = new FormData();
 
         // FormData expects string values for each key
+        formData.append('type', body.type);
         formData.append('label', body.label);
         formData.append('name', body.name);
         formData.append('description', body.description);
@@ -104,6 +105,7 @@ export class SpecializationService extends BaseService {
         const formData = new FormData();
 
         // FormData expects string values for each key
+        formData.append('type', body.type);
         formData.append('label', body.label);
         formData.append('name', body.name);
         formData.append('description', body.description);
