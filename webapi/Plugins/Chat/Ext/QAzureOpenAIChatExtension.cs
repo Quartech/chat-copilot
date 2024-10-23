@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Quartech. All rights reserved.
 
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using Azure.AI.OpenAI;
 using CopilotChat.WebApi.Models.Storage;
 using CopilotChat.WebApi.Services;
@@ -51,81 +50,80 @@ public class QAzureOpenAIChatExtension
 
     public bool isEnabled(string? specializationId)
     {
-        if (this._qAzureOpenAIChatOptions.Enabled && specializationId != this.DefaultSpecialization)
-        {
-            return true;
-        }
-        return false;
+        return this._qAzureOpenAIChatOptions.Enabled && specializationId != this.DefaultSpecialization;
     }
 
-    /// <summary>
-    /// Extension method to support passing Azure Search options for chatCompletions.
-    /// </summary>
-    public async Task<AzureChatExtensionsOptions?> GetAzureChatExtensionsOptions(string specializationId)
+    public AzureChatExtensionsOptions? GetAzureChatExtensionsOptions(Specialization? specialization)
     {
-        Specialization specialization = await this._qSpecializationService.GetSpecializationAsync(specializationId);
-
-        if (specialization != null && specialization.IndexName != null)
+        if (
+            specialization == null
+            || string.IsNullOrEmpty(specialization.IndexName)
+            || !this.isEnabled(specialization.Id)
+        )
         {
-            QAzureOpenAIChatOptions.QSpecializationIndex? qSpecializationIndex = this.GetSpecializationIndexByName(
-                specialization.IndexName
-            );
-            if (qSpecializationIndex == null)
-            {
-                return null;
-            }
-            var aiSearchDeploymentConnection =
-                this._qAzureOpenAIChatOptions.AISearchDeploymentConnections.FirstOrDefault(c =>
-                    c.Name == qSpecializationIndex.AISearchDeploymentConnection
-                );
-            var openAIDeploymentConnection = this._qAzureOpenAIChatOptions.OpenAIDeploymentConnections.FirstOrDefault(
-                c => c.Name == qSpecializationIndex.OpenAIDeploymentConnection
-            );
-            if (aiSearchDeploymentConnection == null || openAIDeploymentConnection == null)
-            {
-                throw new InvalidOperationException(
-                    "Configuration error: AI Search Deployment Connection or OpenAI Deployment Connection is missing."
-                );
-            }
-            if (openAIDeploymentConnection.Endpoint == null || openAIDeploymentConnection.APIKey == null)
-            {
-                throw new InvalidOperationException("OpenAI Deployment Connection or its endpoint  is missing.");
-            }
-            var EmbeddingEndpoint = this.GenerateEmbeddingEndpoint(
-                openAIDeploymentConnection.Endpoint,
-                qSpecializationIndex
-            );
-            return new AzureChatExtensionsOptions()
-            {
-                Extensions =
-                {
-                    new AzureSearchChatExtensionConfiguration()
-                    {
-                        Filter = null,
-                        IndexName = specialization.IndexName,
-                        SearchEndpoint = aiSearchDeploymentConnection.Endpoint,
-                        Strictness = specialization.Strictness,
-                        FieldMappingOptions = new AzureSearchIndexFieldMappingOptions
-                        {
-                            UrlFieldName = qSpecializationIndex.FieldMapping?.UrlFieldName,
-                            TitleFieldName = qSpecializationIndex.FieldMapping?.TitleFieldName,
-                            FilepathFieldName = qSpecializationIndex.FieldMapping?.FilepathFieldName,
-                        },
-                        SemanticConfiguration = qSpecializationIndex.SemanticConfiguration,
-                        QueryType = new AzureSearchQueryType(qSpecializationIndex.QueryType),
-                        ShouldRestrictResultScope = specialization.RestrictResultScope,
-                        RoleInformation = specialization.RoleInformation,
-                        DocumentCount = specialization.DocumentCount,
-                        Authentication = new OnYourDataApiKeyAuthenticationOptions(aiSearchDeploymentConnection.APIKey),
-                        VectorizationSource = new OnYourDataEndpointVectorizationSource(
-                            EmbeddingEndpoint,
-                            new OnYourDataApiKeyAuthenticationOptions(openAIDeploymentConnection.APIKey)
-                        ),
-                    },
-                },
-            };
+            return null;
         }
-        return null;
+
+        var qSpecializationIndex = this.GetSpecializationIndexByName(specialization.IndexName);
+        if (qSpecializationIndex == null)
+        {
+            return null;
+        }
+
+        var aiSearchDeploymentConnection = this._qAzureOpenAIChatOptions.AISearchDeploymentConnections.FirstOrDefault(
+            c => c.Name == qSpecializationIndex.AISearchDeploymentConnection
+        );
+        if (aiSearchDeploymentConnection == null)
+        {
+            throw new InvalidOperationException("Configuration error: AI Search Deployment Connection is missing.");
+        }
+
+        var openAIDeploymentConnection = this._qAzureOpenAIChatOptions.OpenAIDeploymentConnections.FirstOrDefault(c =>
+            c.Name == qSpecializationIndex.OpenAIDeploymentConnection
+        );
+        if (
+            openAIDeploymentConnection == null
+            || openAIDeploymentConnection.Endpoint == null
+            || openAIDeploymentConnection.APIKey == null
+        )
+        {
+            throw new InvalidOperationException("Configuration error: OpenAI Deployment Connection is missing.");
+        }
+
+        var embeddingEndpoint = this.GenerateEmbeddingEndpoint(
+            openAIDeploymentConnection.Endpoint,
+            qSpecializationIndex
+        );
+
+        return new AzureChatExtensionsOptions()
+        {
+            Extensions =
+            {
+                new AzureSearchChatExtensionConfiguration()
+                {
+                    Filter = null,
+                    IndexName = specialization.IndexName,
+                    SearchEndpoint = aiSearchDeploymentConnection.Endpoint,
+                    Strictness = specialization.Strictness,
+                    FieldMappingOptions = new AzureSearchIndexFieldMappingOptions
+                    {
+                        UrlFieldName = qSpecializationIndex.FieldMapping?.UrlFieldName,
+                        TitleFieldName = qSpecializationIndex.FieldMapping?.TitleFieldName,
+                        FilepathFieldName = qSpecializationIndex.FieldMapping?.FilepathFieldName,
+                    },
+                    SemanticConfiguration = qSpecializationIndex.SemanticConfiguration,
+                    QueryType = new AzureSearchQueryType(qSpecializationIndex.QueryType),
+                    ShouldRestrictResultScope = specialization.RestrictResultScope,
+                    RoleInformation = specialization.RoleInformation,
+                    DocumentCount = specialization.DocumentCount,
+                    Authentication = new OnYourDataApiKeyAuthenticationOptions(aiSearchDeploymentConnection.APIKey),
+                    VectorizationSource = new OnYourDataEndpointVectorizationSource(
+                        embeddingEndpoint,
+                        new OnYourDataApiKeyAuthenticationOptions(openAIDeploymentConnection.APIKey)
+                    ),
+                },
+            },
+        };
     }
 
     /// <summary>

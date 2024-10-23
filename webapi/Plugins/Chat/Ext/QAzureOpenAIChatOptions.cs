@@ -23,6 +23,8 @@ public class QAzureOpenAIChatOptions
     public bool DefaultRestrictResultScope { get; set; } = false;
     public int DefaultStrictness { get; set; } = 0;
     public int DefaultDocumentCount { get; set; } = 0;
+    public int DefaultPastMessagesIncludedCount { get; set; } = 0;
+    public int DefaultMaxResponseTokenLimit { get; set; } = 0;
 
     [Required]
     public IList<OpenAIDeploymentConnection> OpenAIDeploymentConnections { get; set; } =
