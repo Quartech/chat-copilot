@@ -1,16 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Linq;
 using CopilotChat.Shared;
+using CopilotChat.WebApi.Plugins.Chat.Ext;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.Diagnostics;
-using CopilotChat.WebApi.Plugins.Chat.Ext;
-using System.Linq;
-using Microsoft.Extensions.Configuration;
 
 // ********************************************************
 // ************** SETUP ***********************************
