@@ -118,6 +118,8 @@ public class Specialization : IStorageEntity
     /// </summary>>
     public int? DocumentCount { get; set; }
 
+    public int? Order { get; set; }
+
     public Specialization() { }
 
     public Specialization(
@@ -134,7 +136,8 @@ public class Specialization : IStorageEntity
         int? DocumentCount,
         string ImageFilePath,
         string IconFilePath,
-        IList<string> GroupMemberships
+        IList<string> GroupMemberships,
+        int? Order
     )
     {
         this.Id = Guid.NewGuid().ToString();
@@ -154,5 +157,6 @@ public class Specialization : IStorageEntity
         this.CreatedOn = DateTimeOffset.Now;
         this.IsActive = true;
         this.InitialChatMessage = InitialChatMessage;
+        this.Order = Order;
     }
 }

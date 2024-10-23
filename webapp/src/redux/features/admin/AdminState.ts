@@ -29,6 +29,7 @@ export const Specializations = [
         strictness: 3,
         documentCount: 20,
         initialChatMessage: '',
+        order: 0,
         isGeneralAndNotExistsInDb: false,
     },
 ];
