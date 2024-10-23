@@ -8,5 +8,5 @@ public enum SpecializationType
     Standard = 0,
 
     [Description("General")]
-    General = 1
+    General = 1,
 }

@@ -46,6 +46,7 @@ export const SpecializationListSection: React.FC<IChatListSectionProps> = ({ hea
                         specializationId={specialization.id}
                         label={specialization.label}
                         name={specialization.name}
+                        type={specialization.type}
                         specializationMode={specialization.isActive}
                         isSelected={isSelected}
                     />

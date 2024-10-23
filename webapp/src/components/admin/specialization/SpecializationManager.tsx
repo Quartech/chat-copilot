@@ -122,6 +122,8 @@ export const SpecializationManager: React.FC = () => {
     const [isGeneralAndMissingInDb, setIsGeneralAndMissingInDb] = useState(false);
     const dropdownId = useId();
 
+    const isGeneralType = type === 'General';
+
     /**
      * Save specialization by creating or updating.
      *
@@ -271,6 +273,7 @@ export const SpecializationManager: React.FC = () => {
                     onChange={(_event, data) => {
                         setName(data.value);
                     }}
+                    disabled={isGeneralType}
                 />
                 <label htmlFor="label">
                     Label<span className={classes.required}>*</span>
@@ -282,20 +285,25 @@ export const SpecializationManager: React.FC = () => {
                     onChange={(_event, data) => {
                         setLabel(data.value);
                     }}
+                    disabled={isGeneralType}
                 />
-                <label htmlFor="index-name">Enrichment Index</label>
-                <Dropdown
-                    clearable
-                    id="index-name"
-                    onOptionSelect={(_control, data) => {
-                        setIndexName(data.optionValue ?? '');
-                    }}
-                    value={indexName}
-                >
-                    {specializationIndexes.map((specializationIndex) => (
-                        <Option key={specializationIndex}>{specializationIndex}</Option>
-                    ))}
-                </Dropdown>
+                {!isGeneralType && (
+                    <>
+                        <label htmlFor="index-name">Enrichment Index</label>
+                        <Dropdown
+                            clearable
+                            id="index-name"
+                            onOptionSelect={(_control, data) => {
+                                setIndexName(data.optionValue ?? '');
+                            }}
+                            value={indexName}
+                        >
+                            {specializationIndexes.map((specializationIndex) => (
+                                <Option key={specializationIndex}>{specializationIndex}</Option>
+                            ))}
+                        </Dropdown>
+                    </>
+                )}
                 <label htmlFor="deployment">Deployment</label>
                 <Dropdown
                     clearable
@@ -437,9 +445,11 @@ export const SpecializationManager: React.FC = () => {
                     </div>
                 </div>
                 <div className={classes.controls}>
-                    <Button appearance="secondary" disabled={!id} onClick={onDeleteSpecialization}>
-                        Delete
-                    </Button>
+                    {!isGeneralType && (
+                        <Button appearance="secondary" disabled={!id} onClick={onDeleteSpecialization}>
+                            Delete
+                        </Button>
+                    )}
 
                     <Button appearance="primary" disabled={!isValid} onClick={onSaveSpecialization}>
                         Save

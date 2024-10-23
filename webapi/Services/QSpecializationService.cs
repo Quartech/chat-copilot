@@ -117,7 +117,8 @@ public class QSpecializationService : IQSpecializationService
     )
     {
         Specialization? specializationToUpdate = await this._specializationSourceRepository.FindByIdAsync(
-            specializationId.ToString());
+            specializationId.ToString()
+        );
 
         if (specializationToUpdate == null)
         {
@@ -140,16 +141,23 @@ public class QSpecializationService : IQSpecializationService
             ResourceUtils.GetImageAsDataUri(this._qAzureOpenAIChatOptions.DefaultSpecializationIcon)
         );
 
-        specializationToUpdate.IsActive = Convert.ToBoolean(qSpecializationMutate.isActive, CultureInfo.InvariantCulture);
+        specializationToUpdate.IsActive = Convert.ToBoolean(
+            qSpecializationMutate.isActive,
+            CultureInfo.InvariantCulture
+        );
         specializationToUpdate.Name = qSpecializationMutate.Name ?? specializationToUpdate.Name;
         specializationToUpdate.Label = qSpecializationMutate.Label ?? specializationToUpdate.Label;
         specializationToUpdate.Description = qSpecializationMutate.Description ?? specializationToUpdate.Description;
-        specializationToUpdate.RoleInformation = qSpecializationMutate.RoleInformation ?? specializationToUpdate.RoleInformation;
-        specializationToUpdate.InitialChatMessage = qSpecializationMutate.InitialChatMessage ?? specializationToUpdate.InitialChatMessage;
+        specializationToUpdate.RoleInformation =
+            qSpecializationMutate.RoleInformation ?? specializationToUpdate.RoleInformation;
+        specializationToUpdate.InitialChatMessage =
+            qSpecializationMutate.InitialChatMessage ?? specializationToUpdate.InitialChatMessage;
         specializationToUpdate.Deployment = qSpecializationMutate.Deployment ?? specializationToUpdate.Deployment;
-        specializationToUpdate.RestrictResultScope = qSpecializationMutate.RestrictResultScope ?? specializationToUpdate.RestrictResultScope;
+        specializationToUpdate.RestrictResultScope =
+            qSpecializationMutate.RestrictResultScope ?? specializationToUpdate.RestrictResultScope;
         specializationToUpdate.Strictness = qSpecializationMutate.Strictness ?? specializationToUpdate.Strictness;
-        specializationToUpdate.DocumentCount = qSpecializationMutate.DocumentCount ?? specializationToUpdate.DocumentCount;
+        specializationToUpdate.DocumentCount =
+            qSpecializationMutate.DocumentCount ?? specializationToUpdate.DocumentCount;
 
         // Group memberships (mutate payload) are a comma separated list of UUIDs.
         specializationToUpdate.GroupMemberships = !string.IsNullOrEmpty(qSpecializationMutate.GroupMemberships)

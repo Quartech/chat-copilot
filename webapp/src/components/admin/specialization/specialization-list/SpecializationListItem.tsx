@@ -63,6 +63,7 @@ interface ISpecializationListItemProps {
     specializationId: string;
     label: string;
     name: string;
+    type: string;
     specializationMode: boolean;
     isSelected: boolean;
 }
@@ -71,6 +72,7 @@ export const SpecializationListItem: FC<ISpecializationListItemProps> = ({
     specializationId,
     label,
     name,
+    type,
     specializationMode,
     isSelected,
 }) => {
@@ -101,10 +103,12 @@ export const SpecializationListItem: FC<ISpecializationListItemProps> = ({
                         {label}
                     </Text>
                 </div>
-                <SpecializationListItemActions
-                    specializationId={specializationId}
-                    specializationMode={specializationMode}
-                />
+                {type != 'General' && (
+                    <SpecializationListItemActions
+                        specializationId={specializationId}
+                        specializationMode={specializationMode}
+                    />
+                )}
             </>
         </div>
     );
