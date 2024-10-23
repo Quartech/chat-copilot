@@ -81,7 +81,7 @@ public class SpecializationController : ControllerBase
             // If "general" specialization is not found, get the default
             var defaultSpecialization = this.GetDefaultSpecialization();
             specializationResponses.Add(
-                new QSpecializationResponse(defaultSpecialization) { IsGeneralAndMissingInDb = true }
+                new QSpecializationResponse(defaultSpecialization) { IsGeneralAndNotExistsInDb = true }
             );
         }
 

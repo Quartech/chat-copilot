@@ -15,7 +15,7 @@ export interface ISpecialization {
     strictness: number;
     documentCount: number;
     initialChatMessage: string;
-    isGeneralAndMissingInDb: boolean;
+    isGeneralAndNotExistsInDb: boolean;
 }
 
 /**

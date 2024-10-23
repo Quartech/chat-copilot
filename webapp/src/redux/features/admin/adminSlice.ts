@@ -30,10 +30,10 @@ export const adminSlice = createSlice({
         },
         addSpecialization: (
             state: AdminState,
-            action: PayloadAction<{ specialization: ISpecialization; isGeneralAndMissingInDb: boolean }>,
+            action: PayloadAction<{ specialization: ISpecialization; isGeneralAndNotExistsInDb: boolean }>,
         ) => {
-            const { specialization, isGeneralAndMissingInDb } = action.payload;
-            if (isGeneralAndMissingInDb) {
+            const { specialization, isGeneralAndNotExistsInDb } = action.payload;
+            if (isGeneralAndNotExistsInDb) {
                 const generalIndex = state.specializations.findIndex(
                     (specialization) => specialization.id === 'general',
                 );

@@ -119,7 +119,7 @@ export const SpecializationManager: React.FC = () => {
     const [documentCount, setDocumentCount] = useState(0);
 
     const [isValid, setIsValid] = useState(false);
-    const [isGeneralAndMissingInDb, setIsGeneralAndMissingInDb] = useState(false);
+    const [isGeneralAndNotExistsInDb, setIsGeneralAndNotExistsInDb] = useState(false);
     const dropdownId = useId();
 
     const isGeneralType = type === 'General';
@@ -133,7 +133,7 @@ export const SpecializationManager: React.FC = () => {
      * @returns {void}
      */
     const onSaveSpecialization = () => {
-        if (editMode && !isGeneralAndMissingInDb) {
+        if (editMode && !isGeneralAndNotExistsInDb) {
             void specialization.updateSpecialization(id, {
                 type,
                 label,
@@ -170,7 +170,7 @@ export const SpecializationManager: React.FC = () => {
                     strictness,
                     documentCount,
                 },
-                isGeneralAndMissingInDb,
+                isGeneralAndNotExistsInDb,
             );
         }
     };
@@ -191,7 +191,7 @@ export const SpecializationManager: React.FC = () => {
         setRestrictResultScope(false);
         setStrictness(3);
         setDocumentCount(5);
-        setIsGeneralAndMissingInDb(false);
+        setIsGeneralAndNotExistsInDb(false);
     };
 
     useEffect(() => {
@@ -211,7 +211,7 @@ export const SpecializationManager: React.FC = () => {
                 setRestrictResultScope(specializationObj.restrictResultScope);
                 setStrictness(specializationObj.strictness);
                 setDocumentCount(specializationObj.documentCount);
-                setIsGeneralAndMissingInDb(specializationObj.isGeneralAndMissingInDb);
+                setIsGeneralAndNotExistsInDb(specializationObj.isGeneralAndNotExistsInDb);
                 /**
                  * Set the image and icon file paths
                  * Note: The file is set to null because we only retrieve the file path from the server
