@@ -105,7 +105,7 @@ public class ChatHistoryController : ControllerBase
         {
             return this.BadRequest("Chat session parameters cannot be null.");
         }
-        // Create a new chat session
+
         var systemDescription = this._promptOptions.SystemDescription;
         var newChat = new ChatSession(
             chatParameters.Title,
@@ -114,14 +114,6 @@ public class ChatHistoryController : ControllerBase
             chatParameters.Id
         );
         await this._sessionRepository.CreateAsync(newChat);
-        ChatSession? chat = null;
-        if (await this._sessionRepository.TryFindByIdAsync(newChat.Id, callback: v => chat = v))
-        {
-            chat!.Title = chatParameters.Title;
-            chat!.SystemDescription = systemDescription;
-            await this._sessionRepository.UpsertAsync(chat);
-        }
-        //Save prompt - End
 
         Specialization? specialization = null;
         if (chatParameters.specializationId != "general")

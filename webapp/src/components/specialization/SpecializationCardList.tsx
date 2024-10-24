@@ -62,7 +62,7 @@ export const SpecializationCardList: React.FC<SpecializationProps> = ({ speciali
 
     // Memoize the filtered specializations based on the user's group memberships
     const filteredSpecializations = useMemo(() => {
-        return specializations.filter((_specialization) => {
+        const filtered = specializations.filter((_specialization) => {
             const hasMembership =
                 activeUserInfo?.groups.some((val) => _specialization.groupMemberships.includes(val)) ?? false;
 
@@ -73,6 +73,7 @@ export const SpecializationCardList: React.FC<SpecializationProps> = ({ speciali
 
             return canViewSpecialization ? _specialization : undefined;
         });
+        return [...filtered].sort((a, b) => a.order - b.order);
     }, [activeUserInfo?.groups, specializations]);
 
     return (

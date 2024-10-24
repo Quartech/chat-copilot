@@ -96,6 +96,12 @@ public class QSpecializationResponse
     public int? DocumentCount { get; set; } = 0;
 
     /// <summary>
+    /// Order of the specialization.
+    /// </summary>
+    [JsonPropertyName("order")]
+    public int? Order { get; set; } = 0;
+
+    /// <summary>
     /// List of group memberships for the user.
     /// </summary>
     public IList<string> GroupMemberships { get; set; } = new List<string>();
@@ -118,6 +124,7 @@ public class QSpecializationResponse
         this.DocumentCount = specializationSource.DocumentCount;
         this.GroupMemberships = specializationSource.GroupMemberships;
         this.InitialChatMessage = specializationSource.InitialChatMessage;
+        this.Order = specializationSource.Order;
         if (specializationSource.IndexName != null)
         {
             this.IndexName = specializationSource.IndexName;

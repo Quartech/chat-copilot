@@ -14,6 +14,7 @@ export interface ISpecialization {
     strictness: number;
     documentCount: number;
     initialChatMessage: string;
+    order: number;
 }
 
 /**
@@ -36,8 +37,16 @@ export interface ISpecializationRequest {
     restrictResultScope: boolean;
     strictness: number;
     documentCount: number;
+    order: number;
 }
 
 export interface ISpecializationToggleRequest {
     isActive: boolean;
+}
+
+export interface ISpecializationSwapOrder {
+    fromId: string;
+    fromOrder: number;
+    toId: string;
+    toOrder: number;
 }

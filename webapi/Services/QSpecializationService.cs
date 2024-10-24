@@ -93,7 +93,8 @@ public class QSpecializationService : IQSpecializationService
                 qSpecializationMutate.DocumentCount,
                 imageFilePath,
                 iconFilePath,
-                qSpecializationMutate.GroupMemberships.Split(',')
+                qSpecializationMutate.GroupMemberships.Split(','),
+                qSpecializationMutate.Order
             );
 
         await this._specializationSourceRepository.CreateAsync(specializationSource);
@@ -205,6 +206,46 @@ public class QSpecializationService : IQSpecializationService
             }
         }
         return true;
+    }
+
+    /// <summary>
+    /// Swaps the order of two specializations identified by their IDs. This method first retrieves
+    /// both specializations, then updates their orders in an atomic manner. If either specialization
+    /// is not found or if the input model is null, appropriate exceptions are thrown. This operation
+    /// maintains all other properties of the specializations unchanged except for their order.
+    /// </summary>
+    /// <param name="swapOrderModel">The model containing the IDs of the specializations to swap and their new orders.</param>
+    /// <returns>A Task representing the asynchronous operation of swapping the specialization orders.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when swapOrderModel is null.</exception>
+    /// <exception cref="InvalidOperationException">Thrown when one or both specializations could not be found.</exception>
+    public async Task SwapSpecializationOrder(QSpecializationSwapOrder swapOrderModel)
+    {
+        if (swapOrderModel == null)
+        {
+            throw new ArgumentNullException(nameof(swapOrderModel), "QSpecializationSwapOrder must be provided.");
+        }
+
+        var fromSpecTask = this._specializationSourceRepository.FindByIdAsync(swapOrderModel.FromId.ToString());
+        var toSpecTask = this._specializationSourceRepository.FindByIdAsync(swapOrderModel.ToId.ToString());
+
+        await Task.WhenAll(fromSpecTask, toSpecTask);
+
+        var fromSpec = await fromSpecTask;
+        var toSpec = await toSpecTask;
+
+        if (fromSpec == null || toSpec == null)
+        {
+            throw new InvalidOperationException("One or both specializations were not found.");
+        }
+
+        // Swap the orders
+        fromSpec.Order = swapOrderModel.ToOrder;
+        toSpec.Order = swapOrderModel.FromOrder;
+
+        await Task.WhenAll(
+            this._specializationSourceRepository.UpsertAsync(fromSpec),
+            this._specializationSourceRepository.UpsertAsync(toSpec)
+        );
     }
 
     /// <summary>

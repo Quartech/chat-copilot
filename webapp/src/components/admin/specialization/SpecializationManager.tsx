@@ -116,6 +116,7 @@ export const SpecializationManager: React.FC = () => {
     const [restrictResultScope, setRestrictResultScope] = useState(false);
     const [strictness, setStrictness] = useState(0);
     const [documentCount, setDocumentCount] = useState(0);
+    const [order, setOrder] = useState(0);
 
     const [isValid, setIsValid] = useState(false);
     const dropdownId = useId();
@@ -146,6 +147,7 @@ export const SpecializationManager: React.FC = () => {
                 restrictResultScope,
                 strictness,
                 documentCount,
+                order,
             });
         } else {
             void specialization.createSpecialization({
@@ -162,6 +164,7 @@ export const SpecializationManager: React.FC = () => {
                 restrictResultScope,
                 strictness,
                 documentCount,
+                order: specializations.length,
             });
         }
     };
@@ -206,6 +209,7 @@ export const SpecializationManager: React.FC = () => {
                 setImageFile({ file: null, src: specializationObj.imageFilePath });
                 setIconFile({ file: null, src: specializationObj.iconFilePath });
                 setIndexName(specializationObj.indexName);
+                setOrder(specializationObj.order);
             }
         } else {
             setEditMode(false);
