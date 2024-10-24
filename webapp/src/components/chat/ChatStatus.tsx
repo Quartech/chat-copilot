@@ -29,8 +29,6 @@ export const ChatStatus: React.FC<ChatStatusProps> = (props: ChatStatusProps) =>
 
     // The last message either from the user or the bot
     const lastMessage = props.chatState.messages[props.chatState.messages.length - 1];
-
-    // Get the bot response status if the last message is not from the bot
     const botResponseStatus = () => {
         if (props.chatState.messages.length < 1) {
             return undefined;
