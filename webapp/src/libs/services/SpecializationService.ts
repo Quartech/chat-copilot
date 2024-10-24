@@ -1,4 +1,4 @@
-import { ISpecialization, ISpecializationRequest, ISpecializationSwapOrder } from '../models/Specialization';
+import { ISpecialization, ISpecializationRequest } from '../models/Specialization';
 import { BaseService } from './BaseService';
 
 export class SpecializationService extends BaseService {
@@ -189,19 +189,27 @@ export class SpecializationService extends BaseService {
     };
 
     /**
-     * Swaps the order of specializations by sending a POST request to the server.
+     * Sets the order of specializations on the server by converting an array of specializations into a format
+     * suitable for the backend API, then posts this data to update the specialization order.
      *
-     * @param {ISpecializationSwapOrder} body - The request body containing the details for swapping specialization orders.
-     * @param {string} accessToken - The access token required for authentication with the API.
-     * @returns {Promise<object>} A promise that resolves to an object representing the result of the swap operation from the server.
-     * @throws {Error} Throws an error if the network request fails or if the server returns an error response.
+     * @param {ISpecialization[]} body - An array of specializations where each object includes an `id` and an `order`.
+     * @param {string} accessToken - The access token for authentication with the API.
+     * @returns {Promise<void>} A promise that resolves when the order has been successfully updated or rejects with an error.
+     * @throws Will throw an error if the API request fails or if there's an issue during data conversion.
      */
-    async swapSpecializationOrder(body: ISpecializationSwapOrder, accessToken: string): Promise<void> {
+    async setSpecializationsOrder(body: ISpecialization[], accessToken: string): Promise<void> {
+        const specializationOrder = {
+            ordering: body.reduce<Record<string, number>>((acc, specialization) => {
+                acc[specialization.id] = specialization.order;
+                return acc;
+            }, {}),
+        };
+
         await this.getResponseAsync(
             {
                 commandPath: `specializations/order`,
                 method: 'POST',
-                body: body,
+                body: specializationOrder,
             },
             accessToken,
         );
