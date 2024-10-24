@@ -14,29 +14,30 @@ data "azurerm_kubernetes_cluster" "aks" {
 /*
 resource "azurerm_resource_group" "sql" {
   name     = "rg-${local.standard_name}-sql"
-  location = var.location
+  location = var.location.name
 }
 */
 
 resource "azurerm_resource_group" "kv" {
   name     = "rg-${local.standard_name}-kv"
-  location = var.location
+  location = var.location.name
   provider = azurerm.kubernetes
 }
 
 resource "azurerm_resource_group" "cosmos" {
   name     = "rg-${local.standard_name}-cosmos"
-  location = var.location
+  location = var.location.name
 }
 
 resource "azurerm_resource_group" "storage" {
   name     = "rg-${local.standard_name}-storage"
-  location = var.location
+  location = var.location.name
 }
 
 resource "azurerm_resource_group" "openai" {
   name     = "rg-${local.standard_name}-openai"
-  location = var.location
+  location = var.location.name
+  tags     = var.tags
 }
 
 ########################
@@ -250,7 +251,7 @@ resource "azuread_application" "frontend" {
 module "azure_cosmosdb" {
   source                  = "./modules/azure-cosmosdb"
   name                    = "cosmos-${local.standard_name}"
-  location                = var.location
+  location                = var.location.name
   resource_group_name     = azurerm_resource_group.cosmos.name
   cosmosdb_sql_containers = var.cosmosdb_sql_containers
   throughput              = var.throughput
@@ -265,7 +266,7 @@ module "storage_account" {
   source              = "./modules/storage_account"
   name                = "stg${local.short_name}"
   resource_group_name = azurerm_resource_group.storage.name
-  location            = var.location
+  location            = var.location.name
   container_names     = var.container_names
   tags                = var.tags
 }
@@ -276,10 +277,11 @@ module "storage_account" {
 
 module "azure_open_ai" {
   source              = "./modules/azure-cognitive"
-  account_name        = "${local.standard_name}-openai"
+  account_name        = "${local.standard_name_openai}-openai"
   resource_group_name = azurerm_resource_group.openai.name
-  account_location    = var.location
+  account_location    = var.location_openai.name
   account_kind        = "OpenAI"
+  sku_name = "S0"
   openai_deployments  = var.openai_deployments
 }
 
@@ -287,8 +289,9 @@ module "azure_computer_vision" {
   source              = "./modules/azure-cognitive"
   account_name        = "${local.standard_name}-computer-vision"
   resource_group_name = azurerm_resource_group.openai.name
-  account_location    = var.location
+  account_location    = var.location.name
   account_kind        = "ComputerVision"
+  sku_name = "F0"
   openai_deployments  = []
 }
 
@@ -296,7 +299,7 @@ module "azure_ai_search" {
   source              = "./modules/azure-ai-search"
   name                = "${local.standard_name}-search"
   resource_group_name = azurerm_resource_group.openai.name
-  location            = var.location
+  location            = var.location.name
   replica_count       = 2
   partition_count     = 1
 }

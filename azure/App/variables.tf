@@ -17,12 +17,17 @@ variable "azure_tenant_id" {
 ##########
 # Global #
 ##########
-
+/*
 variable "region_code" {
   type        = string
   description = "Define the region where resources will be created"
 }
 
+variable "region_code_vision" {
+  type        = string
+  description = "Region where vision resource will be created, may differ from other regions."
+}
+*/
 variable "project_code" {
   type        = string
   description = "Defines the project where resources will be created"
@@ -49,8 +54,19 @@ variable "tags" {
 ##################
 
 variable "location" {
-  type        = string
+  type        = object({
+    name = string,
+    region_code = string
+  })
   description = "Azure region where the resource group will be created"
+}
+
+variable "location_openai" {
+  type        = object({
+    name = string,
+    region_code = string
+  })
+  description = "Azure region for vision account, as availability may differ from other resources."
 }
 
 ##################
@@ -103,6 +119,21 @@ variable "container_names" {
 #   type    = string
 #   default = "S0"
 # }
+
+
+###################
+# Cognitive Services
+###################
+variable "openai_deployments" {
+  type = list(object({
+    name = string
+    model_name = string
+    version = string
+    sku_name = string
+  }))
+  default = []
+  description = "List of Azure OpenAI deployments to create."
+}
 
 ###################
 # Existing Resources Needed #

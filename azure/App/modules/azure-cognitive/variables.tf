@@ -6,10 +6,6 @@ variable "resource_group_name" {
 variable "account_kind" {
   type = string
   description = "The type of cognitive account."
-   validation {
-    condition     = contains(["OpenAI", "ComputerVision"], var.partition_count)
-    error_message = "The partition_count must be one of the following values: 1, 2, 3, 4, 6, 12."
-  }
 }
 
 variable "account_name" {
@@ -20,6 +16,11 @@ variable "account_name" {
 variable "account_location" {
   type = string
   description = "Define the region for this Azure Cognitive Services account."
+}
+
+variable "sku_name" {
+  type = string
+  description = "Define SKU name, like free (F0), standard (S0), etc."
 }
 
 variable "openai_deployments" {
