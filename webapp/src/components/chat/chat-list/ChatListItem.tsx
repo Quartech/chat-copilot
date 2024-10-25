@@ -137,8 +137,7 @@ export const ChatListItem: FC<IChatListItemProps> = ({
         }
     }, [conversations[id]]);
 
-    const onClick = (_ev: any) => {
-        // const specializationId = conversations[id].specializationId;
+    const onClick = (_ev: React.MouseEvent<HTMLElement>) => {
         if (specializationId) {
             const foundSpecialization = specializations.find(
                 (specialization) => specialization.id === specializationId,
