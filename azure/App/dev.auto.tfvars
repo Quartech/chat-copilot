@@ -35,13 +35,22 @@ openai_deployments = [
     name = "gpt-4o-mini",
     model_name = "gpt-4o-mini",
     version = "2024-07-18",
-    sku_name = "GlobalStandard" 
+    sku_name = "GlobalStandard",
+    capacity = 10
   },
   {
     name = "gpt-4o",
     model_name = "gpt-4o",
     version = "2024-05-13",
-    sku_name = "GlobalStandard"
+    sku_name = "GlobalStandard",
+    capacity = 24000
+  },
+  {
+    name = "text-embedding-ada-002",
+    model_name = "text-embedding-ada-002",
+    version = 2,
+    sku_name = "Standard",
+    capacity = 120
   }
 ]
 

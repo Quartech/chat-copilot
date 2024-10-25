@@ -40,6 +40,12 @@ resource "azurerm_resource_group" "openai" {
   tags     = var.tags
 }
 
+resource "azurerm_resource_group" "openai_completions" {
+  name     = "rg-${local.standard_name_openai}-openai"
+  location = var.location_openai.name
+  tags     = var.tags
+}
+
 ########################
 # SQL Database #
 ########################
@@ -278,7 +284,7 @@ module "storage_account" {
 module "azure_open_ai" {
   source              = "./modules/azure-cognitive"
   account_name        = "${local.standard_name_openai}-openai"
-  resource_group_name = azurerm_resource_group.openai.name
+  resource_group_name = azurerm_resource_group.openai_completions.name
   account_location    = var.location_openai.name
   account_kind        = "OpenAI"
   sku_name = "S0"
@@ -297,9 +303,9 @@ module "azure_computer_vision" {
 
 module "azure_ai_search" {
   source              = "./modules/azure-ai-search"
-  name                = "${local.standard_name}-search"
-  resource_group_name = azurerm_resource_group.openai.name
-  location            = var.location.name
+  name                = "${local.standard_name_openai}-search"
+  resource_group_name = azurerm_resource_group.openai_completions.name
+  location            = var.location_openai.name
   replica_count       = 2
   partition_count     = 1
 }

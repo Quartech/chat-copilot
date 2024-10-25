@@ -29,6 +29,7 @@ variable "openai_deployments" {
     model_name = string
     version = string
     sku_name = string
+    capacity = number
   }))
   default = []
   description = "List of Azure OpenAI deployments to create."
