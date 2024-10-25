@@ -1,3 +1,4 @@
+import React from 'react';
 import { makeStyles, mergeClasses, Persona, shorthands, Text, tokens } from '@fluentui/react-components';
 import { ShieldTask16Regular } from '@fluentui/react-icons';
 import { FC, useState } from 'react';
@@ -115,11 +116,29 @@ export const ChatListItem: FC<IChatListItemProps> = ({
 
     const showPreview = !features[FeatureKeys.SimplifiedExperience].enabled && preview;
     const showActions = features[FeatureKeys.SimplifiedExperience].enabled && isSelected;
+    // for some reason the below rule is enforced, but conversations[id].specializationId is nullable.
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    const specializationId = React.useMemo(() => conversations[id]?.specializationId, [conversations[id]]);
 
     const [editingTitle, setEditingTitle] = useState(false);
 
+    React.useEffect(() => {
+        if (specializationId) {
+            const foundSpecialization = specializations.find(
+                (specialization) => specialization.id === specializationId,
+            );
+            if (foundSpecialization) {
+                dispatch(setChatSpecialization(foundSpecialization));
+            }
+        } else {
+            // defaults to general chat if none are selected (because if you type in the chat without selecting a specialization, it will be proceed as general)
+            const generalSpecialization = specializations.find((specialization) => specialization.id === 'general');
+            generalSpecialization && dispatch(setChatSpecialization(generalSpecialization));
+        }
+    }, [conversations[id]]);
+
     const onClick = (_ev: any) => {
-        const specializationId = conversations[id].specializationId;
+        // const specializationId = conversations[id].specializationId;
         if (specializationId) {
             const foundSpecialization = specializations.find(
                 (specialization) => specialization.id === specializationId,
