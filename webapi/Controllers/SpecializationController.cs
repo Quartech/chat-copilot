@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using CopilotChat.WebApi.Auth;
 using CopilotChat.WebApi.Models.Request;
@@ -75,7 +76,7 @@ public class SpecializationController : ControllerBase
         }
         var defaultSpecialization = this.GetDefaultSpecialization();
         specializationResponses.Add(new QSpecializationResponse(defaultSpecialization));
-        return this.Ok(specializationResponses);
+        return this.Ok(specializationResponses.OrderBy(spec => spec.Order!).ToList());
     }
 
     /// <summary>
