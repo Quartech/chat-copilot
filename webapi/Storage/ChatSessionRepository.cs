@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using CopilotChat.WebApi.Models.Storage;
 
 namespace CopilotChat.WebApi.Storage;
@@ -17,13 +15,4 @@ public class ChatSessionRepository : Repository<ChatSession>
     /// <param name="storageContext">The storage context.</param>
     public ChatSessionRepository(IStorageContext<ChatSession> storageContext)
         : base(storageContext) { }
-
-    /// <summary>
-    /// Retrieves all chat sessions.
-    /// </summary>
-    /// <returns>A list of ChatMessages.</returns>
-    public Task<IEnumerable<ChatSession>> GetAllChatsAsync()
-    {
-        return base.StorageContext.QueryEntitiesAsync(e => true);
-    }
 }
