@@ -544,6 +544,11 @@ public class ChatPlugin
             nameof(StreamResponseToClientAsync)
         );
 
+        if (!cancellationToken.IsCancellationRequested)
+        {
+            await this.UpdateBotResponseStatusOnClientAsync(chatId, "Finalizing bot response", cancellationToken);
+        }
+
         // Save the message into chat history
         this._logger.LogInformation("Saving message to chat history");
         await this._chatMessageRepository.UpsertAsync(chatMessage);
@@ -570,7 +575,10 @@ public class ChatPlugin
         chatMessage.TokenUsage = this.GetTokenUsages(chatContext, chatMessage.Content);
 
         // Update the message on client and in chat history with final completion token usage
-        await this.UpdateMessageOnClient(chatMessage, cancellationToken);
+        if (!cancellationToken.IsCancellationRequested)
+        {
+            await this.UpdateMessageOnClient(chatMessage, cancellationToken);
+        }
         await this._chatMessageRepository.UpsertAsync(chatMessage);
 
         return chatMessage;
@@ -1135,6 +1143,11 @@ public class ChatPlugin
         {
             await foreach (var contentPiece in stream)
             {
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    return chatMessage;
+                }
+
                 accumulatedContent.Append(contentPiece.ToString());
                 if (contentPiece.InnerContent is not null)
                 {
@@ -1285,9 +1298,12 @@ public class ChatPlugin
     )
     {
         var chatMessage = CopilotChatMessage.CreateBotResponseMessage(chatId, content, prompt, citations, tokenUsage);
-        await this
-            ._messageRelayHubContext.Clients.Group(chatId)
-            .SendAsync("ReceiveMessage", chatId, userId, chatMessage, cancellationToken);
+        if (!cancellationToken.IsCancellationRequested)
+        {
+            await this
+                ._messageRelayHubContext.Clients.Group(chatId)
+                .SendAsync("ReceiveMessage", chatId, userId, chatMessage, cancellationToken);
+        }
         return chatMessage;
     }
 

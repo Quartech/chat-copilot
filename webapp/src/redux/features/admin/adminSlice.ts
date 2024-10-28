@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { ISpecialization } from '../../../libs/models/Specialization';
+import { ISpecialization, ISpecializationSwapOrder } from '../../../libs/models/Specialization';
 import { AdminState, initialState } from './AdminState';
 
 export const adminSlice = createSlice({
@@ -47,6 +47,24 @@ export const adminSlice = createSlice({
             );
             state.specializations = updatedSpecializations;
         },
+        swapSpecialization: (state: AdminState, action: PayloadAction<ISpecializationSwapOrder>) => {
+            const { fromId, fromOrder, toId, toOrder } = action.payload;
+
+            if (fromId === toId || fromOrder === -1 || toOrder === -1 || fromOrder === toOrder) {
+                return state;
+            }
+
+            const newSpecializations = [...state.specializations];
+            for (let i = 0; i < newSpecializations.length; i++) {
+                if (newSpecializations[i].id === fromId) {
+                    newSpecializations[i] = { ...newSpecializations[i], order: toOrder };
+                } else if (newSpecializations[i].id === toId) {
+                    newSpecializations[i] = { ...newSpecializations[i], order: fromOrder };
+                }
+            }
+
+            return { ...state, specializations: newSpecializations };
+        },
     },
 });
 
@@ -60,6 +78,7 @@ export const {
     addSpecialization,
     editSpecialization,
     removeSpecialization,
+    swapSpecialization,
 } = adminSlice.actions;
 
 export default adminSlice.reducer;

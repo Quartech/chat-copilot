@@ -145,6 +145,7 @@ const registerSignalREvents = (hubConnection: signalR.HubConnection, store: Stor
                 property: message.tokenUsage ? 'tokenUsage' : 'content',
                 value: message.tokenUsage ?? content,
                 frontLoad: true,
+                origin: 'hubMessage',
             },
         });
 
@@ -158,6 +159,7 @@ const registerSignalREvents = (hubConnection: signalR.HubConnection, store: Stor
                     property: 'citations',
                     value: citations,
                     frontLoad: true,
+                    origin: 'hubMessage',
                 },
             });
         }

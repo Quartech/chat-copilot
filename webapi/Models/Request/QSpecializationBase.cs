@@ -98,4 +98,11 @@ public class QSpecializationBase
     [JsonPropertyName("maxResponseTokenLimit")]
     [Range(1, 4096, ErrorMessage = "Max response token limit must be between 1 and 4096.")]
     public int? MaxResponseTokenLimit { get; set; }
+
+    /// <summary>
+    /// Document Count of the specialization
+    /// </summary>>
+    [JsonPropertyName("order")]
+    public int? Order { get; set; }
+
 }

@@ -30,6 +30,7 @@ export const Specializations = [
         pastMessagesIncludedCount: 10,
         maxResponseTokenLimit: 1024,
         initialChatMessage: '',
+        order: 0,
     },
 ];
 export const initialState: AdminState = {

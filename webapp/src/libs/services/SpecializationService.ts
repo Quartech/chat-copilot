@@ -1,4 +1,4 @@
-import { ISpecialization, ISpecializationRequest } from '../models/Specialization';
+import { ISpecialization, ISpecializationRequest, ISpecializationSwapOrder } from '../models/Specialization';
 import { BaseService } from './BaseService';
 
 export class SpecializationService extends BaseService {
@@ -64,6 +64,7 @@ export class SpecializationService extends BaseService {
         formData.append('documentCount', body.documentCount.toString());
         formData.append('pastMessagesIncludedCount', body.pastMessagesIncludedCount.toString());
         formData.append('maxResponseTokenLimit', body.maxResponseTokenLimit.toString());
+        formData.append('order', body.order.toString());
         // This will need to be parsed on the backend
         formData.append('groupMemberships', body.groupMemberships.join(','));
 
@@ -117,6 +118,7 @@ export class SpecializationService extends BaseService {
         formData.append('documentCount', body.documentCount.toString());
         formData.append('pastMessagesIncludedCount', body.pastMessagesIncludedCount.toString());
         formData.append('maxResponseTokenLimit', body.maxResponseTokenLimit.toString());
+        formData.append('order', body.order.toString());
         // This will need to be parsed on the backend
         formData.append('groupMemberships', body.groupMemberships.join(','));
 
@@ -189,4 +191,23 @@ export class SpecializationService extends BaseService {
 
         return result;
     };
+
+    /**
+     * Swaps the order of specializations by sending a POST request to the server.
+     *
+     * @param {ISpecializationSwapOrder} body - The request body containing the details for swapping specialization orders.
+     * @param {string} accessToken - The access token required for authentication with the API.
+     * @returns {Promise<object>} A promise that resolves to an object representing the result of the swap operation from the server.
+     * @throws {Error} Throws an error if the network request fails or if the server returns an error response.
+     */
+    async swapSpecializationOrder(body: ISpecializationSwapOrder, accessToken: string): Promise<void> {
+        await this.getResponseAsync(
+            {
+                commandPath: `specializations/order`,
+                method: 'POST',
+                body: body,
+            },
+            accessToken,
+        );
+    }
 }

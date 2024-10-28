@@ -16,6 +16,7 @@ export interface ISpecialization {
     pastMessagesIncludedCount: number;
     maxResponseTokenLimit: number;
     initialChatMessage: string;
+    order: number;
 }
 
 /**
@@ -40,8 +41,16 @@ export interface ISpecializationRequest {
     documentCount: number;
     pastMessagesIncludedCount: number;
     maxResponseTokenLimit: number;
+    order: number;
 }
 
 export interface ISpecializationToggleRequest {
     isActive: boolean;
+}
+
+export interface ISpecializationSwapOrder {
+    fromId: string;
+    fromOrder: number;
+    toId: string;
+    toOrder: number;
 }
