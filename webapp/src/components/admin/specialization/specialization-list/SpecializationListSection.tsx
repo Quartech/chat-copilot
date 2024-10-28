@@ -46,6 +46,7 @@ export const SpecializationListSection: React.FC<IChatListSectionProps> = ({ hea
 
     const dropRef = React.useRef<HTMLDivElement | null>(null);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const [, drop] = useDrop({
         accept: 'Specialization',
         drop: (item: { id: string }, monitor: DropTargetMonitor) => {
@@ -68,9 +69,11 @@ export const SpecializationListSection: React.FC<IChatListSectionProps> = ({ hea
      * @returns {string} The data-id of the hovered child or an empty string if not found.
      */
     const getHoverId = (monitor: DropTargetMonitor, dropRef: HTMLDivElement | null): string => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
         const clientOffset = monitor.getClientOffset();
         if (!clientOffset || !dropRef) return '';
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
         const hoverClientY = clientOffset.y;
 
         const children = Array.from(dropRef.children);
@@ -103,7 +106,6 @@ export const SpecializationListSection: React.FC<IChatListSectionProps> = ({ hea
                                 specializationId={specialization.id}
                                 label={specialization.label}
                                 name={specialization.name}
-                                type={specialization.type}
                                 specializationMode={specialization.isActive}
                                 isSelected={isSelected}
                             />

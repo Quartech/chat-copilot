@@ -3,7 +3,6 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
-using CopilotChat.WebApi.Models.Storage;
 
 namespace CopilotChat.WebApi.Models.Request;
 
@@ -17,12 +16,6 @@ public class QSpecializationBase
     /// </summary>
     [JsonPropertyName("label")]
     public string Label { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Type of the specialization
-    /// </summary>
-    [JsonPropertyName("type")]
-    public SpecializationType Type { get; set; } = SpecializationType.Standard;
 
     /// <summary>
     /// Name of the specialization

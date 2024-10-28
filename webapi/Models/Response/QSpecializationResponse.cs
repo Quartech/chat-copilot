@@ -18,12 +18,6 @@ public class QSpecializationResponse
     public string Id { get; set; } = string.Empty;
 
     /// <summary>
-    /// Type of the specialization
-    /// </summary>
-    [JsonPropertyName("type")]
-    public string Type { get; set; } = string.Empty;
-
-    /// <summary>
     /// Label of the specialization
     /// </summary>
     [JsonPropertyName("label")]
@@ -102,12 +96,6 @@ public class QSpecializationResponse
     public int? DocumentCount { get; set; } = 0;
 
     /// <summary>
-    /// IsGeneralAndNotExistsInDb determines whether the specialization is "general" and if the configuration is not in the database.
-    /// </summary>
-    [JsonPropertyName("isGeneralAndNotExistsInDb")]
-    public bool IsGeneralAndNotExistsInDb { get; set; } = false;
-
-    /// <summary>
     /// Order of the specialization.
     /// </summary>
     [JsonPropertyName("order")]
@@ -125,7 +113,6 @@ public class QSpecializationResponse
     public QSpecializationResponse(Specialization specializationSource)
     {
         this.Id = specializationSource.Id;
-        this.Type = specializationSource.Type.ToString();
         this.Label = specializationSource.Label;
         this.Name = specializationSource.Name;
         this.Description = specializationSource.Description;

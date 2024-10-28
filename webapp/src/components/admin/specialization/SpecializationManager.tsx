@@ -103,7 +103,6 @@ export const SpecializationManager: React.FC = () => {
     const [editMode, setEditMode] = useState(false);
 
     const [id, setId] = useState('');
-    const [type, setType] = useState('');
     const [label, setLabel] = useState('');
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
@@ -120,10 +119,9 @@ export const SpecializationManager: React.FC = () => {
     const [order, setOrder] = useState(0);
 
     const [isValid, setIsValid] = useState(false);
-    const [isGeneralAndNotExistsInDb, setIsGeneralAndNotExistsInDb] = useState(false);
     const dropdownId = useId();
 
-    const isGeneralType = type === 'General';
+    const hasEnrichmentIndex = !!indexName;
 
     /**
      * Save specialization by creating or updating.
@@ -134,9 +132,8 @@ export const SpecializationManager: React.FC = () => {
      * @returns {void}
      */
     const onSaveSpecialization = () => {
-        if (editMode && !isGeneralAndNotExistsInDb) {
+        if (editMode) {
             void specialization.updateSpecialization(id, {
-                type,
                 label,
                 name,
                 description,
@@ -155,32 +152,27 @@ export const SpecializationManager: React.FC = () => {
                 order,
             });
         } else {
-            void specialization.createSpecialization(
-                {
-                    type,
-                    label,
-                    name,
-                    description,
-                    roleInformation,
-                    indexName,
-                    imageFile: imageFile.file,
-                    iconFile: iconFile.file,
-                    deployment,
-                    groupMemberships: membershipId,
-                    initialChatMessage,
-                    restrictResultScope,
-                    strictness,
-                    documentCount,
-                    order: specializations.length,
-                },
-                isGeneralAndNotExistsInDb,
-            );
+            void specialization.createSpecialization({
+                label,
+                name,
+                description,
+                roleInformation,
+                indexName,
+                imageFile: imageFile.file,
+                iconFile: iconFile.file,
+                deployment,
+                groupMemberships: membershipId,
+                initialChatMessage,
+                restrictResultScope,
+                strictness,
+                documentCount,
+                order: specializations.length,
+            });
         }
     };
 
     const resetSpecialization = () => {
         setId('');
-        setType('Standard');
         setLabel('');
         setName('');
         setDescription('');
@@ -194,7 +186,6 @@ export const SpecializationManager: React.FC = () => {
         setRestrictResultScope(false);
         setStrictness(3);
         setDocumentCount(5);
-        setIsGeneralAndNotExistsInDb(false);
     };
 
     useEffect(() => {
@@ -203,7 +194,6 @@ export const SpecializationManager: React.FC = () => {
             const specializationObj = specializations.find((specialization) => specialization.id === selectedId);
             if (specializationObj) {
                 setId(specializationObj.id);
-                setType(specializationObj.type);
                 setLabel(specializationObj.label);
                 setName(specializationObj.name);
                 setDescription(specializationObj.description);
@@ -214,7 +204,6 @@ export const SpecializationManager: React.FC = () => {
                 setRestrictResultScope(specializationObj.restrictResultScope);
                 setStrictness(specializationObj.strictness);
                 setDocumentCount(specializationObj.documentCount);
-                setIsGeneralAndNotExistsInDb(specializationObj.isGeneralAndNotExistsInDb);
                 /**
                  * Set the image and icon file paths
                  * Note: The file is set to null because we only retrieve the file path from the server
@@ -277,7 +266,6 @@ export const SpecializationManager: React.FC = () => {
                     onChange={(_event, data) => {
                         setName(data.value);
                     }}
-                    disabled={isGeneralType}
                 />
                 <label htmlFor="label">
                     Label<span className={classes.required}>*</span>
@@ -289,25 +277,7 @@ export const SpecializationManager: React.FC = () => {
                     onChange={(_event, data) => {
                         setLabel(data.value);
                     }}
-                    disabled={isGeneralType}
                 />
-                {!isGeneralType && (
-                    <>
-                        <label htmlFor="index-name">Enrichment Index</label>
-                        <Dropdown
-                            clearable
-                            id="index-name"
-                            onOptionSelect={(_control, data) => {
-                                setIndexName(data.optionValue ?? '');
-                            }}
-                            value={indexName}
-                        >
-                            {specializationIndexes.map((specializationIndex) => (
-                                <Option key={specializationIndex}>{specializationIndex}</Option>
-                            ))}
-                        </Dropdown>
-                    </>
-                )}
                 <label htmlFor="deployment">Deployment</label>
                 <Dropdown
                     clearable
@@ -324,53 +294,77 @@ export const SpecializationManager: React.FC = () => {
                         </Option>
                     ))}
                 </Dropdown>
-                <div>
-                    <Checkbox
-                        label="Limit responses to your data content"
-                        checked={restrictResultScope}
-                        onChange={onChangeRestrictResultScope}
-                    />
-                    <Tooltip
-                        content={'Enabling this will limit responses specific to your data content'}
-                        relationship="label"
-                    >
-                        <Button icon={<Info20Regular />} appearance="transparent" />
-                    </Tooltip>
-                </div>
-                <div className={classes.slidersContainer}>
-                    <label htmlFor="strictness">Strictness (1-5)</label>
-                    <div className={classes.slider}>
-                        <Slider id="strictness" min={1} max={5} value={strictness} onChange={onChangeStrictness} />
-                        <span>{strictness}</span>
-                        <Tooltip
-                            content={
-                                'Strictness sets the threshold to categorize documents as relevant to your queries. Raising strictness means a higher threshold for relevance and filtering out more documents that are less relevant for responses. Very high strictness could cause failure to generate responses due to limited available documents. The default strictness is 3.'
-                            }
-                            relationship="label"
-                        >
-                            <Button icon={<Info20Regular />} appearance="transparent" />
-                        </Tooltip>
-                    </div>
-                    <label htmlFor="documentCount">Retrieved Documents (3-20)</label>
-                    <div className={classes.slider}>
-                        <Slider
-                            id="documentCount"
-                            min={3}
-                            max={20}
-                            value={documentCount}
-                            onChange={onChangeDocumentCount}
-                        />
-                        <span>{documentCount}</span>
-                        <Tooltip
-                            content={
-                                'This specifies the number of top-scoring documents from your data index used to generate responses. You want to increase the value when you have short documents or want to provide more context. The default value is 5. Note: if you set the value to 20 but only have 10 documents in your index, only 10 will be used.'
-                            }
-                            relationship="label"
-                        >
-                            <Button icon={<Info20Regular />} appearance="transparent" />
-                        </Tooltip>
-                    </div>
-                </div>
+                <label htmlFor="index-name">Enrichment Index</label>
+                <Dropdown
+                    clearable
+                    id="index-name"
+                    onOptionSelect={(_control, data) => {
+                        setIndexName(data.optionValue ?? '');
+                    }}
+                    value={indexName || 'None'}
+                >
+                    <Option value="">None</Option>
+                    {specializationIndexes.map((specializationIndex) => (
+                        <Option key={specializationIndex}>{specializationIndex}</Option>
+                    ))}
+                </Dropdown>
+                {hasEnrichmentIndex && (
+                    <>
+                        <div>
+                            <Checkbox
+                                label="Limit responses to your data content"
+                                checked={restrictResultScope}
+                                onChange={onChangeRestrictResultScope}
+                            />
+                            <Tooltip
+                                content={'Enabling this will limit responses specific to your data content'}
+                                relationship="label"
+                            >
+                                <Button icon={<Info20Regular />} appearance="transparent" />
+                            </Tooltip>
+                        </div>
+                        <div className={classes.slidersContainer}>
+                            <label htmlFor="strictness">Strictness (1-5)</label>
+                            <div className={classes.slider}>
+                                <Slider
+                                    id="strictness"
+                                    min={1}
+                                    max={5}
+                                    value={strictness}
+                                    onChange={onChangeStrictness}
+                                />
+                                <span>{strictness}</span>
+                                <Tooltip
+                                    content={
+                                        'Strictness sets the threshold to categorize documents as relevant to your queries. Raising strictness means a higher threshold for relevance and filtering out more documents that are less relevant for responses. Very high strictness could cause failure to generate responses due to limited available documents. The default strictness is 3.'
+                                    }
+                                    relationship="label"
+                                >
+                                    <Button icon={<Info20Regular />} appearance="transparent" />
+                                </Tooltip>
+                            </div>
+                            <label htmlFor="documentCount">Retrieved Documents (3-20)</label>
+                            <div className={classes.slider}>
+                                <Slider
+                                    id="documentCount"
+                                    min={3}
+                                    max={20}
+                                    value={documentCount}
+                                    onChange={onChangeDocumentCount}
+                                />
+                                <span>{documentCount}</span>
+                                <Tooltip
+                                    content={
+                                        'This specifies the number of top-scoring documents from your data index used to generate responses. You want to increase the value when you have short documents or want to provide more context. The default value is 5. Note: if you set the value to 20 but only have 10 documents in your index, only 10 will be used.'
+                                    }
+                                    relationship="label"
+                                >
+                                    <Button icon={<Info20Regular />} appearance="transparent" />
+                                </Tooltip>
+                            </div>
+                        </div>
+                    </>
+                )}
                 <label htmlFor="description">
                     Short Description<span className={classes.required}>*</span>
                 </label>
@@ -449,11 +443,9 @@ export const SpecializationManager: React.FC = () => {
                     </div>
                 </div>
                 <div className={classes.controls}>
-                    {!isGeneralType && (
-                        <Button appearance="secondary" disabled={!id} onClick={onDeleteSpecialization}>
-                            Delete
-                        </Button>
-                    )}
+                    <Button appearance="secondary" disabled={!id} onClick={onDeleteSpecialization}>
+                        Delete
+                    </Button>
 
                     <Button appearance="primary" disabled={!isValid} onClick={onSaveSpecialization}>
                         Save

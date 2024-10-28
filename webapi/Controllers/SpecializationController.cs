@@ -71,20 +71,6 @@ public class SpecializationController : ControllerBase
 
         var specializationResponses = specializations.Select(s => new QSpecializationResponse(s)).ToList();
 
-        // Check if the "general" specialization exists in the retrieved list
-        var generalSpecialization = specializationResponses.FirstOrDefault(s =>
-            s.Type == SpecializationType.General.ToString()
-        );
-
-        if (generalSpecialization == null)
-        {
-            // If "general" specialization is not found, get the default
-            var defaultSpecialization = this.GetDefaultSpecialization();
-            specializationResponses.Add(
-                new QSpecializationResponse(defaultSpecialization) { IsGeneralAndNotExistsInDb = true }
-            );
-        }
-
         return this.Ok(specializationResponses);
     }
 
@@ -259,7 +245,6 @@ public class SpecializationController : ControllerBase
         var defaultSpecialization = new Specialization()
         {
             Id = "general",
-            Type = SpecializationType.General,
             Label = "General",
             Name = "General",
             Description = string.IsNullOrEmpty(this._qAzureOpenAIChatOptions.DefaultSpecializationDescription)

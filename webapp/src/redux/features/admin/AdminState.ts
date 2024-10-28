@@ -30,7 +30,6 @@ export const Specializations = [
         documentCount: 20,
         initialChatMessage: '',
         order: 0,
-        isGeneralAndNotExistsInDb: false,
     },
 ];
 export const initialState: AdminState = {

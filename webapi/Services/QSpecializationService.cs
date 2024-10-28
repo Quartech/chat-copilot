@@ -81,7 +81,6 @@ public class QSpecializationService : IQSpecializationService
                 : await this._qBlobStorage.AddBlobAsync(qSpecializationMutate.IconFile);
 
         var specializationSource = new Specialization(
-            qSpecializationMutate.Type,
             qSpecializationMutate.Label,
             qSpecializationMutate.Name,
             qSpecializationMutate.Description,

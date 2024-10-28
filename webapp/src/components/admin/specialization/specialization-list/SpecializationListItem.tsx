@@ -64,7 +64,6 @@ interface ISpecializationListItemProps {
     specializationId: string;
     label: string;
     name: string;
-    type: string;
     specializationMode: boolean;
     isSelected: boolean;
 }
@@ -73,22 +72,22 @@ export const SpecializationListItem: FC<ISpecializationListItemProps> = ({
     specializationId,
     label,
     name,
-    type,
     specializationMode,
     isSelected,
 }) => {
     const classes = useClasses();
     const dispatch = useAppDispatch();
     const friendlyTitle = name.length > 30 ? name.substring(0, 30) + '...' : name;
-    const isGeneralType = type === 'General';
     const onEditSpecializationClick = (specializationId: string) => {
         dispatch(setSelectedKey(specializationId));
     };
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const [{ isDragging }, drag] = useDrag({
         type: 'Specialization',
         item: { id: specializationId },
         collect: (monitor) => ({
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             isDragging: monitor.isDragging(),
         }),
     });
@@ -96,8 +95,8 @@ export const SpecializationListItem: FC<ISpecializationListItemProps> = ({
     return (
         <div
             data-id={specializationId}
-            ref={!isGeneralType ? drag : null}
-            style={{ opacity: isDragging ? 0.5 : 1, cursor: isGeneralType ? 'pointer' : 'move' }}
+            ref={drag}
+            style={{ opacity: isDragging ? 0.5 : 1, cursor: 'move' }}
             className={mergeClasses(classes.root, isSelected && classes.selected)}
             onClick={() => {
                 onEditSpecializationClick(specializationId);
@@ -116,12 +115,10 @@ export const SpecializationListItem: FC<ISpecializationListItemProps> = ({
                         {label}
                     </Text>
                 </div>
-                {!isGeneralType && (
-                    <SpecializationListItemActions
-                        specializationId={specializationId}
-                        specializationMode={specializationMode}
-                    />
-                )}
+                <SpecializationListItemActions
+                    specializationId={specializationId}
+                    specializationMode={specializationMode}
+                />
             </>
         </div>
     );
