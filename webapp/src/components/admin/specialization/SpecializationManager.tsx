@@ -7,6 +7,8 @@ import {
     InputOnChangeData,
     makeStyles,
     Option,
+    OptionOnSelectData,
+    SelectionEvents,
     shorthands,
     Slider,
     SliderOnChangeData,
@@ -117,11 +119,11 @@ export const SpecializationManager: React.FC = () => {
     const [membershipId, setMembershipId] = useState<string[]>([]);
     const [imageFile, setImageFile] = useState<ISpecializationFile>({ file: null, src: null });
     const [iconFile, setIconFile] = useState<ISpecializationFile>({ file: null, src: null });
-    const [restrictResultScope, setRestrictResultScope] = useState(false);
-    const [strictness, setStrictness] = useState(0);
-    const [documentCount, setDocumentCount] = useState(0);
-    const [pastMessagesIncludedCount, setPastMessagesIncludedCount] = useState(0);
-    const [maxResponseTokenLimit, setMaxResponseTokenLimit] = useState(0);
+    const [restrictResultScope, setRestrictResultScope] = useState<boolean | null>(false);
+    const [strictness, setStrictness] = useState<number | null>(0);
+    const [documentCount, setDocumentCount] = useState<number | null>(0);
+    const [pastMessagesIncludedCount, setPastMessagesIncludedCount] = useState<number | null>(0);
+    const [maxResponseTokenLimit, setMaxResponseTokenLimit] = useState<number | null>(0);
     const [order, setOrder] = useState(0);
 
     const [isValid, setIsValid] = useState(false);
@@ -213,18 +215,18 @@ export const SpecializationManager: React.FC = () => {
                 setMembershipId(specializationObj.groupMemberships);
                 setDeployment(specializationObj.deployment);
                 setInitialChatMessage(specializationObj.initialChatMessage);
-                setRestrictResultScope(specializationObj.restrictResultScope);
-                setStrictness(specializationObj.strictness);
-                setDocumentCount(specializationObj.documentCount);
-                setPastMessagesIncludedCount(specializationObj.pastMessagesIncludedCount);
-                setMaxResponseTokenLimit(specializationObj.maxResponseTokenLimit);
+                setIndexName(specializationObj.indexName);
+                setRestrictResultScope(specializationObj.restrictResultScope ?? false);
+                setStrictness(specializationObj.strictness ?? 3);
+                setDocumentCount(specializationObj.documentCount ?? 5);
+                setPastMessagesIncludedCount(specializationObj.pastMessagesIncludedCount ?? 10);
+                setMaxResponseTokenLimit(specializationObj.maxResponseTokenLimit ?? 1024);
                 /**
                  * Set the image and icon file paths
                  * Note: The file is set to null because we only retrieve the file path from the server
                  */
                 setImageFile({ file: null, src: specializationObj.imageFilePath });
                 setIconFile({ file: null, src: specializationObj.iconFilePath });
-                setIndexName(specializationObj.indexName);
                 setOrder(specializationObj.order);
             }
         } else {
@@ -233,9 +235,23 @@ export const SpecializationManager: React.FC = () => {
         }
     }, [editMode, selectedId, specializations]);
 
+    useEffect(() => {
+        const isValid =
+            !!label && !!name && !!roleInformation && !!description && !!initialChatMessage && membershipId.length > 0;
+        setIsValid(isValid);
+        return () => {};
+    }, [specializations, selectedId, label, name, roleInformation, membershipId, description, initialChatMessage]);
+
     const onDeleteSpecialization = () => {
         void specialization.deleteSpecialization(id, name);
         resetSpecialization();
+    };
+
+    /**
+     * Callback function for handling changes to the "Enrichment Index" dropdown.
+     */
+    const onChangeIndexName = (_event?: SelectionEvents, data?: OptionOnSelectData) => {
+        setIndexName(data?.optionValue ?? '');
     };
 
     /**
@@ -318,13 +334,6 @@ export const SpecializationManager: React.FC = () => {
         setMaxResponseTokenLimit(intValue);
     };
 
-    useEffect(() => {
-        const isValid =
-            !!label && !!name && !!roleInformation && !!description && !!initialChatMessage && membershipId.length > 0;
-        setIsValid(isValid);
-        return () => {};
-    }, [specializations, selectedId, label, name, roleInformation, membershipId, description, initialChatMessage]);
-
     return (
         <div className={classes.scrollableContainer}>
             <div className={classes.root}>
@@ -368,14 +377,7 @@ export const SpecializationManager: React.FC = () => {
                     ))}
                 </Dropdown>
                 <label htmlFor="index-name">Enrichment Index</label>
-                <Dropdown
-                    clearable
-                    id="index-name"
-                    onOptionSelect={(_control, data) => {
-                        setIndexName(data.optionValue ?? '');
-                    }}
-                    value={indexName || 'None'}
-                >
+                <Dropdown clearable id="index-name" onOptionSelect={onChangeIndexName} value={indexName || 'None'}>
                     <Option value="">None</Option>
                     {specializationIndexes.map((specializationIndex) => (
                         <Option key={specializationIndex}>{specializationIndex}</Option>
@@ -386,7 +388,7 @@ export const SpecializationManager: React.FC = () => {
                         <div>
                             <Checkbox
                                 label="Limit responses to your data content"
-                                checked={restrictResultScope}
+                                checked={restrictResultScope ?? false}
                                 onChange={onChangeRestrictResultScope}
                             />
                             <Tooltip
@@ -403,11 +405,11 @@ export const SpecializationManager: React.FC = () => {
                                     id="strictness"
                                     min={1}
                                     max={5}
-                                    value={strictness}
+                                    value={strictness ?? 3}
                                     onChange={onChangeStrictness}
                                 />
                                 <Input
-                                    value={documentCount.toString()}
+                                    value={strictness?.toString()}
                                     onChange={onInputChangeStrictness}
                                     type="number"
                                     min={1}
@@ -429,11 +431,11 @@ export const SpecializationManager: React.FC = () => {
                                     id="documentCount"
                                     min={3}
                                     max={20}
-                                    value={documentCount}
+                                    value={documentCount ?? 5}
                                     onChange={onChangeDocumentCount}
                                 />
                                 <Input
-                                    value={documentCount.toString()}
+                                    value={documentCount?.toString()}
                                     onChange={onInputChangeDocumentCount}
                                     type="number"
                                     min={3}
@@ -454,11 +456,11 @@ export const SpecializationManager: React.FC = () => {
                                 <Slider
                                     min={1}
                                     max={100}
-                                    value={pastMessagesIncludedCount}
+                                    value={pastMessagesIncludedCount ?? 10}
                                     onChange={onChangePastMessagesIncludedCount}
                                 />
                                 <Input
-                                    value={pastMessagesIncludedCount.toString()}
+                                    value={pastMessagesIncludedCount?.toString()}
                                     onChange={onInputChangePastMessagesIncludedCount}
                                     type="number"
                                     min={1}
@@ -479,11 +481,11 @@ export const SpecializationManager: React.FC = () => {
                                 <Slider
                                     min={1}
                                     max={4096}
-                                    value={maxResponseTokenLimit}
+                                    value={maxResponseTokenLimit ?? 1024}
                                     onChange={onChangeMaxResponseTokenLimit}
                                 />
                                 <Input
-                                    value={maxResponseTokenLimit.toString()}
+                                    value={maxResponseTokenLimit?.toString()}
                                     onChange={onInputChangeMaxResponseTokenLimit}
                                     type="number"
                                     min={1}

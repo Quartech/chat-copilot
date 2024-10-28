@@ -183,12 +183,9 @@ public class ChatPlugin
         KernelArguments chatContext = new(context);
         chatContext["knowledgeCutoff"] = this._promptOptions.KnowledgeCutoffDate;
 
-        // Retrieve the specialization key or default to the predefined default specialization key
-        var specializationKey =
-            context[this._qAzureOpenAIChatExtension.ContextKey]?.ToString()
-            ?? this._qAzureOpenAIChatExtension.DefaultSpecialization;
-        // Fetch specialization only if the context key differs from the default
-        if (specializationKey != this._qAzureOpenAIChatExtension.DefaultSpecialization)
+
+        string? specializationKey = context[this._qAzureOpenAIChatExtension.ContextKey]?.ToString();
+        if (specializationKey != null)
         {
             this._qSpecialization = await this._qSpecializationService.GetSpecializationAsync(specializationKey);
         }
