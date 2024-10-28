@@ -179,23 +179,9 @@ public class ChatHistoryController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetAllChatSessionsAsync()
     {
-        // Get all participants that belong to the user.
-        // Then get all the chats from the list of participants.
         var chatParticipants = await this._participantRepository.FindByUserIdAsync(this._authInfo.UserId);
 
-        var chats = new List<ChatSession>();
-        foreach (var chatParticipant in chatParticipants)
-        {
-            ChatSession? chat = null;
-            if (await this._sessionRepository.TryFindByIdAsync(chatParticipant.ChatId, callback: v => chat = v))
-            {
-                chats.Add(chat!);
-            }
-            else
-            {
-                this._logger.LogDebug("Failed to find chat session with id {0}", chatParticipant.ChatId);
-            }
-        }
+        var chats = await this._sessionRepository.FindByIdsAsync(chatParticipants.Select(cp => cp.ChatId));
 
         return this.Ok(chats);
     }

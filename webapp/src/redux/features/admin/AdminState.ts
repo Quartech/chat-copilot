@@ -28,6 +28,8 @@ export const Specializations = [
         restrictResultScope: false,
         strictness: 3,
         documentCount: 20,
+        pastMessagesIncludedCount: 10,
+        maxResponseTokenLimit: 1024,
         initialChatMessage: '',
         order: 0,
     },

@@ -260,6 +260,8 @@ public class SpecializationController : ControllerBase
             InitialChatMessage = this._promptOptions.InitialBotMessage,
             GroupMemberships = new List<string> { this._qAzureOpenAIChatOptions.AdminGroupMembershipId },
             IsActive = true,
+            PastMessagesIncludedCount = this._qAzureOpenAIChatOptions.DefaultPastMessagesIncludedCount,
+            MaxResponseTokenLimit = this._qAzureOpenAIChatOptions.DefaultMaxResponseTokenLimit,
             Order = 0,
         };
 

@@ -80,22 +80,25 @@ public class QSpecializationService : IQSpecializationService
                 ? ResourceUtils.GetImageAsDataUri(this._qAzureOpenAIChatOptions.DefaultSpecializationIcon)
                 : await this._qBlobStorage.AddBlobAsync(qSpecializationMutate.IconFile);
 
-        var specializationSource = new Specialization(
-            qSpecializationMutate.Label,
-            qSpecializationMutate.Name,
-            qSpecializationMutate.Description,
-            qSpecializationMutate.RoleInformation,
-            qSpecializationMutate.InitialChatMessage,
-            qSpecializationMutate.IndexName,
-            qSpecializationMutate.Deployment,
-            qSpecializationMutate.RestrictResultScope,
-            qSpecializationMutate.Strictness,
-            qSpecializationMutate.DocumentCount,
-            imageFilePath,
-            iconFilePath,
-            qSpecializationMutate.GroupMemberships.Split(','),
-            qSpecializationMutate.Order
-        );
+        Specialization specializationSource =
+            new(
+                qSpecializationMutate.Label,
+                qSpecializationMutate.Name,
+                qSpecializationMutate.Description,
+                qSpecializationMutate.RoleInformation,
+                qSpecializationMutate.InitialChatMessage,
+                qSpecializationMutate.IndexName,
+                qSpecializationMutate.Deployment,
+                qSpecializationMutate.RestrictResultScope,
+                qSpecializationMutate.Strictness,
+                qSpecializationMutate.DocumentCount,
+                qSpecializationMutate.PastMessagesIncludedCount,
+                qSpecializationMutate.MaxResponseTokenLimit,
+                imageFilePath,
+                iconFilePath,
+                qSpecializationMutate.GroupMemberships.Split(','),
+                qSpecializationMutate.Order
+            );
 
         await this._specializationSourceRepository.CreateAsync(specializationSource);
 
@@ -158,6 +161,10 @@ public class QSpecializationService : IQSpecializationService
         specializationToUpdate.Strictness = qSpecializationMutate.Strictness ?? specializationToUpdate.Strictness;
         specializationToUpdate.DocumentCount =
             qSpecializationMutate.DocumentCount ?? specializationToUpdate.DocumentCount;
+        specializationToUpdate.PastMessagesIncludedCount =
+            qSpecializationMutate.PastMessagesIncludedCount ?? specializationToUpdate.PastMessagesIncludedCount;
+        specializationToUpdate.MaxResponseTokenLimit =
+            qSpecializationMutate.MaxResponseTokenLimit ?? specializationToUpdate.MaxResponseTokenLimit;
 
         // Group memberships (mutate payload) are a comma separated list of UUIDs.
         specializationToUpdate.GroupMemberships = !string.IsNullOrEmpty(qSpecializationMutate.GroupMemberships)
