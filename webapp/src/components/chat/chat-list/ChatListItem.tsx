@@ -135,6 +135,8 @@ export const ChatListItem: FC<IChatListItemProps> = ({
             const generalSpecialization = specializations.find((specialization) => specialization.id === 'general');
             generalSpecialization && dispatch(setChatSpecialization(generalSpecialization));
         }
+        // only want this to fire when the convversation changes
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [conversations[id]]);
 
     const onClick = (_ev: React.MouseEvent<HTMLElement>) => {
