@@ -19,11 +19,13 @@ public class ChatSessionRepository : Repository<ChatSession>
         : base(storageContext) { }
 
     /// <summary>
-    /// Retrieves all chat sessions.
+    /// Retrieves a list of chat sessions.
     /// </summary>
-    /// <returns>A list of ChatMessages.</returns>
-    public Task<IEnumerable<ChatSession>> GetAllChatsAsync()
+    /// <param name="chatIds">List of ChatSession IDs to retrieve.</param>
+    /// <returns>A list of ChatSessions.</returns>
+    public Task<IEnumerable<ChatSession>> FindByIdsAsync(IEnumerable<string> chatIds)
     {
-        return base.StorageContext.QueryEntitiesAsync(e => true);
+        var chatSet = new HashSet<string>(chatIds);
+        return base.StorageContext.QueryEntitiesAsync(e => chatSet.Contains(e.Partition));
     }
 }
