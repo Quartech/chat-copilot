@@ -21,7 +21,6 @@ using CopilotChat.WebApi.Plugins.Utils;
 using CopilotChat.WebApi.Services;
 using CopilotChat.WebApi.Storage;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.KernelMemory;
@@ -69,7 +68,15 @@ public class ChatPlugin
     /// </summary>
     private readonly IHubContext<MessageRelayHub> _messageRelayHubContext;
 
+    /// <summary>
+    /// The QSpecializationService used for managing specializations.
+    /// </summary>
     private readonly QSpecializationService _qSpecializationService;
+
+    /// <summary>
+    /// The current specialization in use, may be null if not yet set or if no specialization applies.
+    /// </summary>
+    private Specialization? _qSpecialization = null;
 
     /// <summary>
     /// Settings containing prompt texts.
@@ -140,84 +147,6 @@ public class ChatPlugin
     }
 
     /// <summary>
-    /// Method that wraps GetAllowedChatHistoryAsync to get allotted history messages as one string.
-    /// GetAllowedChatHistoryAsync optionally updates a ChatHistory object with the allotted messages,
-    /// but the ChatHistory type is not supported when calling from a rendered prompt, so this wrapper bypasses the chatHistory parameter.
-    /// </summary>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    [KernelFunction, Description("Extract chat history")]
-    public Task<string> ExtractChatHistory(
-        [Description("Chat ID to extract history from")] string chatId,
-        [Description("Maximum number of tokens")] int tokenLimit,
-        CancellationToken cancellationToken = default
-    )
-    {
-        return this.GetAllowedChatHistoryAsync(chatId, tokenLimit, cancellationToken: cancellationToken);
-    }
-
-    /// <summary>
-    /// Extract chat history within token limit as a formatted string and optionally update the ChatHistory object with the allotted messages
-    /// </summary>
-    /// <param name="chatId">Chat ID to extract history from.</param>
-    /// <param name="tokenLimit">Maximum number of tokens.</param>
-    /// <param name="chatHistory">Optional ChatHistory object tracking allotted messages.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>Chat history as a string.</returns>
-    private async Task<string> GetAllowedChatHistoryAsync(
-        string chatId,
-        int tokenLimit,
-        ChatHistory? chatHistory = null,
-        CancellationToken cancellationToken = default
-    )
-    {
-        var sortedMessages = await this._chatMessageRepository.FindByChatIdAsync(chatId, 0, 100);
-
-        ChatHistory allottedChatHistory = new();
-        var remainingToken = tokenLimit;
-        string historyText = string.Empty;
-
-        foreach (var chatMessage in sortedMessages)
-        {
-            var formattedMessage = chatMessage.ToFormattedString();
-
-            if (chatMessage.Type == CopilotChatMessage.ChatMessageType.Document)
-            {
-                continue;
-            }
-
-            var promptRole =
-                chatMessage.AuthorRole == CopilotChatMessage.AuthorRoles.Bot ? AuthorRole.System : AuthorRole.User;
-            int tokenCount = chatHistory is not null
-                ? TokenUtils.GetContextMessageTokenCount(promptRole, formattedMessage)
-                : TokenUtils.TokenCount(formattedMessage);
-
-            if (remainingToken - tokenCount >= 0)
-            {
-                historyText = $"{formattedMessage}\n{historyText}";
-                if (chatMessage.AuthorRole == CopilotChatMessage.AuthorRoles.Bot)
-                {
-                    // Message doesn't have to be formatted for bot. This helps with asserting a natural language response from the LLM (no date or author preamble).
-                    allottedChatHistory.AddAssistantMessage(chatMessage.Content.Trim());
-                }
-                else
-                {
-                    allottedChatHistory.AddUserMessage(formattedMessage.Trim());
-                }
-
-                remainingToken -= tokenCount;
-            }
-            else
-            {
-                break;
-            }
-        }
-
-        chatHistory?.AddRange(allottedChatHistory.Reverse());
-
-        return $"Chat history:\n{historyText.Trim()}";
-    }
-
-    /// <summary>
     /// This is the entry point for getting a chat response. It manages the token limit, saves
     /// messages to memory, and fills in the necessary context variables for completing the
     /// prompt that will be rendered by the template engine.
@@ -254,8 +183,18 @@ public class ChatPlugin
         KernelArguments chatContext = new(context);
         chatContext["knowledgeCutoff"] = this._promptOptions.KnowledgeCutoffDate;
 
+        // Retrieve the specialization key or default to the predefined default specialization key
+        var specializationKey =
+            context[this._qAzureOpenAIChatExtension.ContextKey]?.ToString()
+            ?? this._qAzureOpenAIChatExtension.DefaultSpecialization;
+        // Fetch specialization only if the context key differs from the default
+        if (specializationKey != this._qAzureOpenAIChatExtension.DefaultSpecialization)
+        {
+            this._qSpecialization = await this._qSpecializationService.GetSpecializationAsync(specializationKey);
+        }
+
         this._logger.LogInformation("Getting chat response");
-        // Directly get the chat response without extracting user intent
+
         CopilotChatMessage chatMessage = await this.GetChatResponseAsync(
             chatId,
             userId,
@@ -277,6 +216,103 @@ public class ChatPlugin
         }
 
         return context;
+    }
+
+    /// <summary>
+    /// Generate the necessary chat context to create a prompt then invoke the model to get a response.
+    /// </summary>
+    /// <param name="chatId">The chat ID</param>
+    /// <param name="userId">The user ID</param>
+    /// <param name="chatContext">The KernelArguments.</param>
+    /// <param name="userMessage">ChatMessage object representing new user message.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The created chat message containing the model-generated response.</returns>
+    private async Task<CopilotChatMessage> GetChatResponseAsync(
+        string chatId,
+        string userId,
+        KernelArguments chatContext,
+        CopilotChatMessage userMessage,
+        CancellationToken cancellationToken
+    )
+    {
+        // Render system instruction components and create the meta-prompt template
+        var systemInstructions = await AsyncUtils.SafeInvokeAsync(
+            () => this.RenderSystemInstructions(chatId, chatContext, cancellationToken),
+            nameof(RenderSystemInstructions)
+        );
+        ChatHistory metaPrompt = new(systemInstructions);
+
+        // Get the audience
+        var audience = await AsyncUtils.SafeInvokeAsync(
+            () => this.GetAudienceAsync(chatContext, cancellationToken),
+            nameof(GetAudienceAsync)
+        );
+        metaPrompt.AddSystemMessage(audience);
+
+        var userIntent = string.Empty;
+        if (this._isUserIntentExtractionEnabled)
+        {
+            // Extract user intent from the conversation history.
+            userIntent = await AsyncUtils.SafeInvokeAsync(
+                () => this.GetUserIntentAsync(chatContext, cancellationToken),
+                nameof(GetUserIntentAsync)
+            );
+            metaPrompt.AddSystemMessage(userIntent);
+        }
+
+        // Calculate tokens used for memories
+        int maxRequestTokenBudget = this.GetMaxRequestTokenBudget();
+        // Calculate tokens used so far: system instructions, audience extraction and user intent
+        int tokensUsed = TokenUtils.GetContextMessagesTokenCount(metaPrompt);
+        int chatMemoryTokenBudget =
+            maxRequestTokenBudget
+            - tokensUsed
+            - TokenUtils.GetContextMessageTokenCount(AuthorRole.User, userMessage.ToFormattedString());
+        chatMemoryTokenBudget = (int)(chatMemoryTokenBudget * this._promptOptions.MemoriesResponseContextWeight);
+
+        // Query relevant semantic and document memories
+        (var memoryText, var citationMap) = await this._semanticMemoryRetriever.QueryMemoriesAsync(
+            userIntent,
+            chatId,
+            chatMemoryTokenBudget
+        );
+        if (!string.IsNullOrWhiteSpace(memoryText))
+        {
+            metaPrompt.AddSystemMessage(memoryText);
+            tokensUsed += TokenUtils.GetContextMessageTokenCount(AuthorRole.System, memoryText);
+        }
+
+        // Add as many chat history messages to meta-prompt as the token budget will allow, or based on the count of messages to add specified in the specialization
+        string allowedChatHistory = await this.GetAllowedChatHistoryAsync(
+            chatId,
+            maxRequestTokenBudget - tokensUsed,
+            metaPrompt,
+            cancellationToken
+        );
+
+        // Store token usage of prompt template
+        chatContext[TokenUtils.GetFunctionKey("SystemMetaPrompt")] = TokenUtils
+            .GetContextMessagesTokenCount(metaPrompt)
+            .ToString(CultureInfo.CurrentCulture);
+
+        // Stream the response to the client
+        var botPrompt = new BotResponsePrompt(
+            systemInstructions,
+            audience,
+            userIntent,
+            memoryText,
+            allowedChatHistory,
+            metaPrompt
+        );
+
+        return await this.StreamBotResponseAsync(
+            chatId,
+            userId,
+            chatContext,
+            botPrompt,
+            citationMap.Values.AsEnumerable(),
+            cancellationToken
+        );
     }
 
     /// <summary>
@@ -341,6 +377,44 @@ public class ChatPlugin
         }
 
         return context;
+    }
+
+    /// <summary>
+    /// Will generate a response from the bot that will reference conversation
+    /// history but not include this exchange in that history or stream the response back to the client.
+    /// </summary>
+    /// <param name="chatId"></param>
+    /// <param name="userId"></param>
+    /// <param name="chatContext"></param>
+    /// <param name="userMessage"></param>
+    /// <param name="cancellationToken"></param>
+    private async Task<CopilotChatMessage> GetChatResponseSilentAsync(
+        string chatId,
+        string userId,
+        KernelArguments chatContext,
+        CopilotChatMessage userMessage,
+        CancellationToken cancellationToken
+    )
+    {
+        var promptConfig = await this.GetPromptConfig(chatId, chatContext, cancellationToken);
+        var (memoryText, citationMap) = await this.GetAndInjectSemanticMemories(chatId, 0, chatContext, promptConfig);
+        var botPrompt = await this.GetBotResponsePromptAsync(
+            userId,
+            chatId,
+            memoryText,
+            promptConfig,
+            userMessage,
+            cancellationToken
+        );
+
+        return await this.OneOffBotResponseAsync(
+            chatId,
+            userId,
+            chatContext,
+            botPrompt,
+            citationMap.Values.AsEnumerable(),
+            cancellationToken
+        );
     }
 
     /// <summary>
@@ -432,7 +506,7 @@ public class ChatPlugin
     )
     {
         var memoryQueryTask = this._semanticMemoryRetriever.QueryMemoriesAsync(
-            promptConfig.UserIntent,
+            this._promptOptions.DocumentMemoryName,
             chatId,
             tokenBudget
         );
@@ -443,6 +517,117 @@ public class ChatPlugin
             .GetContextMessagesTokenCount(promptConfig.MetaPrompt)
             .ToString(CultureInfo.CurrentCulture);
         return (memoryText, citationMap);
+    }
+
+    /// <summary>
+    /// Helper function to handle final steps of bot response generation, including streaming to client,
+    /// generating semantic text memory, calculating final token usages, and saving to chat history.
+    /// </summary>
+    /// <param name="chatId">The chat ID</param>
+    /// <param name="userId">The user ID</param>
+    /// <param name="chatContext">Chat context.</param>
+    /// <param name="promptView">The prompt view.</param>
+    /// <param name="citations">Citation sources.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    private async Task<CopilotChatMessage> StreamBotResponseAsync(
+        string chatId,
+        string userId,
+        KernelArguments chatContext,
+        BotResponsePrompt promptView,
+        IEnumerable<CitationSource>? citations,
+        CancellationToken cancellationToken
+    )
+    {
+        CopilotChatMessage chatMessage = await AsyncUtils.SafeInvokeAsync(
+            () =>
+                this.StreamResponseToClientAsync(chatId, userId, promptView, chatContext, cancellationToken, citations),
+            nameof(StreamResponseToClientAsync)
+        );
+
+        if (!cancellationToken.IsCancellationRequested)
+        {
+            await this.UpdateBotResponseStatusOnClientAsync(chatId, "Finalizing bot response", cancellationToken);
+        }
+
+        // Save the message into chat history
+        this._logger.LogInformation("Saving message to chat history");
+        await this._chatMessageRepository.UpsertAsync(chatMessage);
+
+        // Extract semantic chat memory
+        this._logger.LogInformation("Generating semantic chat memory");
+        await AsyncUtils.SafeInvokeAsync(
+            () =>
+                SemanticChatMemoryExtractor.ExtractSemanticChatMemoryAsync(
+                    chatId,
+                    this.GetResponseTokenLimit(),
+                    this._memoryClient,
+                    this._kernel,
+                    chatContext,
+                    this._promptOptions,
+                    this._logger,
+                    cancellationToken
+                ),
+            nameof(SemanticChatMemoryExtractor.ExtractSemanticChatMemoryAsync)
+        );
+
+        // Calculate total token usage for dependency functions and prompt template
+        this._logger.LogInformation("Saving token usage");
+        chatMessage.TokenUsage = this.GetTokenUsages(chatContext, chatMessage.Content);
+
+        // Update the message on client and in chat history with final completion token usage
+        if (!cancellationToken.IsCancellationRequested)
+        {
+            await this.UpdateMessageOnClient(chatMessage, cancellationToken);
+        }
+        await this._chatMessageRepository.UpsertAsync(chatMessage);
+
+        return chatMessage;
+    }
+
+    /// <summary>
+    /// Helper function to handle final steps of bot response generation, including streaming to client,
+    /// generating semantic text memory, calculating final token usages, and saving to chat history.
+    /// </summary>
+    /// <param name="chatId">The chat ID</param>
+    /// <param name="userId">The user ID</param>
+    /// <param name="chatContext">Chat context.</param>
+    /// <param name="promptView">The prompt view.</param>
+    /// <param name="citations">Citation sources.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    private async Task<CopilotChatMessage> OneOffBotResponseAsync(
+        string chatId,
+        string userId,
+        KernelArguments chatContext,
+        BotResponsePrompt promptView,
+        IEnumerable<CitationSource>? citations,
+        CancellationToken cancellationToken
+    )
+    {
+        string speckey = (string)chatContext[this._qAzureOpenAIChatExtension.ContextKey]!;
+        string serializedContext = JsonSerializer.Serialize(chatContext);
+
+        // Combine the context with the main prompt
+        string combinedPrompt = $"{promptView.MetaPromptTemplate}\n\nContext: {serializedContext}";
+        var chatHistory = new ChatHistory();
+        chatHistory.AddUserMessage(combinedPrompt);
+
+        var chatCompletion = this._kernel.GetRequiredService<IChatCompletionService>();
+        var stream = await chatCompletion.GetChatMessageContentAsync(
+            chatHistory,
+            this.CreateChatRequestSettings(),
+            this._kernel,
+            cancellationToken
+        );
+        // Return the constructed message without saving to chat history.
+        var chatmessage = new CopilotChatMessage(
+            userId,
+            "Bot",
+            chatId,
+            stream.Content ?? "No message returned",
+            combinedPrompt,
+            citations
+        );
+        return chatmessage;
     }
 
     /// <summary>
@@ -468,6 +653,11 @@ public class ChatPlugin
         // Calculate max amount of tokens to use for memories
         int maxRequestTokenBudget = this.GetMaxRequestTokenBudget();
         int tokensUsed = TokenUtils.GetContextMessagesTokenCount(promptConfig.MetaPrompt);
+        int chatMemoryTokenBudget =
+            maxRequestTokenBudget
+            - tokensUsed
+            - TokenUtils.GetContextMessageTokenCount(AuthorRole.User, userMessage.ToFormattedString());
+        chatMemoryTokenBudget = (int)(chatMemoryTokenBudget * this._promptOptions.MemoriesResponseContextWeight);
 
         // Start extracting chat history
         var chatHistoryTask = this.GetAllowedChatHistoryAsync(
@@ -479,7 +669,7 @@ public class ChatPlugin
 
         if (!string.IsNullOrWhiteSpace(memoryText))
         {
-            promptConfig.MetaPrompt.AddUserMessage(memoryText);
+            promptConfig.MetaPrompt.AddSystemMessage(memoryText);
             tokensUsed += TokenUtils.GetContextMessageTokenCount(AuthorRole.System, memoryText);
         }
 
@@ -494,164 +684,6 @@ public class ChatPlugin
             allowedChatHistory,
             promptConfig.MetaPrompt
         );
-    }
-
-    /// <summary>
-    /// Generate the necessary chat context to create a prompt then invoke the model to get a response.
-    /// </summary>
-    /// <param name="chatId">The chat ID</param>
-    /// <param name="userId">The user ID</param>
-    /// <param name="chatContext">The KernelArguments.</param>
-    /// <param name="userMessage">ChatMessage object representing new user message.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>The created chat message containing the model-generated response.</returns>
-    private async Task<CopilotChatMessage> GetChatResponseAsync(
-        string chatId,
-        string userId,
-        KernelArguments chatContext,
-        CopilotChatMessage userMessage,
-        CancellationToken cancellationToken
-    )
-    {
-        var promptConfig = await this.GetPromptConfig(chatId, chatContext, cancellationToken);
-
-        int maxRequestTokenBudget = this.GetMaxRequestTokenBudget();
-        int tokensUsed = TokenUtils.GetContextMessagesTokenCount(promptConfig.MetaPrompt);
-
-        int chatMemoryTokenBudget =
-            maxRequestTokenBudget
-            - tokensUsed
-            - TokenUtils.GetContextMessageTokenCount(AuthorRole.User, userMessage.ToFormattedString());
-        chatMemoryTokenBudget = (int)(chatMemoryTokenBudget * this._promptOptions.MemoriesResponseContextWeight);
-
-        var (memoryText, citationMap) = await this.GetAndInjectSemanticMemories(
-            chatId,
-            chatMemoryTokenBudget,
-            chatContext,
-            promptConfig
-        );
-        var botPrompt = await this.GetBotResponsePromptAsync(
-            userId,
-            chatId,
-            memoryText,
-            promptConfig,
-            userMessage,
-            cancellationToken
-        );
-
-        return await this.StreamBotResponseAsync(
-            chatId,
-            userId,
-            botPrompt,
-            chatContext,
-            citationMap.Values.AsEnumerable(),
-            cancellationToken
-        );
-    }
-
-    /// <summary>
-    /// Will generate a response from the bot that will reference conversation
-    /// history but not include this exchange in that history or stream the response back to the client.
-    /// </summary>
-    /// <param name="chatId"></param>
-    /// <param name="userId"></param>
-    /// <param name="chatContext"></param>
-    /// <param name="userMessage"></param>
-    /// <param name="cancellationToken"></param>
-    private async Task<CopilotChatMessage> GetChatResponseSilentAsync(
-        string chatId,
-        string userId,
-        KernelArguments chatContext,
-        CopilotChatMessage userMessage,
-        CancellationToken cancellationToken
-    )
-    {
-        var promptConfig = await this.GetPromptConfig(chatId, chatContext, cancellationToken);
-
-        int maxRequestTokenBudget = this.GetMaxRequestTokenBudget();
-        int tokensUsed = TokenUtils.GetContextMessagesTokenCount(promptConfig.MetaPrompt);
-
-        int chatMemoryTokenBudget =
-            maxRequestTokenBudget
-            - tokensUsed
-            - TokenUtils.GetContextMessageTokenCount(AuthorRole.User, userMessage.ToFormattedString());
-        chatMemoryTokenBudget = (int)(chatMemoryTokenBudget * this._promptOptions.MemoriesResponseContextWeight);
-
-        var (memoryText, citationMap) = await this.GetAndInjectSemanticMemories(
-            chatId,
-            chatMemoryTokenBudget,
-            chatContext,
-            promptConfig
-        );
-        var botPrompt = await this.GetBotResponsePromptAsync(
-            userId,
-            chatId,
-            memoryText,
-            promptConfig,
-            userMessage,
-            cancellationToken
-        );
-
-        return await this.OneOffBotResponseAsync(
-            chatId,
-            userId,
-            chatContext,
-            botPrompt,
-            citationMap.Values.AsEnumerable(),
-            cancellationToken
-        );
-    }
-
-    /// <summary>
-    /// Helper function to handle final steps of bot response generation, including streaming to client,
-    /// generating semantic text memory, calculating final token usages, and saving to chat history.
-    /// </summary>
-    /// <param name="chatId">The chat ID</param>
-    /// <param name="userId">The user ID</param>
-    /// <param name="chatContext">Chat context.</param>
-    /// <param name="promptView">The prompt view.</param>
-    /// <param name="citations">Citation sources.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    private async Task<CopilotChatMessage> OneOffBotResponseAsync(
-        string chatId,
-        string userId,
-        KernelArguments chatContext,
-        BotResponsePrompt promptView,
-        IEnumerable<CitationSource>? citations,
-        CancellationToken cancellationToken
-    )
-    {
-        string speckey = (string)chatContext[this._qAzureOpenAIChatExtension.ContextKey]!;
-
-        var provider = this._kernel.GetRequiredService<IServiceProvider>();
-        var defaultModel = this._qAzureOpenAIChatExtension.GetDefaultChatCompletionDeployment();
-        var specialization =
-            speckey == "general" ? null : await this._qSpecializationService.GetSpecializationAsync(speckey);
-        var serviceId =
-            (specialization == null || specialization.Deployment == defaultModel)
-                ? "default"
-                : specialization.Deployment;
-        var chatCompletion = provider.GetKeyedService<IChatCompletionService>(serviceId);
-        if (chatCompletion == null)
-        {
-            throw new InvalidOperationException($"ChatCompletionService for serviceId '{serviceId}' not found.");
-        }
-        var stream = await chatCompletion.GetChatMessageContentAsync(
-            promptView.MetaPromptTemplate,
-            await this.CreateChatRequestSettingsAsync(speckey),
-            this._kernel,
-            cancellationToken
-        );
-        // Return the constructed message without saving to chat history.
-        var chatmessage = new CopilotChatMessage(
-            userId,
-            "Bot",
-            chatId,
-            stream.Content ?? "No message returned",
-            promptView.MetaPromptTemplate.ToString(),
-            citations
-        );
-        return chatmessage;
     }
 
     /// <summary>
@@ -675,76 +707,6 @@ public class ChatPlugin
     }
 
     /// <summary>
-    /// Helper function to handle final steps of bot response generation, including streaming to client,
-    /// generating semantic text memory, calculating final token usages, and saving to chat history.
-    /// </summary>
-    /// <param name="chatId">The chat ID</param>
-    /// <param name="userId">The user ID</param>
-    /// <param name="promptView">The prompt view.</param>
-    /// <param name="chatContext">Chat context.</param>
-    /// <param name="citations">Citation sources.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    private async Task<CopilotChatMessage> StreamBotResponseAsync(
-        string chatId,
-        string userId,
-        BotResponsePrompt promptView,
-        KernelArguments chatContext,
-        IEnumerable<CitationSource>? citations,
-        CancellationToken cancellationToken
-    )
-    {
-        CopilotChatMessage chatMessage = await AsyncUtils.SafeInvokeAsync(
-            () =>
-                this.StreamResponseToClientAsync(
-                    chatId,
-                    userId,
-                    (string)chatContext[this._qAzureOpenAIChatExtension.ContextKey]!,
-                    promptView,
-                    cancellationToken,
-                    citations
-                ),
-            nameof(StreamResponseToClientAsync)
-        );
-        if (!cancellationToken.IsCancellationRequested)
-        {
-            await this.UpdateBotResponseStatusOnClientAsync(chatId, "Finalizing bot response", cancellationToken);
-        }
-        // Save the message into chat history
-        this._logger.LogInformation("Saving message to chat history");
-        await this._chatMessageRepository.UpsertAsync(chatMessage);
-
-        // Extract semantic chat memory
-        this._logger.LogInformation("Generating semantic chat memory");
-        await AsyncUtils.SafeInvokeAsync(
-            () =>
-                SemanticChatMemoryExtractor.ExtractSemanticChatMemoryAsync(
-                    chatId,
-                    this._memoryClient,
-                    this._kernel,
-                    chatContext,
-                    this._promptOptions,
-                    this._logger,
-                    cancellationToken
-                ),
-            nameof(SemanticChatMemoryExtractor.ExtractSemanticChatMemoryAsync)
-        );
-
-        // Calculate total token usage for dependency functions and prompt template
-        this._logger.LogInformation("Saving token usage");
-        chatMessage.TokenUsage = this.GetTokenUsages(chatContext, chatMessage.Content);
-
-        // Update the message on client and in chat history with final completion token usage
-        if (!cancellationToken.IsCancellationRequested)
-        {
-            await this.UpdateMessageOnClient(chatMessage, cancellationToken);
-        }
-
-        await this._chatMessageRepository.UpsertAsync(chatMessage);
-
-        return chatMessage;
-    }
-
-    /// <summary>
     /// Extract the list of participants from the conversation history.
     /// Note that only those who have spoken will be included.
     /// </summary>
@@ -756,7 +718,7 @@ public class ChatPlugin
         KernelArguments audienceContext = new(context);
         int historyTokenBudget =
             this._promptOptions.CompletionTokenLimit
-            - this._promptOptions.ResponseTokenLimit
+            - this.GetResponseTokenLimit()
             - TokenUtils.TokenCount(
                 string.Join(
                     "\n\n",
@@ -765,12 +727,9 @@ public class ChatPlugin
             );
 
         audienceContext["tokenLimit"] = historyTokenBudget.ToString(new NumberFormatInfo());
-        var specializationKey =
-            context[this._qAzureOpenAIChatExtension.ContextKey]
-            ?? this._qAzureOpenAIChatExtension.DefaultSpecialization;
         var completionFunction = this._kernel.CreateFunctionFromPrompt(
             this._promptOptions.SystemAudienceExtraction,
-            await this.CreateIntentCompletionSettingsAsync((string)specializationKey),
+            this.CreateIntentCompletionSettings(),
             functionName: "SystemAudienceExtraction",
             description: "Extract audience"
         );
@@ -804,7 +763,7 @@ public class ChatPlugin
 
         int tokenBudget =
             this._promptOptions.CompletionTokenLimit
-            - this._promptOptions.ResponseTokenLimit
+            - this.GetResponseTokenLimit()
             - TokenUtils.TokenCount(
                 string.Join(
                     "\n",
@@ -819,12 +778,9 @@ public class ChatPlugin
 
         intentContext["tokenLimit"] = tokenBudget.ToString(new NumberFormatInfo());
         intentContext["knowledgeCutoff"] = this._promptOptions.KnowledgeCutoffDate;
-        var specializationKey =
-            context[this._qAzureOpenAIChatExtension.ContextKey]
-            ?? this._qAzureOpenAIChatExtension.DefaultSpecialization;
         var completionFunction = this._kernel.CreateFunctionFromPrompt(
             this._promptOptions.SystemIntentExtraction,
-            await this.CreateIntentCompletionSettingsAsync((string)specializationKey),
+            this.CreateIntentCompletionSettings(),
             functionName: "UserIntentExtraction",
             description: "Extract user intent"
         );
@@ -843,6 +799,85 @@ public class ChatPlugin
         }
 
         return $"User intent: {result}";
+    }
+
+    /// <summary>
+    /// Method that wraps GetAllowedChatHistoryAsync to get allotted history messages as one string.
+    /// GetAllowedChatHistoryAsync optionally updates a ChatHistory object with the allotted messages,
+    /// but the ChatHistory type is not supported when calling from a rendered prompt, so this wrapper bypasses the chatHistory parameter.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    [KernelFunction, Description("Extract chat history")]
+    public Task<string> ExtractChatHistory(
+        [Description("Chat ID to extract history from")] string chatId,
+        [Description("Maximum number of tokens")] int tokenLimit,
+        CancellationToken cancellationToken = default
+    )
+    {
+        return this.GetAllowedChatHistoryAsync(chatId, tokenLimit, cancellationToken: cancellationToken);
+    }
+
+    /// <summary>
+    /// Extract chat history within token limit as a formatted string and optionally update the ChatHistory object with the allotted messages
+    /// </summary>
+    /// <param name="chatId">Chat ID to extract history from.</param>
+    /// <param name="tokenLimit">Maximum number of tokens.</param>
+    /// <param name="chatHistory">Optional ChatHistory object tracking allotted messages.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>Chat history as a string.</returns>
+    private async Task<string> GetAllowedChatHistoryAsync(
+        string chatId,
+        int tokenLimit,
+        ChatHistory? chatHistory = null,
+        CancellationToken cancellationToken = default
+    )
+    {
+        int count = this._qSpecialization?.PastMessagesIncludedCount ?? 100;
+        var sortedMessages = await this._chatMessageRepository.FindByChatIdAsync(chatId, 0, count);
+
+        ChatHistory allottedChatHistory = new();
+        var remainingToken = tokenLimit;
+        string historyText = string.Empty;
+
+        foreach (var chatMessage in sortedMessages)
+        {
+            var formattedMessage = chatMessage.ToFormattedString();
+
+            if (chatMessage.Type == CopilotChatMessage.ChatMessageType.Document)
+            {
+                continue;
+            }
+
+            var promptRole =
+                chatMessage.AuthorRole == CopilotChatMessage.AuthorRoles.Bot ? AuthorRole.System : AuthorRole.User;
+            int tokenCount = chatHistory is not null
+                ? TokenUtils.GetContextMessageTokenCount(promptRole, formattedMessage)
+                : TokenUtils.TokenCount(formattedMessage);
+
+            if (remainingToken - tokenCount >= 0)
+            {
+                historyText = $"{formattedMessage}\n{historyText}";
+                if (chatMessage.AuthorRole == CopilotChatMessage.AuthorRoles.Bot)
+                {
+                    // Message doesn't have to be formatted for bot. This helps with asserting a natural language response from the LLM (no date or author preamble).
+                    allottedChatHistory.AddAssistantMessage(chatMessage.Content.Trim());
+                }
+                else
+                {
+                    allottedChatHistory.AddUserMessage(formattedMessage.Trim());
+                }
+
+                remainingToken -= tokenCount;
+            }
+            else
+            {
+                break;
+            }
+        }
+
+        chatHistory?.AddRange(allottedChatHistory.Reverse());
+
+        return $"Chat history:\n{historyText.Trim()}";
     }
 
     /// <summary>
@@ -957,21 +992,20 @@ public class ChatPlugin
     /// <summary>
     /// Create `OpenAIPromptExecutionSettings` for chat response. Parameters are read from the PromptSettings class.
     /// </summary>
-    private async Task<OpenAIPromptExecutionSettings> CreateChatRequestSettingsAsync(string specializationId)
+    private OpenAIPromptExecutionSettings CreateChatRequestSettings()
     {
 #pragma warning disable SKEXP0010 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         return new OpenAIPromptExecutionSettings
         {
-            MaxTokens = this._promptOptions.ResponseTokenLimit,
+            MaxTokens = this.GetResponseTokenLimit(),
             Temperature = this._promptOptions.ResponseTemperature,
             TopP = this._promptOptions.ResponseTopP,
             FrequencyPenalty = this._promptOptions.ResponseFrequencyPenalty,
             PresencePenalty = this._promptOptions.ResponsePresencePenalty,
             ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions,
-            AzureChatExtensionsOptions =
-                this._qAzureOpenAIChatExtension.isEnabled(specializationId) == true
-                    ? await this._qAzureOpenAIChatExtension.GetAzureChatExtensionsOptions(specializationId)
-                    : null,
+            AzureChatExtensionsOptions = this._qAzureOpenAIChatExtension.GetAzureChatExtensionsOptions(
+                this._qSpecialization
+            ),
         };
 #pragma warning restore SKEXP0010 //Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
     }
@@ -979,21 +1013,20 @@ public class ChatPlugin
     /// <summary>
     /// Create `OpenAIPromptExecutionSettings` for intent response. Parameters are read from the PromptSettings class.
     /// </summary>
-    private async Task<OpenAIPromptExecutionSettings> CreateIntentCompletionSettingsAsync(string specializationId)
+    private OpenAIPromptExecutionSettings CreateIntentCompletionSettings()
     {
 #pragma warning disable SKEXP0010 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         return new OpenAIPromptExecutionSettings
         {
-            MaxTokens = this._promptOptions.ResponseTokenLimit,
+            MaxTokens = this.GetResponseTokenLimit(),
             Temperature = this._promptOptions.IntentTemperature,
             TopP = this._promptOptions.IntentTopP,
             FrequencyPenalty = this._promptOptions.IntentFrequencyPenalty,
             PresencePenalty = this._promptOptions.IntentPresencePenalty,
             StopSequences = new string[] { "] bot:" },
-            AzureChatExtensionsOptions =
-                this._qAzureOpenAIChatExtension.isEnabled(specializationId) == true
-                    ? await this._qAzureOpenAIChatExtension.GetAzureChatExtensionsOptions(specializationId)
-                    : null,
+            AzureChatExtensionsOptions = this._qAzureOpenAIChatExtension.GetAzureChatExtensionsOptions(
+                this._qSpecialization
+            ),
         };
 #pragma warning restore SKEXP0010 //Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
     }
@@ -1010,9 +1043,20 @@ public class ChatPlugin
         return this._promptOptions.CompletionTokenLimit // Total token limit
             - ExtraOpenAiMessageTokens
             // Token count reserved for model to generate a response
-            - this._promptOptions.ResponseTokenLimit
+            - this.GetResponseTokenLimit()
             // Buffer for Tool Calls
             - this._promptOptions.FunctionCallingTokenLimit;
+    }
+
+    /// <summary>
+    /// Retrieves the token limit for responses.
+    /// This method first checks if a specialization exists and has a maximum response token limit set.
+    /// If so, it returns that limit; otherwise, it falls back to the default response token limit specified in the prompt options.
+    /// </summary>
+    /// <returns>The applicable response token limit as an integer.</returns>
+    private int GetResponseTokenLimit()
+    {
+        return this._qSpecialization?.MaxResponseTokenLimit ?? this._promptOptions.ResponseTokenLimit;
     }
 
     /// <summary>
@@ -1057,33 +1101,29 @@ public class ChatPlugin
     private async Task<CopilotChatMessage> StreamResponseToClientAsync(
         string chatId,
         string userId,
-        string specializationkey,
         BotResponsePrompt prompt,
+        KernelArguments chatContext,
         CancellationToken cancellationToken,
         IEnumerable<CitationSource>? citations = null
     )
     {
         // Create the stream
-        var provider = this._kernel.GetRequiredService<IServiceProvider>();
-        var defaultModel = this._qAzureOpenAIChatExtension.GetDefaultChatCompletionDeployment();
-        var specialization =
-            specializationkey == "general"
-                ? null
-                : await this._qSpecializationService.GetSpecializationAsync(specializationkey);
-        var serviceId =
-            (specialization == null || specialization.Deployment == defaultModel)
-                ? "default"
-                : specialization.Deployment;
-        var chatCompletion = provider.GetKeyedService<IChatCompletionService>(serviceId);
-        if (chatCompletion == null)
-        {
-            throw new InvalidOperationException($"ChatCompletionService for serviceId '{serviceId}' not found.");
-        }
+        var chatCompletion = this._kernel.GetRequiredService<IChatCompletionService>();
         var stream = chatCompletion.GetStreamingChatMessageContentsAsync(
             prompt.MetaPromptTemplate,
-            await this.CreateChatRequestSettingsAsync(specializationkey),
+            this.CreateChatRequestSettings(),
             this._kernel,
             cancellationToken
+        );
+
+        // Create message on client
+        var chatMessage = await this.CreateBotMessageOnClient(
+            chatId,
+            userId,
+            JsonSerializer.Serialize(prompt),
+            string.Empty,
+            cancellationToken,
+            citations
         );
 
         var responseCitations = new List<CitationSource>();
@@ -1092,136 +1132,144 @@ public class ChatPlugin
         var citationPattern = new Regex(@"\[(doc\d+)\](,)?");
         var accumulatedContent = new StringBuilder();
 
-        // Create message on client
-        CopilotChatMessage chatMessage;
+        // Determine the citations based on whether the current specialization matches the default
+        var citationsToUse =
+            this._qSpecialization?.Id == this._qAzureOpenAIChatExtension.DefaultSpecialization
+                ? citations
+                : new List<CitationSource>();
 
-        if (specializationkey == "general")
-        {
-            chatMessage = await this.CreateBotMessageOnClient(
-                chatId,
-                userId,
-                JsonSerializer.Serialize(prompt),
-                string.Empty,
-                cancellationToken,
-                citations
-            );
-        }
-        else
-        {
-            chatMessage = await this.CreateBotMessageOnClient(
-                chatId,
-                userId,
-                JsonSerializer.Serialize(prompt),
-                string.Empty,
-                cancellationToken,
-                new List<CitationSource>()
-            );
-        }
         // Stream the message to the client
-        await foreach (var contentPiece in stream)
+        try
         {
-            if (cancellationToken.IsCancellationRequested)
+            await foreach (var contentPiece in stream)
             {
-                return chatMessage;
-            }
-            accumulatedContent.Append(contentPiece.ToString());
-            if (contentPiece.InnerContent is not null)
-            {
-                Azure.AI.OpenAI.StreamingChatCompletionsUpdate actx = (Azure.AI.OpenAI.StreamingChatCompletionsUpdate)
-                    contentPiece.InnerContent;
-                if (actx.AzureExtensionsContext != null && actx.AzureExtensionsContext.Citations != null)
+                if (cancellationToken.IsCancellationRequested)
                 {
-                    foreach (
-                        AzureChatExtensionDataSourceResponseCitation citation in actx.AzureExtensionsContext.Citations
-                    )
+                    return chatMessage;
+                }
+
+                accumulatedContent.Append(contentPiece.ToString());
+                if (contentPiece.InnerContent is not null)
+                {
+                    Azure.AI.OpenAI.StreamingChatCompletionsUpdate actx =
+                        (Azure.AI.OpenAI.StreamingChatCompletionsUpdate)contentPiece.InnerContent;
+                    if (actx.AzureExtensionsContext != null && actx.AzureExtensionsContext.Citations != null)
                     {
-                        var sourceName = citation.Filepath;
-                        var link = citation.Filepath;
-                        if (citationCountMap.TryGetValue(sourceName, out int count))
+                        foreach (
+                            AzureChatExtensionDataSourceResponseCitation citation in actx.AzureExtensionsContext.Citations
+                        )
                         {
-                            citationCountMap[sourceName]++;
-                            sourceName = $"{sourceName} - Part {citationCountMap[sourceName]}";
-                        }
-                        else
-                        {
-                            citationCountMap[sourceName] = 1;
-                            // Check if this is the only occurrence
-                            if (actx.AzureExtensionsContext.Citations.Count(c => c.Filepath == citation.Filepath) > 1)
+                            var sourceName = citation.Filepath;
+                            var link = citation.Filepath;
+                            if (citationCountMap.TryGetValue(sourceName, out int count))
                             {
-                                sourceName = $"{sourceName} - Part 1";
+                                citationCountMap[sourceName]++;
+                                sourceName = $"{sourceName} - Part {citationCountMap[sourceName]}";
                             }
-                        }
-                        // Collect citation here
-                        string fileExtension = Path.GetExtension(link).TrimStart('.').ToLower(); // Extract and normalize the file extension
-                        string contentType = fileExtension switch
-                        {
-                            "pdf" => "application/pdf", // PDF files
-                            "doc" => "application/msword", // Microsoft Word documents
-                            "docx" => "application/vnd.openxmlformats-officedocument.wordprocessingml.document", // Microsoft Word (OpenXML)
-                            "jpg" => "image/jpeg", // JPEG images
-                            "jpeg" => "image/jpeg", // JPEG images
-                            "png" => "image/png", // PNG images
-                            "gif" => "image/gif", // GIF images
-                            "csv" => "text/csv", // CSV files
-                            _ =>
-                                "application/octet-stream" // Default content type for unknown extensions
-                            ,
-                        };
-
-                        responseCitations.Add(
-                            new CitationSource
+                            else
                             {
-                                Link = link,
-                                SourceName = sourceName,
-                                Snippet = citation.Content,
-                                SourceContentType = contentType, // Use the dynamically determined content type
+                                citationCountMap[sourceName] = 1;
+                                // Check if this is the only occurrence
+                                if (
+                                    actx.AzureExtensionsContext.Citations.Count(c => c.Filepath == citation.Filepath)
+                                    > 1
+                                )
+                                {
+                                    sourceName = $"{sourceName} - Part 1";
+                                }
                             }
-                        );
+                            // Collect citation here
+                            string fileExtension = Path.GetExtension(link).TrimStart('.').ToLower(); // Extract and normalize the file extension
+                            string contentType = fileExtension switch
+                            {
+                                "pdf" => "application/pdf", // PDF files
+                                "doc" => "application/msword", // Microsoft Word documents
+                                "docx" => "application/vnd.openxmlformats-officedocument.wordprocessingml.document", // Microsoft Word (OpenXML)
+                                "jpg" => "image/jpeg", // JPEG images
+                                "jpeg" => "image/jpeg", // JPEG images
+                                "png" => "image/png", // PNG images
+                                "gif" => "image/gif", // GIF images
+                                "csv" => "text/csv", // CSV files
+                                _ =>
+                                    "application/octet-stream" // Default content type for unknown extensions
+                                ,
+                            };
+
+                            responseCitations.Add(
+                                new CitationSource
+                                {
+                                    Link = link,
+                                    SourceName = sourceName,
+                                    Snippet = citation.Content,
+                                    SourceContentType = contentType, // Use the dynamically determined content type
+                                }
+                            );
+                        }
                     }
                 }
-            }
 
-            // Filter citations to include only those referenced in the current content piece
-            var referencedCitations = new HashSet<string>();
-            var matches = citationPattern.Matches(accumulatedContent.ToString());
-            foreach (Match match in matches)
-            {
-                if (match.Groups.Count > 1)
+                // Filter citations to include only those referenced in the current content piece
+                var referencedCitations = new HashSet<string>();
+                var matches = citationPattern.Matches(accumulatedContent.ToString());
+                foreach (Match match in matches)
                 {
-                    var referenceIndex =
-                        int.Parse(match.Groups[1].Value.Substring(3), CultureInfo.InvariantCulture) - 1; // Extract the index from "docX"
-                    if (referenceIndex >= 0 && referenceIndex < responseCitations.Count)
+                    if (match.Groups.Count > 1)
                     {
-                        referencedCitations.Add(responseCitations[referenceIndex].SourceName);
+                        var referenceIndex =
+                            int.Parse(match.Groups[1].Value.AsSpan(3), CultureInfo.InvariantCulture) - 1; // Extract the index from "docX"
+                        if (referenceIndex >= 0 && referenceIndex < responseCitations.Count)
+                        {
+                            referencedCitations.Add(responseCitations[referenceIndex].SourceName);
+                        }
                     }
                 }
-            }
 
-            var filteredCitations = responseCitations
-                .Where(citation => referencedCitations.Contains(citation.SourceName))
-                .ToList();
+                var filteredCitations = responseCitations
+                    .Where(citation => referencedCitations.Contains(citation.SourceName))
+                    .ToList();
 
-            // Replace citations with superscript numbers in the current content piece
-            var processedContentPiece = citationPattern.Replace(
-                contentPiece.ToString(),
-                match =>
+                // Replace citations with superscript numbers in the current content piece
+                var processedContentPiece = citationPattern.Replace(
+                    contentPiece.ToString(),
+                    match =>
+                    {
+                        var citationKey = match.Groups[1].Value;
+                        if (!citationIndexMap.TryGetValue(citationKey, out int value))
+                        {
+                            value = citationIndexMap.Count + 1;
+                            citationIndexMap[citationKey] = value;
+                        }
+                        return $"^{value}^";
+                    }
+                );
+
+                // Update the message content and citations on the client
+                chatMessage.Content += processedContentPiece;
+
+                // Determine citations based on specialization
+                if (this._qSpecialization?.Id != this._qAzureOpenAIChatExtension.DefaultSpecialization)
                 {
-                    var citationKey = match.Groups[1].Value;
-                    if (!citationIndexMap.ContainsKey(citationKey))
-                    {
-                        citationIndexMap[citationKey] = citationIndexMap.Count + 1;
-                    }
-                    return $"^{citationIndexMap[citationKey]}^";
+                    chatMessage.Citations = filteredCitations;
                 }
-            );
 
-            // Update the message content and citations on the client
-            chatMessage.Content += processedContentPiece;
-            // Conditionally update citations based on specialization key
-            if (specializationkey != "general")
-            {
-                chatMessage.Citations = filteredCitations;
+                // Update the message on the client with the new content and possibly updated citations
+                await this.UpdateMessageOnClient(chatMessage, cancellationToken);
             }
+        }
+        catch (Exception ex) when (ex.Message.Contains("max_tokens was reached", StringComparison.Ordinal))
+        {
+            Console.WriteLine($"Token limit reached. Error details: {ex.Message}");
+
+            /*
+            Handling 'max_tokens was reached' error:
+            - This error typically occurs on first request when the response token limit is set too low for the model to generate a coherent response.
+            - It seems there might be some initial token overhead or info caching that causes this.
+            - Instead of failing the entire operation, we return a message to maintain user experience.
+            - This approach assumes that subsequent requests will work due to possible cached information.
+            - The exact cause is not fully understood but I suspect the impact of semantic memories on token consumption might be a contributing factor.
+            */
+
+            chatMessage.Content = "Please try again; the first request hit a token limit.";
             await this.UpdateMessageOnClient(chatMessage, cancellationToken);
         }
 

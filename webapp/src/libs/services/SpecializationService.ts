@@ -62,6 +62,8 @@ export class SpecializationService extends BaseService {
         formData.append('restrictResultScope', body.restrictResultScope.toString());
         formData.append('strictness', body.strictness.toString());
         formData.append('documentCount', body.documentCount.toString());
+        formData.append('pastMessagesIncludedCount', body.pastMessagesIncludedCount.toString());
+        formData.append('maxResponseTokenLimit', body.maxResponseTokenLimit.toString());
         formData.append('order', body.order.toString());
         // This will need to be parsed on the backend
         formData.append('groupMemberships', body.groupMemberships.join(','));
@@ -114,6 +116,8 @@ export class SpecializationService extends BaseService {
         formData.append('restrictResultScope', body.restrictResultScope.toString());
         formData.append('strictness', body.strictness.toString());
         formData.append('documentCount', body.documentCount.toString());
+        formData.append('pastMessagesIncludedCount', body.pastMessagesIncludedCount.toString());
+        formData.append('maxResponseTokenLimit', body.maxResponseTokenLimit.toString());
         formData.append('order', body.order.toString());
         // This will need to be parsed on the backend
         formData.append('groupMemberships', body.groupMemberships.join(','));
