@@ -11,6 +11,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\shared\CopilotChatShared.csproj" />
+    <ProjectReference Include="..\webapi\CopilotChatWebApi.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,6 +1,7 @@
 import { makeStyles, mergeClasses, shorthands, Text, tokens } from '@fluentui/react-components';
 
 import { FC, useId } from 'react';
+import { useDrag } from 'react-dnd';
 import { useAppDispatch } from '../../../../redux/app/hooks';
 import { setSelectedKey } from '../../../../redux/features/admin/adminSlice';
 import { Breakpoints, SharedStyles } from '../../../../styles';
@@ -81,8 +82,19 @@ export const SpecializationListItem: FC<ISpecializationListItemProps> = ({
         dispatch(setSelectedKey(specializationId));
     };
 
+    const [{ isDragging }, drag] = useDrag({
+        type: 'Specialization',
+        item: { id: specializationId },
+        collect: (monitor) => ({
+            isDragging: monitor.isDragging(),
+        }),
+    });
+
     return (
         <div
+            data-id={specializationId}
+            ref={drag}
+            style={{ opacity: isDragging ? 0.5 : 1, cursor: 'move' }}
             className={mergeClasses(classes.root, isSelected && classes.selected)}
             onClick={() => {
                 onEditSpecializationClick(specializationId);

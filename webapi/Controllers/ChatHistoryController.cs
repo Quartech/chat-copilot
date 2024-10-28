@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using CopilotChat.WebApi.Auth;
@@ -105,7 +104,7 @@ public class ChatHistoryController : ControllerBase
         {
             return this.BadRequest("Chat session parameters cannot be null.");
         }
-        // Create a new chat session
+
         var systemDescription = this._promptOptions.SystemDescription;
         var newChat = new ChatSession(
             chatParameters.Title,
@@ -114,14 +113,6 @@ public class ChatHistoryController : ControllerBase
             chatParameters.Id
         );
         await this._sessionRepository.CreateAsync(newChat);
-        ChatSession? chat = null;
-        if (await this._sessionRepository.TryFindByIdAsync(newChat.Id, callback: v => chat = v))
-        {
-            chat!.Title = chatParameters.Title;
-            chat!.SystemDescription = systemDescription;
-            await this._sessionRepository.UpsertAsync(chat);
-        }
-        //Save prompt - End
 
         Specialization? specialization = null;
         if (chatParameters.specializationId != "general")
@@ -188,38 +179,9 @@ public class ChatHistoryController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetAllChatSessionsAsync()
     {
-        // Get all participants that belong to the user.
-        // Then get all the chats from the list of participants.
         var chatParticipants = await this._participantRepository.FindByUserIdAsync(this._authInfo.UserId);
 
-        var chats = new List<ChatSession>();
-        foreach (var chatParticipant in chatParticipants)
-        {
-            ChatSession? chat = null;
-            if (await this._sessionRepository.TryFindByIdAsync(chatParticipant.ChatId, callback: v => chat = v))
-            {
-                if (
-                    Regex.IsMatch(
-                        chat!.Title,
-                        @"Q-Pilot @ [0-9]{1,2}\/[0-9]{1,2}\/[0-9]{1,4}, [0-9]{1,2}:[0-9]{1,2}:[0-9]{1,2} [A,P]M"
-                    )
-                )
-                {
-                    var messagesInThisChat = await this._messageRepository.FindByChatIdAsync(chatParticipant.ChatId);
-                    var firstUserMessage = messagesInThisChat.Where(m => m.UserId != "Bot").MinBy(m => m.Timestamp);
-                    if (firstUserMessage != null)
-                    {
-                        chat!.Title = firstUserMessage.Content;
-                    }
-                }
-
-                chats.Add(chat!);
-            }
-            else
-            {
-                this._logger.LogDebug("Failed to find chat session with id {0}", chatParticipant.ChatId);
-            }
-        }
+        var chats = await this._sessionRepository.FindByIdsAsync(chatParticipants.Select(cp => cp.ChatId));
 
         return this.Ok(chats);
     }
