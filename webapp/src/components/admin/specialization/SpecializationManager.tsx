@@ -406,7 +406,14 @@ export const SpecializationManager: React.FC = () => {
                                     value={strictness}
                                     onChange={onChangeStrictness}
                                 />
-                                <span>{strictness}</span>
+                                <Input
+                                    value={documentCount.toString()}
+                                    onChange={onInputChangeStrictness}
+                                    type="number"
+                                    min={1}
+                                    max={5}
+                                    className={classes.input}
+                                ></Input>
                                 <Tooltip
                                     content={
                                         'Strictness sets the threshold to categorize documents as relevant to your queries. Raising strictness means a higher threshold for relevance and filtering out more documents that are less relevant for responses. Very high strictness could cause failure to generate responses due to limited available documents. The default strictness is 3.'
@@ -425,7 +432,14 @@ export const SpecializationManager: React.FC = () => {
                                     value={documentCount}
                                     onChange={onChangeDocumentCount}
                                 />
-                                <span>{documentCount}</span>
+                                <Input
+                                    value={documentCount.toString()}
+                                    onChange={onInputChangeDocumentCount}
+                                    type="number"
+                                    min={3}
+                                    max={20}
+                                    className={classes.input}
+                                ></Input>
                                 <Tooltip
                                     content={
                                         'This specifies the number of top-scoring documents from your data index used to generate responses. You want to increase the value when you have short documents or want to provide more context. The default value is 5. Note: if you set the value to 20 but only have 10 documents in your index, only 10 will be used.'
@@ -435,60 +449,59 @@ export const SpecializationManager: React.FC = () => {
                                     <Button icon={<Info20Regular />} appearance="transparent" />
                                 </Tooltip>
                             </div>
+                            <label htmlFor="maxResponse">Past messages included (1-100)</label>
+                            <div id="maxResponse" className={classes.slider}>
+                                <Slider
+                                    min={1}
+                                    max={100}
+                                    value={pastMessagesIncludedCount}
+                                    onChange={onChangePastMessagesIncludedCount}
+                                />
+                                <Input
+                                    value={pastMessagesIncludedCount.toString()}
+                                    onChange={onInputChangePastMessagesIncludedCount}
+                                    type="number"
+                                    min={1}
+                                    max={100}
+                                    className={classes.input}
+                                ></Input>
+                                <Tooltip
+                                    content={
+                                        'Select the number of past messages to include in each new API request. This helps give the model context for new user queries. Setting this number to 10 will include 5 user queries and 5 system responses.'
+                                    }
+                                    relationship="label"
+                                >
+                                    <Button icon={<Info20Regular />} appearance="transparent" />
+                                </Tooltip>
+                            </div>
+                            <label htmlFor="maxResponse">Max Response (1-4096)</label>
+                            <div id="maxResponse" className={classes.slider}>
+                                <Slider
+                                    min={1}
+                                    max={4096}
+                                    value={maxResponseTokenLimit}
+                                    onChange={onChangeMaxResponseTokenLimit}
+                                />
+                                <Input
+                                    value={maxResponseTokenLimit.toString()}
+                                    onChange={onInputChangeMaxResponseTokenLimit}
+                                    type="number"
+                                    min={1}
+                                    max={4096}
+                                    className={classes.input}
+                                ></Input>
+                                <Tooltip
+                                    content={
+                                        "Set a limit on the number of tokens per model response. The supported number of tokens are shared between the prompt (including system message, examples, message history, and user query) and the model's response. One token is roughly 4 characters for typical English text."
+                                    }
+                                    relationship="label"
+                                >
+                                    <Button icon={<Info20Regular />} appearance="transparent" />
+                                </Tooltip>
+                            </div>
                         </div>
-                    <label htmlFor="maxResponse">Past messages included (1-100)</label>
-                    <div id="maxResponse" className={classes.slider}>
-                        <Slider
-                            min={1}
-                            max={100}
-                            value={pastMessagesIncludedCount}
-                            onChange={onChangePastMessagesIncludedCount}
-                        />
-                        <Input
-                            value={pastMessagesIncludedCount.toString()}
-                            onChange={onInputChangePastMessagesIncludedCount}
-                            type="number"
-                            min={1}
-                            max={100}
-                            className={classes.input}
-                        ></Input>
-                        <Tooltip
-                            content={
-                                'Select the number of past messages to include in each new API request. This helps give the model context for new user queries. Setting this number to 10 will include 5 user queries and 5 system responses.'
-                            }
-                            relationship="label"
-                        >
-                            <Button icon={<Info20Regular />} appearance="transparent" />
-                        </Tooltip>
-                    </div>
-                    <label htmlFor="maxResponse">Max Response (1-4096)</label>
-                    <div id="maxResponse" className={classes.slider}>
-                        <Slider
-                            min={1}
-                            max={4096}
-                            value={maxResponseTokenLimit}
-                            onChange={onChangeMaxResponseTokenLimit}
-                        />
-                        <Input
-                            value={maxResponseTokenLimit.toString()}
-                            onChange={onInputChangeMaxResponseTokenLimit}
-                            type="number"
-                            min={1}
-                            max={4096}
-                            className={classes.input}
-                        ></Input>
-                        <Tooltip
-                            content={
-                                "Set a limit on the number of tokens per model response. The supported number of tokens are shared between the prompt (including system message, examples, message history, and user query) and the model's response. One token is roughly 4 characters for typical English text."
-                            }
-                            relationship="label"
-                        >
-                            <Button icon={<Info20Regular />} appearance="transparent" />
-                        </Tooltip>
-                    </div>
                     </>
                 )}
-                </div>
                 <label htmlFor="description">
                     Short Description<span className={classes.required}>*</span>
                 </label>
