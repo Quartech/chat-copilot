@@ -124,6 +124,7 @@ export const ChatRoom: React.FC = () => {
             //eslint-disable-next-line @typescript-eslint/no-floating-promises
             chat.editChat(selectedId, title, conversation.systemDescription, conversation.memoryBalance);
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [messages]);
 
     const handleSubmit = async (options: GetResponseOptions) => {
