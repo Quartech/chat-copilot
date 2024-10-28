@@ -128,7 +128,6 @@ public class Specialization : IStorageEntity
     /// </summary>>
     public int? Order { get; set; }
 
-
     public Specialization() { }
 
     public Specialization(

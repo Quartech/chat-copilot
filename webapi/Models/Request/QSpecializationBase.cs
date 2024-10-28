@@ -104,5 +104,4 @@ public class QSpecializationBase
     /// </summary>>
     [JsonPropertyName("order")]
     public int? Order { get; set; }
-
 }
