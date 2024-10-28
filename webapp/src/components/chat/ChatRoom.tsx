@@ -120,7 +120,7 @@ export const ChatRoom: React.FC = () => {
         const conversation = conversations[selectedId];
         const title = getFriendlyChatName(conversation);
 
-        if (title != "New Chat" && conversation.title != title && conversation.createdOnServer) {
+        if (title != 'New Chat' && conversation.title != title && conversation.createdOnServer) {
             //eslint-disable-next-line @typescript-eslint/no-floating-promises
             chat.editChat(selectedId, title, conversation.systemDescription, conversation.memoryBalance);
         }
