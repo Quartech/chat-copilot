@@ -183,7 +183,6 @@ public class ChatPlugin
         KernelArguments chatContext = new(context);
         chatContext["knowledgeCutoff"] = this._promptOptions.KnowledgeCutoffDate;
 
-
         string? specializationKey = context[this._qAzureOpenAIChatExtension.ContextKey]?.ToString();
         if (specializationKey != null)
         {

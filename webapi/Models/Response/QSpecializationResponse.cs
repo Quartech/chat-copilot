@@ -113,7 +113,6 @@ public class QSpecializationResponse
     [JsonPropertyName("order")]
     public int? Order { get; set; } = 0;
 
-
     /// <summary>
     /// List of group memberships for the user.
     /// </summary>

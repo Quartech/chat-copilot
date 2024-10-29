@@ -89,11 +89,17 @@ public class QSpecializationService : IQSpecializationService
                 InitialChatMessage: qSpecializationMutate.InitialChatMessage,
                 Deployment: qSpecializationMutate.Deployment,
                 IndexName: qSpecializationMutate.IndexName,
-                RestrictResultScope: qSpecializationMutate.IndexName != null ? qSpecializationMutate.RestrictResultScope : null,
+                RestrictResultScope: qSpecializationMutate.IndexName != null
+                    ? qSpecializationMutate.RestrictResultScope
+                    : null,
                 Strictness: qSpecializationMutate.IndexName != null ? qSpecializationMutate.Strictness : null,
                 DocumentCount: qSpecializationMutate.IndexName != null ? qSpecializationMutate.DocumentCount : null,
-                PastMessagesIncludedCount: qSpecializationMutate.IndexName != null ? qSpecializationMutate.PastMessagesIncludedCount : null,
-                MaxResponseTokenLimit: qSpecializationMutate.IndexName != null ? qSpecializationMutate.MaxResponseTokenLimit : null,
+                PastMessagesIncludedCount: qSpecializationMutate.IndexName != null
+                    ? qSpecializationMutate.PastMessagesIncludedCount
+                    : null,
+                MaxResponseTokenLimit: qSpecializationMutate.IndexName != null
+                    ? qSpecializationMutate.MaxResponseTokenLimit
+                    : null,
                 ImageFilePath: imageFilePath,
                 IconFilePath: iconFilePath,
                 GroupMemberships: qSpecializationMutate.GroupMemberships.Split(','),
@@ -166,24 +172,29 @@ public class QSpecializationService : IQSpecializationService
         specializationToUpdate.IndexName = qSpecializationMutate.IndexName;
 
         specializationToUpdate.RestrictResultScope =
-            qSpecializationMutate.IndexName == null ? null :
-            qSpecializationMutate.RestrictResultScope ?? specializationToUpdate.RestrictResultScope;
+            qSpecializationMutate.IndexName == null
+                ? null
+                : qSpecializationMutate.RestrictResultScope ?? specializationToUpdate.RestrictResultScope;
 
         specializationToUpdate.Strictness =
-            qSpecializationMutate.IndexName == null ? null :
-            qSpecializationMutate.Strictness ?? specializationToUpdate.Strictness;
+            qSpecializationMutate.IndexName == null
+                ? null
+                : qSpecializationMutate.Strictness ?? specializationToUpdate.Strictness;
 
         specializationToUpdate.DocumentCount =
-            qSpecializationMutate.IndexName == null ? null :
-            qSpecializationMutate.DocumentCount ?? specializationToUpdate.DocumentCount;
+            qSpecializationMutate.IndexName == null
+                ? null
+                : qSpecializationMutate.DocumentCount ?? specializationToUpdate.DocumentCount;
 
         specializationToUpdate.PastMessagesIncludedCount =
-            qSpecializationMutate.IndexName == null ? null :
-            qSpecializationMutate.PastMessagesIncludedCount ?? specializationToUpdate.PastMessagesIncludedCount;
+            qSpecializationMutate.IndexName == null
+                ? null
+                : qSpecializationMutate.PastMessagesIncludedCount ?? specializationToUpdate.PastMessagesIncludedCount;
 
         specializationToUpdate.MaxResponseTokenLimit =
-            qSpecializationMutate.IndexName == null ? null :
-            qSpecializationMutate.MaxResponseTokenLimit ?? specializationToUpdate.MaxResponseTokenLimit;
+            qSpecializationMutate.IndexName == null
+                ? null
+                : qSpecializationMutate.MaxResponseTokenLimit ?? specializationToUpdate.MaxResponseTokenLimit;
 
         // Group memberships (mutate payload) are a comma separated list of UUIDs.
         specializationToUpdate.GroupMemberships = !string.IsNullOrEmpty(qSpecializationMutate.GroupMemberships)
