@@ -235,36 +235,4 @@ public class SpecializationController : ControllerBase
             );
         }
     }
-
-    /// <summary>
-    /// Gets the default specialization
-    /// </summary>
-    /// <returns>An instance of <see cref="Specialization"/></returns>
-    private Specialization GetDefaultSpecialization()
-    {
-        var defaultSpecialization = new Specialization()
-        {
-            Id = "general",
-            Label = "General",
-            Name = "General",
-            Description = string.IsNullOrEmpty(this._qAzureOpenAIChatOptions.DefaultSpecializationDescription)
-                ? "This is a chat between an intelligent AI bot named Copilot and one or more participants. SK stands for Semantic Kernel, the AI platform used to build the bot."
-                : this._qAzureOpenAIChatOptions.DefaultSpecializationDescription,
-            RoleInformation = this._promptOptions.SystemDescription,
-            ImageFilePath = ResourceUtils.GetImageAsDataUri(this._qAzureOpenAIChatOptions.DefaultSpecializationImage),
-            IconFilePath = ResourceUtils.GetImageAsDataUri(this._qAzureOpenAIChatOptions.DefaultSpecializationIcon),
-            Deployment = "gpt-4o",
-            RestrictResultScope = this._qAzureOpenAIChatOptions.DefaultRestrictResultScope,
-            Strictness = this._qAzureOpenAIChatOptions.DefaultStrictness,
-            DocumentCount = this._qAzureOpenAIChatOptions.DefaultDocumentCount,
-            InitialChatMessage = this._promptOptions.InitialBotMessage,
-            GroupMemberships = new List<string> { this._qAzureOpenAIChatOptions.AdminGroupMembershipId },
-            IsActive = true,
-            PastMessagesIncludedCount = this._qAzureOpenAIChatOptions.DefaultPastMessagesIncludedCount,
-            MaxResponseTokenLimit = this._qAzureOpenAIChatOptions.DefaultMaxResponseTokenLimit,
-            Order = 0,
-        };
-
-        return defaultSpecialization;
-    }
 }
