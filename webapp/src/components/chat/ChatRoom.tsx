@@ -3,7 +3,7 @@
 import { makeStyles, shorthands, tokens } from '@fluentui/react-components';
 import React, { useState } from 'react';
 import { SpecializationCardList } from '../../components/specialization/SpecializationCardList';
-import { GetResponseOptions, useChat } from '../../libs/hooks/useChat';
+import { getFriendlyChatName, GetResponseOptions, useChat } from '../../libs/hooks/useChat';
 import { ChatMessageType } from '../../libs/models/ChatMessage';
 import { useAppSelector } from '../../redux/app/hooks';
 import { RootState } from '../../redux/app/store';
@@ -115,6 +115,17 @@ export const ChatRoom: React.FC = () => {
             setShowSpecialization(false);
         }
     }, [messages, selectedId, conversations, showSpecialization]);
+
+    React.useEffect(() => {
+        const conversation = conversations[selectedId];
+        const title = getFriendlyChatName(conversation);
+
+        if (title != 'New Chat' && conversation.title != title && conversation.createdOnServer) {
+            //eslint-disable-next-line @typescript-eslint/no-floating-promises
+            chat.editChat(selectedId, title, conversation.systemDescription, conversation.memoryBalance);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [messages]);
 
     const handleSubmit = async (options: GetResponseOptions) => {
         await chat.getResponse(options);
