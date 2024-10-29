@@ -118,7 +118,7 @@ export const ChatListItem: FC<IChatListItemProps> = ({
     const showActions = features[FeatureKeys.SimplifiedExperience].enabled && isSelected;
     // for some reason the below rule is enforced, but conversations[id].specializationId is nullable.
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    const specializationId = React.useMemo(() => conversations[id]?.specializationId, [conversations[id]]);
+    const specializationId = React.useMemo(() => conversations[id]?.specializationId, [conversations, id]);
 
     const [editingTitle, setEditingTitle] = useState(false);
 
@@ -137,7 +137,7 @@ export const ChatListItem: FC<IChatListItemProps> = ({
         }
         // only want this to fire when the convversation changes
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [conversations[id]]);
+    }, [conversations, id]);
 
     const onClick = (_ev: React.MouseEvent<HTMLElement>) => {
         if (specializationId) {
