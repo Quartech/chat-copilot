@@ -15,7 +15,7 @@ import { ChatSuggestionList } from './suggestions/ChatSuggestionList';
 
 const useClasses = makeStyles({
     root: {
-        ...shorthands.overflow('hidden'),
+        overflow: 'hidden',
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'space-between',
