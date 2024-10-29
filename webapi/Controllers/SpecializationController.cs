@@ -12,7 +12,6 @@ using CopilotChat.WebApi.Options;
 using CopilotChat.WebApi.Plugins.Chat.Ext;
 using CopilotChat.WebApi.Services;
 using CopilotChat.WebApi.Storage;
-using CopilotChat.WebApi.Utilities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -69,7 +68,7 @@ public class SpecializationController : ControllerBase
     {
         var specializations = await this._qspecializationService.GetAllSpecializations();
 
-        var specializationResponses = specializations.Select(s => new QSpecializationResponse(s)).ToList();
+        var specializationResponses = specializations.Select(s => new QSpecializationResponse(s));
 
         return this.Ok(specializationResponses);
     }
