@@ -3,7 +3,9 @@
 import { makeStyles } from '@fluentui/react-components';
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
+import rehypeMathjax from 'rehype-mathjax';
 import remarkGfm from 'remark-gfm';
+import remarkMath from 'remark-math';
 import remarkSupersub from 'remark-supersub';
 import { IChatMessage } from '../../../libs/models/ChatMessage';
 import * as utils from './../../utils/TextUtils';
@@ -19,11 +21,15 @@ interface ChatHistoryTextContentProps {
 
 export const ChatHistoryTextContent: React.FC<ChatHistoryTextContentProps> = ({ message }) => {
     const classes = useClasses();
-    const content = utils.replaceCitationLinksWithIndices(utils.formatChatTextContent(message.content), message);
+    const content = utils.replaceMathBracketsWithDollarSigns(
+        utils.replaceCitationLinksWithIndices(utils.formatChatTextContent(message.content), message),
+    );
 
     return (
         <div className={classes.content}>
-            <ReactMarkdown remarkPlugins={[remarkGfm, remarkSupersub]}>{content}</ReactMarkdown>
+            <ReactMarkdown rehypePlugins={[rehypeMathjax]} remarkPlugins={[remarkGfm, remarkSupersub, remarkMath]}>
+                {content}
+            </ReactMarkdown>
         </div>
     );
 };
