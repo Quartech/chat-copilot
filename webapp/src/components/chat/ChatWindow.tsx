@@ -91,7 +91,7 @@ export const ChatWindow: React.FC = () => {
         setSelectedTab(data.value);
     };
 
-    // Set the chat specialization based on the conversation specialization, esnures UI is in sync with current selected chat
+    // Set the chat specialization based on the conversation specialization, ensures UI is in sync with current selected chat
     React.useEffect(() => {
         if (conversationSpecialization) {
             const specializationMatch = specializations.find((spec) => spec.id === conversationSpecialization);
