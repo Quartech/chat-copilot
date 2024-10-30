@@ -13,6 +13,7 @@ import {
     ConversationSuggestionsChange,
     ConversationSystemDescriptionChange,
     ConversationTitleChange,
+    ConversationUpdateTimestampChange,
     initialState,
     UpdatePluginStatePayload,
 } from './ConversationsState';
@@ -29,6 +30,13 @@ export const conversationsSlice = createSlice({
             const newTitle = action.payload.newTitle;
             state.conversations[id].title = newTitle;
             frontLoadChat(state, id);
+        },
+        editConversationLastUpdate: (
+            state: ConversationsState,
+            action: PayloadAction<ConversationUpdateTimestampChange>,
+        ) => {
+            const id = action.payload.id;
+            state.conversations[id].lastUpdatedTimestamp = action.payload.newDate;
         },
         editConversationSpecialization: (
             state: ConversationsState,
@@ -324,6 +332,7 @@ export const {
     editConversationSpecialization,
     updateSuggestions,
     deleteConversationHistory,
+    editConversationLastUpdate,
 } = conversationsSlice.actions;
 
 export default conversationsSlice.reducer;

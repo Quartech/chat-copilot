@@ -26,6 +26,11 @@ export interface ConversationTitleChange {
     newTitle: string;
 }
 
+export interface ConversationUpdateTimestampChange {
+    id: string;
+    newDate: number;
+}
+
 export interface ConversationInputChange {
     id: string;
     newInput: string;

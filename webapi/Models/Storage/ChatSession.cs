@@ -70,6 +70,11 @@ public class ChatSession : IStorageEntity
     public string specializationId { get; set; }
 
     /// <summary>
+    /// Last time this chat was messaged.
+    /// </summary>
+    public DateTimeOffset LastUpdatedTimestamp { get; set; }
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="ChatSession"/> class.
     /// </summary>
     /// <param name="title">The title of the chat.</param>
@@ -83,5 +88,6 @@ public class ChatSession : IStorageEntity
         this.SystemDescription = systemDescription;
         this.Version = CurrentVersion;
         this.specializationId = specializationId;
+        this.LastUpdatedTimestamp = DateTimeOffset.Now;
     }
 }

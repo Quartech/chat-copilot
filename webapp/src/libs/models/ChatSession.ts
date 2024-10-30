@@ -11,6 +11,7 @@ export interface IChatSession {
     memoryBalance: number;
     enabledPlugins: string[];
     specializationId?: string;
+    lastUpdatedTimestamp?: string;
 }
 
 export interface ICreateChatSessionResponse {
