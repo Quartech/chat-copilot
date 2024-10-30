@@ -10,11 +10,11 @@ export interface ISpecialization {
     iconFilePath: string;
     isActive: boolean;
     groupMemberships: string[];
-    restrictResultScope: boolean;
-    strictness: number;
-    documentCount: number;
-    pastMessagesIncludedCount: number;
-    maxResponseTokenLimit: number;
+    restrictResultScope: boolean | null;
+    strictness: number | null;
+    documentCount: number | null;
+    pastMessagesIncludedCount: number | null;
+    maxResponseTokenLimit: number | null;
     initialChatMessage: string;
     order: number;
 }
@@ -36,11 +36,11 @@ export interface ISpecializationRequest {
     deleteIcon?: boolean; // Flag to delete the icon
     groupMemberships: string[];
     initialChatMessage: string;
-    restrictResultScope: boolean;
-    strictness: number;
-    documentCount: number;
-    pastMessagesIncludedCount: number;
-    maxResponseTokenLimit: number;
+    restrictResultScope: boolean | null;
+    strictness: number | null;
+    documentCount: number | null;
+    pastMessagesIncludedCount: number | null;
+    maxResponseTokenLimit: number | null;
     order: number;
 }
 

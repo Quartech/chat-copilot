@@ -136,8 +136,8 @@ public class Specialization : IStorageEntity
         string Description,
         string RoleInformation,
         string InitialChatMessage,
-        string? IndexName,
         string? Deployment,
+        string? IndexName,
         bool? RestrictResultScope,
         int? Strictness,
         int? DocumentCount,
@@ -154,8 +154,8 @@ public class Specialization : IStorageEntity
         this.Name = Name;
         this.Description = Description;
         this.RoleInformation = RoleInformation;
-        this.IndexName = IndexName;
         this.Deployment = Deployment;
+        this.IndexName = IndexName;
         this.RestrictResultScope = RestrictResultScope;
         this.Strictness = Strictness;
         this.DocumentCount = DocumentCount;

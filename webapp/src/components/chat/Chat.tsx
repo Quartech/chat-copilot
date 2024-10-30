@@ -36,7 +36,6 @@ const Chat = ({
             <LoadingSpinner />
             <Header appState={appState} setAppState={setAppState} showPluginsAndSettings={true} />
             {appState === AppState.ProbeForBackend && <BackendProbe onBackendFound={onBackendFound} />}
-
             <>
                 {hasAccess ? (
                     <>

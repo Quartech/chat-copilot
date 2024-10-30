@@ -1,3 +1,4 @@
+import React from 'react';
 import { makeStyles, mergeClasses, Persona, shorthands, Text, tokens } from '@fluentui/react-components';
 import { ShieldTask16Regular } from '@fluentui/react-icons';
 import { FC, useState } from 'react';
@@ -118,7 +119,7 @@ export const ChatListItem: FC<IChatListItemProps> = ({
 
     const [editingTitle, setEditingTitle] = useState(false);
 
-    const onClick = (_ev: any) => {
+    const onClick = (_ev: React.MouseEvent<HTMLElement>) => {
         const specializationId = conversations[id].specializationId;
         if (specializationId) {
             const foundSpecialization = specializations.find(
