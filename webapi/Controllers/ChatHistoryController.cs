@@ -467,6 +467,38 @@ public class ChatHistoryController : ControllerBase
         return this.NoContent();
     }
 
+    [Route("chats/{sourceId:guid}/documents")]
+    [HttpDelete]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [Authorize(Policy = AuthPolicyName.RequireChatParticipant)]
+    public async Task<IActionResult> DeleteSourceAsync(Guid sourceId)
+    {
+        var sourceIdString = sourceId.ToString();
+        MemorySource? source = null;
+        try
+        {
+            source = await this._sourceRepository.FindByIdAsync(sourceIdString);
+        }
+        catch (KeyNotFoundException)
+        {
+            return this.NotFound($"No document memory source found for source id '{sourceId}'.");
+        }
+
+        try
+        {
+            await this._sourceRepository.DeleteAsync(source);
+        }
+        catch (AggregateException)
+        {
+            return this.StatusCode(500, $"Failed to delete document memory source for source id '{sourceId}'.");
+        }
+
+        return this.NoContent();
+    }
+
     /// <summary>
     /// Deletes all associated resources (messages, memories, participants) associated with a chat session.
     /// </summary>

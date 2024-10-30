@@ -50,4 +50,13 @@ public class ChatMemorySourceRepository : Repository<MemorySource>
     {
         return base.StorageContext.QueryEntitiesAsync(e => true);
     }
+
+    /// <summary>
+    /// Retrieves a memory source by id.
+    /// </summary>
+    /// <returns>A memory source.</returns>
+    public Task<MemorySource> FindByIdAsync(string sourceId)
+    {
+        return base.StorageContext.ReadAsync(sourceId, sourceId);
+    }
 }

@@ -31,6 +31,7 @@ import {
     useTableSort,
 } from '@fluentui/react-components';
 import {
+    DeleteRegular,
     DocumentArrowUp20Regular,
     DocumentPdfRegular,
     DocumentTextRegular,
@@ -47,8 +48,6 @@ import { RootState } from '../../../redux/app/store';
 import { Add20 } from '../../shared/BundledIcons';
 import { timestampToDateString } from '../../utils/TextUtils';
 import { TabView } from './TabView';
-
-const EmptyGuid = '00000000-0000-0000-0000-000000000000';
 
 const useClasses = makeStyles({
     functional: {
@@ -127,7 +126,12 @@ export const DocumentsTab: React.FC = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [importingDocuments, selectedId]);
 
-    const { columns, rows } = useTable(resources);
+    const handleDeleteResource = (sourceId: string) => {
+        void fileHandler.deleteFile(sourceId);
+        setResources((resources) => resources.filter((resource) => resource.id !== sourceId));
+    };
+
+    const { columns, rows } = useTable(resources, handleDeleteResource);
     return (
         <TabView
             title="Documents"
@@ -234,7 +238,7 @@ export const DocumentsTab: React.FC = () => {
     );
 };
 
-function useTable(resources: ChatMemorySource[]) {
+function useTable(resources: ChatMemorySource[], onDeleteResource: (sourceId: string) => void) {
     const headerSortProps = (columnId: TableColumnId): TableHeaderCellProps => ({
         onClick: (e: React.MouseEvent) => {
             toggleColumnSort(e, columnId);
@@ -342,6 +346,20 @@ function useTable(resources: ChatMemorySource[]) {
                 return getSortDirection('progress') === 'ascending' ? comparison : comparison * -1;
             },
         }),
+        createTableColumn<TableItem>({
+            columnId: 'delete',
+            renderHeaderCell: () => <TableHeaderCell key="delete">Actions</TableHeaderCell>,
+            renderCell: (item) => (
+                <TableCell key={`${item.id}-delete`}>
+                    <Button
+                        onClick={() => {
+                            onDeleteResource(item.id);
+                        }}
+                        icon={<DeleteRegular />}
+                    ></Button>
+                </TableCell>
+            ),
+        }),
     ];
 
     const items = resources.map((item) => ({
@@ -384,7 +402,7 @@ function useTable(resources: ChatMemorySource[]) {
 }
 
 function getAccessString(chatId: string) {
-    return chatId === EmptyGuid ? 'Global' : 'This chat';
+    return chatId === Constants.EMPTY_GUID ? 'Global' : 'This chat';
 }
 
 export function getFileIconByFileExtension(fileName: string, props: FluentIconsProps = {}) {

@@ -28,6 +28,16 @@ export class DocumentImportService extends BaseService {
         );
     };
 
+    public deleteDocumentAsync = async (sourceId: string, accessToken: string) => {
+        return await this.getResponseAsync(
+            {
+                commandPath: `chats/${sourceId}/documents`,
+                method: 'DELETE',
+            },
+            accessToken,
+        );
+    };
+
     public getContentSafetyStatusAsync = async (accessToken: string): Promise<boolean> => {
         const serviceInfo = await this.getResponseAsync<ServiceInfo>(
             {
