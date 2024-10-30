@@ -95,7 +95,7 @@ export function replaceCitationLinksWithIndices(formattedMessageContent: string,
 
 /**
  * Will first escape all dollar signs present in the original string.
- * Then, replace every occurence of block style MathJax delimiters \[ and \] with $$ and $$
+ * Then, replace every occurrence of block style MathJax delimiters \[ and \] with $$ and $$
  * Then, replace every occurrence of inline style MathJax delimiters \( and \) with $ and $.
  */
 export function replaceMathBracketsWithDollarSigns(formattedMessageContent: string) {
