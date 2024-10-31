@@ -34,6 +34,7 @@ namespace CopilotChat.WebApi.Controllers;
 public class DocumentController : ControllerBase
 {
     private const string GlobalDocumentUploadedClientCall = "GlobalDocumentUploaded";
+    private const string DocumentDeletedClientCall = "DocumentDeleted";
     private const string ReceiveMessageClientCall = "ReceiveMessage";
 
     private readonly ILogger<DocumentController> _logger;
@@ -153,6 +154,12 @@ public class DocumentController : ControllerBase
             await Task.WhenAll(
                 this._sourceRepository.DeleteAsync(source),
                 memoryClient.DeleteDocumentAsync(sourceIdString, this._promptOptions.MemoryIndexName)
+            );
+
+            await messageRelayHubContext.Clients.All.SendAsync(
+                DocumentDeletedClientCall,
+                source.Name,
+                this._authInfo.Name
             );
         }
         catch (AggregateException ex)
