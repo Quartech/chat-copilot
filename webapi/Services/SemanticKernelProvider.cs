@@ -55,7 +55,6 @@ public sealed class SemanticKernelProvider
         {
             case string x when x.Equals("AzureOpenAI", StringComparison.OrdinalIgnoreCase):
             case string y when y.Equals("AzureOpenAIText", StringComparison.OrdinalIgnoreCase):
-                var defaultModel = qAzureOpenAIChatOptions.DefaultModel;
                 foreach (
                     QAzureOpenAIChatOptions.OpenAIDeploymentConnection connection in qAzureOpenAIChatOptions.OpenAIDeploymentConnections
                 )
@@ -68,7 +67,7 @@ public sealed class SemanticKernelProvider
                             connection.Endpoint?.ToString(),
                             connection.APIKey,
                             httpClient: httpClientFactory.CreateClient(),
-                            serviceId: deployment == defaultModel ? "default" : deployment
+                            serviceId: deployment
                         );
                     }
                 }
