@@ -185,6 +185,8 @@ public class ChatController : ControllerBase, IDisposable
                 Variables = contextVariables.Select(v => new KeyValuePair<string, object?>(v.Key, v.Value)),
             };
 
+        chat.LastUpdatedTimestamp = DateTimeOffset.Now;
+        await chatSessionRepository.UpsertAsync(chat);
         // Broadcast AskResult to all users
         await messageRelayHubContext
             .Clients.Group(chatIdString)

@@ -112,7 +112,7 @@ export const ChatList: FC = () => {
                 return -1;
             }
             // eslint-disable-next-line  @typescript-eslint/no-non-null-assertion
-            return conversations[a].lastUpdatedTimestamp - conversations[b].lastUpdatedTimestamp;
+            return conversations[b].lastUpdatedTimestamp - conversations[a].lastUpdatedTimestamp;
         });
 
         // Add conversations to sortedConversations in the order of sortedIds.
