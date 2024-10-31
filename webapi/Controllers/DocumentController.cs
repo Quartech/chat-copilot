@@ -124,6 +124,48 @@ public class DocumentController : ControllerBase
         );
     }
 
+    /// <summary>
+    /// Service API for deleting a document.
+    /// </summary>
+    [Route("chats/{sourceId:guid}/documents")]
+    [HttpDelete]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> DocumentDeleteAsync(
+        [FromServices] IKernelMemory memoryClient,
+        [FromServices] IHubContext<MessageRelayHub> messageRelayHubContext,
+        [FromRoute] Guid sourceId
+    )
+    {
+        var sourceIdString = sourceId.ToString();
+
+        // Try to find and delete the source
+        MemorySource? source = await this._sourceRepository.FindByIdAsync(sourceIdString);
+        if (source == null)
+        {
+            return this.NotFound($"No document memory source found for source id '{sourceId}'.");
+        }
+
+        // Attempt deletion operations
+        try
+        {
+            await Task.WhenAll(
+                this._sourceRepository.DeleteAsync(source),
+                memoryClient.DeleteDocumentAsync(sourceIdString, this._promptOptions.MemoryIndexName)
+            );
+        }
+        catch (AggregateException ex)
+        {
+            return this.StatusCode(
+                500,
+                $"An error occurred while deleting document for source id '{sourceId}': {ex.Message}"
+            );
+        }
+
+        return this.NoContent();
+    }
+
     private async Task<IActionResult> DocumentImportAsync(
         IKernelMemory memoryClient,
         IHubContext<MessageRelayHub> messageRelayHubContext,

@@ -127,8 +127,9 @@ export const DocumentsTab: React.FC = () => {
     }, [importingDocuments, selectedId]);
 
     const handleDeleteResource = (sourceId: string) => {
-        void fileHandler.deleteFile(sourceId);
-        setResources((resources) => resources.filter((resource) => resource.id !== sourceId));
+        void fileHandler.deleteFile(sourceId).then(() => {
+            setResources((resources) => resources.filter((resource) => resource.id !== sourceId));
+        });
     };
 
     const { columns, rows } = useTable(resources, handleDeleteResource);
