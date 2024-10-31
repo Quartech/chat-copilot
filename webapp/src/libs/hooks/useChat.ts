@@ -74,7 +74,7 @@ export const useChat = () => {
         return users.find((user) => user.id === id);
     };
 
-    const defaultSpecializationId = specializationsState.find((a) => a.id === 'general')?.id ?? '';
+    const defaultSpecializationId = specializationsState.find((a) => a.isDefault)?.id ?? '';
     /**
      * Create chat - This function will create an entry in the redux conversation state with default values.
      * It does not send any information to the server.

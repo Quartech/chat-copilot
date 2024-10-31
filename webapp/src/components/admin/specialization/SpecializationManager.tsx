@@ -120,6 +120,7 @@ export const SpecializationManager: React.FC = () => {
     const [imageFile, setImageFile] = useState<ISpecializationFile>({ file: null, src: null });
     const [iconFile, setIconFile] = useState<ISpecializationFile>({ file: null, src: null });
     const [restrictResultScope, setRestrictResultScope] = useState<boolean | null>(false);
+    const [isDefault, setIsDefault] = useState<boolean>(false);
     const [strictness, setStrictness] = useState<number | null>(0);
     const [documentCount, setDocumentCount] = useState<number | null>(0);
     const [pastMessagesIncludedCount, setPastMessagesIncludedCount] = useState<number | null>(0);
@@ -154,6 +155,7 @@ export const SpecializationManager: React.FC = () => {
                 deployment,
                 groupMemberships: membershipId,
                 initialChatMessage,
+                isDefault,
                 restrictResultScope,
                 strictness,
                 documentCount,
@@ -173,6 +175,7 @@ export const SpecializationManager: React.FC = () => {
                 deployment,
                 groupMemberships: membershipId,
                 initialChatMessage,
+                isDefault,
                 restrictResultScope,
                 strictness,
                 documentCount,
@@ -259,6 +262,10 @@ export const SpecializationManager: React.FC = () => {
      */
     const onChangeRestrictResultScope = (_event?: React.ChangeEvent<HTMLInputElement>, data?: CheckboxOnChangeData) => {
         setRestrictResultScope(!!data?.checked);
+    };
+
+    const onChangeIsDefault = (_event?: React.ChangeEvent<HTMLInputElement>, data?: CheckboxOnChangeData) => {
+        setIsDefault(!!data?.checked);
     };
 
     /**
@@ -383,6 +390,11 @@ export const SpecializationManager: React.FC = () => {
                         <Option key={specializationIndex}>{specializationIndex}</Option>
                     ))}
                 </Dropdown>
+                <Checkbox
+                    label="Set as Default Specialization"
+                    checked={isDefault}
+                    onChange={onChangeIsDefault}
+                />  
                 {hasEnrichmentIndex && (
                     <>
                         <div>

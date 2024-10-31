@@ -65,6 +65,24 @@ export const useSpecialization = () => {
         dispatch(showSpinner());
         try {
             const accessToken = await AuthHelper.getSKaaSAccessToken(instance, inProgress);
+            // Get all existing specializations
+            const existingSpecializations = await specializationService.getAllSpecializationsAsync(accessToken);
+
+            // If this is the first specialization, make it default regardless of input
+            if (existingSpecializations.length === 0) {
+                data.isDefault = true;
+            }
+            // If this specialization is set as default, update the current default
+            else if (data.isDefault) {
+                const currentDefault = existingSpecializations.find((spec) => spec.isDefault);
+                if (currentDefault) {
+                    await specializationService.updateSpecializationAsync(
+                        currentDefault.id,
+                        {isDefault: false } as ISpecializationRequest,
+                        accessToken,
+                    );
+                }
+            }
             await specializationService.createSpecializationAsync(data, accessToken).then((result: ISpecialization) => {
                 dispatch(addSpecialization(result));
             });

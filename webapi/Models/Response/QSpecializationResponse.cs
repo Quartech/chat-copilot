@@ -78,6 +78,12 @@ public class QSpecializationResponse
     public bool isActive { get; set; } = true;
 
     /// <summary>
+    /// Is Default flag of the specialization
+    /// </summary>
+    [JsonPropertyName("isDefault")]
+    public bool? IsDefault { get; set; } = false;
+
+    /// <summary>
     /// Restrict result scope flag of the specialization.
     /// </summary>
     [JsonPropertyName("restrictResultScope")]
@@ -131,6 +137,7 @@ public class QSpecializationResponse
         this.ImageFilePath = specializationSource.ImageFilePath;
         this.IconFilePath = specializationSource.IconFilePath;
         this.isActive = specializationSource.IsActive;
+        this.IsDefault = specializationSource.IsDefault;
         this.RestrictResultScope = specializationSource.RestrictResultScope;
         this.Strictness = specializationSource.Strictness;
         this.DocumentCount = specializationSource.DocumentCount;
