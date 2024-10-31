@@ -6,11 +6,11 @@ import Chat from './components/chat/Chat';
 import Header from './components/header/Header';
 import { Loading, Login } from './components/views';
 import { AuthHelper } from './libs/auth/AuthHelper';
+import { useAppLoader } from './libs/hooks/useAppLoader';
 import { useAppSelector } from './redux/app/hooks';
 import { RootState } from './redux/app/store';
 import { FeatureKeys } from './redux/features/app/AppState';
 import { semanticKernelDarkTheme, semanticKernelLightTheme } from './styles';
-import { useAppLoader } from './libs/hooks/useAppLoader';
 
 export const useClasses = makeStyles({
     container: {
