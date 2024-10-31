@@ -105,6 +105,17 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
     // Current chat state
     const chatState = conversations[selectedId];
 
+    const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+        // only submit if the user presses enter without shift and the bot is not generating a response
+        if (event.key === 'Enter' && !event.shiftKey && chatState.botResponseStatus !== 'Generating bot response') {
+            event.preventDefault();
+            handleSubmit(input);
+        } else if (event.key === 'Enter' && !event.shiftKey) {
+            // without this the text area will add a new line when pressing enter without shift key while bot is generating a response
+            event.preventDefault();
+        }
+    };
+
     React.useEffect(() => {
         // Focus on the text area when the selected conversation changes
         textAreaRef.current?.focus();
@@ -294,12 +305,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
 
                         setInput(data.value);
                     }}
-                    onKeyDown={(event) => {
-                        if (event.key === 'Enter' && !event.shiftKey) {
-                            event.preventDefault();
-                            handleSubmit(input);
-                        }
-                    }}
+                    onKeyDown={handleKeyDown}
                     onBlur={() => {
                         // User is considered not typing if the input is not  in focus
                         if (activeUserInfo) {
