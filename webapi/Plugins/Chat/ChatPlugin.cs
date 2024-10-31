@@ -21,11 +21,11 @@ using CopilotChat.WebApi.Plugins.Utils;
 using CopilotChat.WebApi.Services;
 using CopilotChat.WebApi.Storage;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.KernelMemory;
 using Microsoft.SemanticKernel;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 
@@ -537,7 +537,15 @@ public class ChatPlugin
     {
         CopilotChatMessage chatMessage = await AsyncUtils.SafeInvokeAsync(
             () =>
-                this.StreamResponseToClientAsync(chatId, userId, (string)chatContext[this._qAzureOpenAIChatExtension.ContextKey]!, promptView, chatContext, cancellationToken, citations),
+                this.StreamResponseToClientAsync(
+                    chatId,
+                    userId,
+                    (string)chatContext[this._qAzureOpenAIChatExtension.ContextKey]!,
+                    promptView,
+                    chatContext,
+                    cancellationToken,
+                    citations
+                ),
             nameof(StreamResponseToClientAsync)
         );
 
@@ -1104,7 +1112,8 @@ public class ChatPlugin
         var defaultModel = this._qAzureOpenAIChatExtension.GetDefaultChatCompletionDeployment();
         var specialization = await this._qSpecializationService.GetSpecializationAsync(specializationkey);
         var serviceId = specialization.Deployment;
-        var chatCompletion = provider.GetKeyedService<IChatCompletionService>(serviceId); ;
+        var chatCompletion = provider.GetKeyedService<IChatCompletionService>(serviceId);
+        ;
         if (chatCompletion == null)
         {
             throw new InvalidOperationException($"ChatCompletionService for serviceId '{serviceId}' not found.");
@@ -1115,7 +1124,6 @@ public class ChatPlugin
             this._kernel,
             cancellationToken
         );
-
 
         var responseCitations = new List<CitationSource>();
         var citationCountMap = new Dictionary<string, int>();
