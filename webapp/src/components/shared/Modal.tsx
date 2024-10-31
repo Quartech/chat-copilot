@@ -14,8 +14,11 @@ export const Modal: React.FC = () => {
                         <DialogActions>
                             <Button
                                 onClick={() => {
-                                    dialog.onConfirm && dialog.onConfirm();
-                                    dialog.reloadOnConfirm && window.location.reload();
+                                    if (dialog.reloadOnConfirm) {
+                                        window.location.reload();
+                                    } else if (dialog.onConfirm) {
+                                        dialog.onConfirm();
+                                    }
                                 }}
                                 appearance="primary"
                             >
