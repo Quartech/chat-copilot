@@ -22,6 +22,13 @@ export interface Alert {
     onRetry?: () => void;
 }
 
+export interface Dialog {
+    text: string;
+    onConfirm?: () => void;
+    onCancel?: () => void;
+    reloadOnConfirm?: boolean;
+}
+
 interface Feature {
     enabled: boolean; // Whether to show the feature in the UX
     label: string;
@@ -39,6 +46,7 @@ export interface Setting {
 
 export interface AppState {
     alerts: Alert[];
+    dialog?: Dialog;
     activeUserInfo?: ActiveUserInfo;
     authConfig?: AuthConfig | null;
     tokenUsage: TokenUsage;
