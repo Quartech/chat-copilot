@@ -1224,20 +1224,21 @@ public class ChatPlugin
                     .Where(citation => referencedCitations.Contains(citation.SourceName))
                     .ToList();
 
-                // Replace citations with superscript numbers in the current content piece
-                var processedContentPiece = citationPattern.Replace(
-                    contentPiece.ToString(),
-                    match =>
-                    {
-                        var citationKey = match.Groups[1].Value;
-                        if (!citationIndexMap.TryGetValue(citationKey, out int value))
-                        {
-                            value = citationIndexMap.Count + 1;
-                            citationIndexMap[citationKey] = value;
-                        }
-                        return $"^{value}^";
-                    }
-                );
+                // This can corrupt the way the bot formats citations in its answers! Deferring this formatting to the frontend.
+                // var processedContentPiece = citationPattern.Replace(
+                //     contentPiece.ToString(),
+                //     match =>
+                //     {
+                //         var citationKey = match.Groups[1].Value;
+                //         if (!citationIndexMap.TryGetValue(citationKey, out int value))
+                //         {
+                //             value = citationIndexMap.Count + 1;
+                //             citationIndexMap[citationKey] = value;
+                //         }
+                //         return $"^{value}^";
+                //     }
+                // );
+                var processedContentPiece = contentPiece;
 
                 // Update the message content and citations on the client
                 chatMessage.Content += processedContentPiece;
