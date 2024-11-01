@@ -13,6 +13,7 @@ import {
     addConversation,
     addMessageToConversationFromUser,
     deleteConversation,
+    editConversationLastUpdate,
     editConversationSpecialization,
     setConversations,
     updateBotResponseStatus,
@@ -101,6 +102,7 @@ export const useChat = () => {
             specializationId,
             suggestions: [],
             createdOnServer: false,
+            lastUpdatedTimestamp: new Date().getTime(),
         };
 
         dispatch(addConversation(newChat));
@@ -141,6 +143,7 @@ export const useChat = () => {
                     specializationId,
                     suggestions: [],
                     createdOnServer: true,
+                    lastUpdatedTimestamp: new Date().getTime(),
                 };
                 dispatch(addConversation(newChat));
                 return newChat.id;
@@ -215,7 +218,7 @@ export const useChat = () => {
         if (kernelArguments) {
             ask.variables.push(...kernelArguments);
         }
-
+        dispatch(editConversationLastUpdate({ id: chatId, newDate: new Date().getTime() }));
         try {
             const conversation = conversations[currentConversationId];
             if (!conversation.createdOnServer) {
@@ -302,6 +305,7 @@ export const useChat = () => {
                         specializationId: chatSession.specializationId,
                         createdOnServer: true,
                         suggestions: [],
+                        lastUpdatedTimestamp: new Date(chatSession.lastUpdatedTimestamp ?? 0).getTime(),
                     };
                 }
 
