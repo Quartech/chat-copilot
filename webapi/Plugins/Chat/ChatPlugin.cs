@@ -537,14 +537,7 @@ public class ChatPlugin
     {
         CopilotChatMessage chatMessage = await AsyncUtils.SafeInvokeAsync(
             () =>
-                this.StreamResponseToClientAsync(
-                    chatId,
-                    userId,
-                    promptView,
-                    chatContext,
-                    cancellationToken,
-                    citations
-                ),
+                this.StreamResponseToClientAsync(chatId, userId, promptView, chatContext, cancellationToken, citations),
             nameof(StreamResponseToClientAsync)
         );
 
