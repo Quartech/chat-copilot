@@ -32,6 +32,7 @@ const useClasses = makeStyles({
     root: {
         display: 'flex',
         flexShrink: 0,
+        height: 'calc(100% - 60px)',
         width: '320px',
         backgroundColor: tokens.colorNeutralBackground4,
         flexDirection: 'column',
@@ -56,6 +57,7 @@ const useClasses = makeStyles({
     },
     header: {
         display: 'flex',
+        flexShrink: 0,
         flexDirection: 'row',
         justifyContent: 'space-between',
         marginRight: tokens.spacingVerticalM,
