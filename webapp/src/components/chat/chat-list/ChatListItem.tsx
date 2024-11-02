@@ -1,7 +1,6 @@
-import React from 'react';
 import { makeStyles, mergeClasses, Persona, shorthands, Text, tokens } from '@fluentui/react-components';
 import { ShieldTask16Regular } from '@fluentui/react-icons';
-import { FC, useState } from 'react';
+import React, { FC, useState } from 'react';
 import { useChat } from '../../../libs/hooks';
 import { AlertType } from '../../../libs/models/AlertType';
 import { useAppDispatch, useAppSelector } from '../../../redux/app/hooks';

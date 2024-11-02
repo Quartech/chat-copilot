@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 namespace CopilotChat.Shared.Ocr.AzureVision;
 
 public sealed class AzureVisionOptions
@@ -9,4 +10,6 @@ public sealed class AzureVisionOptions
     public string? Endpoint { get; set; } = string.Empty;
     [Required]
     public string? Key { get; set; } = string.Empty;
+    [Required]
+    public IList<string> Features { get; set; } = new List<string>();
 }

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -17,7 +18,7 @@ namespace CopilotChat.Shared.Ocr.AzureVision;
 public class AzureVisionOcrEngine : IOcrEngine
 {
     private readonly ImageAnalysisClient _engine;
-
+    private readonly List<string> _features;
     /// <summary>
     /// Creates a new instance of the TesseractEngineWrapper passing in a valid TesseractEngine.
     /// </summary>
@@ -28,6 +29,7 @@ public class AzureVisionOcrEngine : IOcrEngine
             throw new ArgumentNullException($"Missing configuration when constructing {nameof(AzureVisionOcrEngine)}");
         }
         this._engine = new ImageAnalysisClient(new System.Uri(azureVisionOptions.Endpoint), new Azure.AzureKeyCredential(azureVisionOptions.Key));
+        this._features = azureVisionOptions.Features.ToList();
     }
 
     ///<inheritdoc/>
@@ -40,9 +42,25 @@ public class AzureVisionOcrEngine : IOcrEngine
 
             var img = imgStream.ToArray();
 
-            var result = await this._engine.AnalyzeAsync(new System.BinaryData(img), VisualFeatures.DenseCaptions | VisualFeatures.Read);
+            // LINQ Aggregate is roughly equivalent to JS Reduce. 
+            // This will iterate over the strings present in the Features defined by the appsettings and
+            // try to look up each in the VisualFeatures enum. Performing bitwise OR on these allows us to select
+            // multiple features for the AzureVision engine to use together.
+            var options = this._features.Aggregate(VisualFeatures.None, (acc, next) =>
+            {
+                if (Enum.TryParse<VisualFeatures>(next, out VisualFeatures enumResult))
+                {
+                    return acc = acc | enumResult;
+                }
+                else
+                {
+                    return acc;
+                }
+            });
+
+            var result = await this._engine.AnalyzeAsync(new System.BinaryData(img), options);
             var sb = new StringBuilder();
-            if (result.Value.DenseCaptions.Values.Count > 0)
+            if (result.Value.DenseCaptions?.Values.Count > 0)
             {
                 var firstCaption = result.Value.DenseCaptions.Values.First();
                 sb.AppendLine($"The summary of this image's content is the following: {firstCaption.Text}");
@@ -52,7 +70,11 @@ public class AzureVisionOcrEngine : IOcrEngine
                     sb.AppendLine(caption.Text);
                 }
             }
-            if (result.Value.Read.Blocks.Count > 0)
+            if (result.Value.Caption != null)
+            {
+                sb.AppendLine($"The summary of this image's content is the following: {result.Value.Caption.Text}");
+            }
+            if (result.Value.Read?.Blocks.Count > 0)
             {
                 sb.AppendLine($"The following text elements are included in the image: ");
                 foreach (var block in result.Value.Read.Blocks)
