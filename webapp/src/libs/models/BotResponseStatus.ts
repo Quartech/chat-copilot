@@ -1,5 +1,5 @@
 export enum BotResponseStatus {
-    CallingTheKernal = 'Calling the kernal',
+    CallingTheKernel = 'Calling the kernel',
     GeneratingBotResponse = 'Generating bot response',
     FinalizingBotResponse = 'Finalizing bot response',
 }
