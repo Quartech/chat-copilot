@@ -22,11 +22,8 @@ export interface Alert {
     onRetry?: () => void;
 }
 
-export interface Dialog {
+export interface ReloadDialog {
     text: string;
-    onConfirm?: () => void;
-    onCancel?: () => void;
-    reloadOnConfirm?: boolean;
 }
 
 interface Feature {
@@ -46,7 +43,7 @@ export interface Setting {
 
 export interface AppState {
     alerts: Alert[];
-    dialog?: Dialog;
+    dialog?: ReloadDialog;
     activeUserInfo?: ActiveUserInfo;
     authConfig?: AuthConfig | null;
     tokenUsage: TokenUsage;

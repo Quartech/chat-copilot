@@ -5,7 +5,7 @@ import { Constants } from '../../../Constants';
 import { ServiceInfo } from '../../../libs/models/ServiceInfo';
 import { TokenUsage, TokenUsageFunctionNameMap } from '../../../libs/models/TokenUsage';
 import { getUUID } from '../../../libs/utils/HelperMethods';
-import { ActiveUserInfo, Alert, AppState, Dialog, FeatureKeys, initialState } from './AppState';
+import { ActiveUserInfo, Alert, AppState, ReloadDialog, FeatureKeys, initialState } from './AppState';
 /**
  * Modified to support specialization.
  */
@@ -40,10 +40,10 @@ export const appSlice = createSlice({
                 state.alerts.splice(index, 1);
             }
         },
-        addDialog: (state: AppState, action: PayloadAction<Dialog>) => {
+        addReloadDialog: (state: AppState, action: PayloadAction<ReloadDialog>) => {
             state.dialog = action.payload;
         },
-        removeDialog: (state: AppState) => {
+        removeReloadDialog: (state: AppState) => {
             state.dialog = undefined;
         },
         updateActiveUserInfo: (state: AppState, action: PayloadAction<Partial<ActiveUserInfo>>) => {
@@ -113,8 +113,8 @@ export const appSlice = createSlice({
 
 export const {
     addAlert,
-    addDialog,
-    removeDialog,
+    addReloadDialog,
+    removeReloadDialog,
     removeAlert,
     setAlerts,
     updateActiveUserInfo,
