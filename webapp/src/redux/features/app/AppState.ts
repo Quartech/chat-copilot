@@ -43,7 +43,7 @@ export interface Setting {
 
 export interface AppState {
     alerts: Alert[];
-    dialog?: ReloadDialog;
+    reloadDialog?: ReloadDialog;
     activeUserInfo?: ActiveUserInfo;
     authConfig?: AuthConfig | null;
     tokenUsage: TokenUsage;

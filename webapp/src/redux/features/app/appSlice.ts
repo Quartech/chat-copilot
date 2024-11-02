@@ -41,10 +41,10 @@ export const appSlice = createSlice({
             }
         },
         addReloadDialog: (state: AppState, action: PayloadAction<ReloadDialog>) => {
-            state.dialog = action.payload;
+            state.reloadDialog = action.payload;
         },
         removeReloadDialog: (state: AppState) => {
-            state.dialog = undefined;
+            state.reloadDialog = undefined;
         },
         updateActiveUserInfo: (state: AppState, action: PayloadAction<Partial<ActiveUserInfo>>) => {
             state.activeUserInfo = Object.assign({}, state.activeUserInfo, action.payload);

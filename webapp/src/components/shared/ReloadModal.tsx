@@ -3,18 +3,18 @@ import { Modal } from './Modal';
 import { useAppSelector } from '../../redux/app/hooks';
 import { RootState } from '../../redux/app/store';
 
-/** ReloadModal component - will reload page when user confirms. */
+/** ReloadModal component - will reload page when user confirms. Triggered by reducer that is populated on SignalR events. */
 export const ReloadModal: React.FC = () => {
-    const { dialog } = useAppSelector((state: RootState) => state.app);
+    const { reloadDialog } = useAppSelector((state: RootState) => state.app);
 
     return (
-        !!dialog && (
+        !!reloadDialog && (
             <Modal
-                open={!!dialog}
+                open={!!reloadDialog}
                 onConfirm={() => {
                     window.location.reload();
                 }}
-                text={dialog.text}
+                text={reloadDialog.text}
             />
         )
     );
