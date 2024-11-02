@@ -174,5 +174,5 @@ const updateConnectionStatus = (state: AppState, statusUpdate: Alert) => {
         state.alerts.splice(connectionAlertIndex, 1);
     }
 
-    addNewAlert(state.alerts, statusUpdate);
+    addReloadDialog({ text: statusUpdate.message });
 };
