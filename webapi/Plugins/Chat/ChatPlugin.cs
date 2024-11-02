@@ -244,7 +244,7 @@ public class ChatPlugin
             () => this.GetAudienceAsync(chatContext, cancellationToken),
             nameof(GetAudienceAsync)
         );
-        metaPrompt.AddSystemMessage(audience);
+        metaPrompt.AddUserMessage(audience);
 
         var userIntent = string.Empty;
         if (this._isUserIntentExtractionEnabled)
@@ -254,7 +254,7 @@ public class ChatPlugin
                 () => this.GetUserIntentAsync(chatContext, cancellationToken),
                 nameof(GetUserIntentAsync)
             );
-            metaPrompt.AddSystemMessage(userIntent);
+            metaPrompt.AddUserMessage(userIntent);
         }
 
         // Calculate tokens used for memories
@@ -276,7 +276,7 @@ public class ChatPlugin
         if (!string.IsNullOrWhiteSpace(memoryText))
         {
             metaPrompt.AddUserMessage(memoryText);
-            tokensUsed += TokenUtils.GetContextMessageTokenCount(AuthorRole.System, memoryText);
+            tokensUsed += TokenUtils.GetContextMessageTokenCount(AuthorRole.User, memoryText);
         }
 
         // Add as many chat history messages to meta-prompt as the token budget will allow, or based on the count of messages to add specified in the specialization
@@ -537,15 +537,7 @@ public class ChatPlugin
     {
         CopilotChatMessage chatMessage = await AsyncUtils.SafeInvokeAsync(
             () =>
-                this.StreamResponseToClientAsync(
-                    chatId,
-                    userId,
-                    (string)chatContext[this._qAzureOpenAIChatExtension.ContextKey]!,
-                    promptView,
-                    chatContext,
-                    cancellationToken,
-                    citations
-                ),
+                this.StreamResponseToClientAsync(chatId, userId, promptView, chatContext, cancellationToken, citations),
             nameof(StreamResponseToClientAsync)
         );
 
@@ -1100,7 +1092,6 @@ public class ChatPlugin
     private async Task<CopilotChatMessage> StreamResponseToClientAsync(
         string chatId,
         string userId,
-        string specializationkey,
         BotResponsePrompt prompt,
         KernelArguments chatContext,
         CancellationToken cancellationToken,
@@ -1109,14 +1100,12 @@ public class ChatPlugin
     {
         // Create the stream
         var provider = this._kernel.GetRequiredService<IServiceProvider>();
-        var defaultModel = this._qAzureOpenAIChatExtension.GetDefaultChatCompletionDeployment();
-        var specialization = await this._qSpecializationService.GetSpecializationAsync(specializationkey);
-        var serviceId = specialization.Deployment;
-        var chatCompletion = provider.GetKeyedService<IChatCompletionService>(serviceId);
-        ;
+        var deployment = this._qSpecialization?.Deployment;
+        var chatCompletion = provider.GetKeyedService<IChatCompletionService>(deployment);
+
         if (chatCompletion == null)
         {
-            throw new InvalidOperationException($"ChatCompletionService for serviceId '{serviceId}' not found.");
+            throw new InvalidOperationException($"ChatCompletionService for deployment '{deployment}' not found.");
         }
         var stream = chatCompletion.GetStreamingChatMessageContentsAsync(
             prompt.MetaPromptTemplate,
@@ -1133,7 +1122,7 @@ public class ChatPlugin
 
         // Determine the citations based on whether the current specialization matches the default
         var citationsToUse =
-            specializationkey == this._qAzureOpenAIChatExtension.DefaultSpecialization
+            this._qSpecialization?.Id == this._qAzureOpenAIChatExtension.DefaultSpecialization
                 ? citations
                 : new List<CitationSource>();
 
@@ -1255,7 +1244,7 @@ public class ChatPlugin
                 chatMessage.Content += processedContentPiece;
 
                 // Determine citations based on specialization
-                if (specializationkey != this._qAzureOpenAIChatExtension.DefaultSpecialization)
+                if (this._qSpecialization?.Id != this._qAzureOpenAIChatExtension.DefaultSpecialization)
                 {
                     chatMessage.Citations = filteredCitations;
                 }
