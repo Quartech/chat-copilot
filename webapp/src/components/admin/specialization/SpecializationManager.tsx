@@ -248,10 +248,10 @@ export const SpecializationManager: React.FC = () => {
 
     useEffect(() => {
         const isValid =
-            !!label && !!name && !!roleInformation && !!description && !!initialChatMessage && membershipId.length > 0;
+            !!label && !!name && !!roleInformation && !!description && !!initialChatMessage && membershipId.length > 0 && !!deployment;
         setIsValid(isValid);
         return () => {};
-    }, [specializations, selectedId, label, name, roleInformation, membershipId, description, initialChatMessage]);
+    }, [specializations, selectedId, label, name, roleInformation, membershipId, description, initialChatMessage, deployment]);
 
     const onDeleteSpecialization = () => {
         setIsDeleteDialogOpen(true);
@@ -427,7 +427,9 @@ export const SpecializationManager: React.FC = () => {
                         setLabel(data.value);
                     }}
                 />
-                <label htmlFor="deployment">Deployment</label>
+                <label htmlFor="deployment">
+                    Deployment<span className={classes.required}>*</span>
+                </label>
                 <Dropdown
                     clearable
                     id="deployment"
