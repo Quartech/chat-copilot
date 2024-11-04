@@ -76,7 +76,7 @@ export const ChatRoom: React.FC = () => {
     };
     const { specializations } = useAppSelector((state: RootState) => state.admin);
 
-    const [showSpecialization, setShowSpecialization] = useState(true);
+    const [showSpecialization, setShowSpecialization] = useState(false);
     const [showSuggestions, setShowSuggestions] = useState(true);
 
     React.useEffect(() => {
