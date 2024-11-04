@@ -126,6 +126,7 @@ export const SpecializationManager: React.FC = () => {
     const [restrictResultScope, setRestrictResultScope] = useState<boolean | null>(false);
     const [isDefault, setIsDefault] = useState<boolean>(false);
     const [isDefaultDialogOpen, setIsDefaultDialogOpen] = useState(false);
+    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [strictness, setStrictness] = useState<number | null>(0);
     const [documentCount, setDocumentCount] = useState<number | null>(0);
     const [pastMessagesIncludedCount, setPastMessagesIncludedCount] = useState<number | null>(0);
@@ -253,6 +254,10 @@ export const SpecializationManager: React.FC = () => {
     }, [specializations, selectedId, label, name, roleInformation, membershipId, description, initialChatMessage]);
 
     const onDeleteSpecialization = () => {
+        setIsDeleteDialogOpen(true);
+    };
+
+    const confirmDelete = () => {
         if (isDefault && specializations.length > 1) {
             dispatch(
                 addAlert({
@@ -260,10 +265,12 @@ export const SpecializationManager: React.FC = () => {
                     type: AlertType.Warning,
                 }),
             );
+            setIsDeleteDialogOpen(false);
             return;
         }
         void specialization.deleteSpecialization(id, name);
         resetSpecialization();
+        setIsDeleteDialogOpen(false);
     };
 
 
@@ -451,7 +458,20 @@ export const SpecializationManager: React.FC = () => {
                     confirmLabel="Yes"
                     cancelLabel="No"
                     onConfirm={confirmDefaultChange}
-                    onCancel={() => { setIsDefaultDialogOpen(false); }}
+                    onCancel={() => {
+                        setIsDefaultDialogOpen(false);
+                    }}
+                />
+                <ConfirmationDialog
+                    open={isDeleteDialogOpen}
+                    title="Delete Specialization"
+                    content={`Are you sure you want to delete the ${name} specialization?`}
+                    confirmLabel="Delete"
+                    cancelLabel="Cancel"
+                    onConfirm={confirmDelete}
+                    onCancel={() => {
+                        setIsDeleteDialogOpen(false);
+                    }}
                 />
                 {hasEnrichmentIndex && (
                     <>
