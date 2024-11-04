@@ -14,7 +14,7 @@ import {
     SliderOnChangeData,
     Textarea,
     tokens,
-    Tooltip,
+    Tooltip
 } from '@fluentui/react-components';
 import { Info20Regular } from '@fluentui/react-icons';
 import React, { useEffect, useId, useState } from 'react';
@@ -25,6 +25,8 @@ import { ImageUploaderPreview } from '../../files/ImageUploaderPreview';
 import { useAppDispatch } from '../../../redux/app/hooks';
 import { addAlert } from '../../../redux/features/app/appSlice';
 import { AlertType } from '../../../libs/models/AlertType';
+import { ConfirmationDialog } from '../../shared/ConfirmationDialog';
+
 interface ISpecializationFile {
     file: File | null;
     src: string | null;
@@ -109,7 +111,7 @@ export const SpecializationManager: React.FC = () => {
     );
 
     const [editMode, setEditMode] = useState(false);
-
+    const defaultSpecializationId = specializations.find((spec) => spec.isDefault)?.id;
     const [id, setId] = useState('');
     const [label, setLabel] = useState('');
     const [name, setName] = useState('');
@@ -123,6 +125,7 @@ export const SpecializationManager: React.FC = () => {
     const [iconFile, setIconFile] = useState<ISpecializationFile>({ file: null, src: null });
     const [restrictResultScope, setRestrictResultScope] = useState<boolean | null>(false);
     const [isDefault, setIsDefault] = useState<boolean>(false);
+    const [isDefaultDialogOpen, setIsDefaultDialogOpen] = useState(false);
     const [strictness, setStrictness] = useState<number | null>(0);
     const [documentCount, setDocumentCount] = useState<number | null>(0);
     const [pastMessagesIncludedCount, setPastMessagesIncludedCount] = useState<number | null>(0);
@@ -200,6 +203,7 @@ export const SpecializationManager: React.FC = () => {
         setIndexName('');
         setDeployment('');
         setInitialChatMessage('');
+        setIsDefault(false);
         setRestrictResultScope(false);
         setStrictness(3);
         setDocumentCount(5);
@@ -249,9 +253,19 @@ export const SpecializationManager: React.FC = () => {
     }, [specializations, selectedId, label, name, roleInformation, membershipId, description, initialChatMessage]);
 
     const onDeleteSpecialization = () => {
+        if (isDefault && specializations.length > 1) {
+            dispatch(
+                addAlert({
+                    message: 'Please set another specialization as default before deleting this one.',
+                    type: AlertType.Warning,
+                }),
+            );
+            return;
+        }
         void specialization.deleteSpecialization(id, name);
         resetSpecialization();
     };
+
 
     /**
      * Callback function for handling changes to the "Enrichment Index" dropdown.
@@ -283,16 +297,28 @@ export const SpecializationManager: React.FC = () => {
      * Callback function for handling changes to the "Set as Default Specialization" checkbox.
      */
     const onChangeIsDefault = (_event?: React.ChangeEvent<HTMLInputElement>, data?: CheckboxOnChangeData) => {
-        if (!data?.checked && specializations.length === 0) {
+        const isCurrentlyDefault = id === defaultSpecializationId;
+        if (isCurrentlyDefault && !data?.checked) {
             dispatch(
                 addAlert({
                     message: 'Having a default specialization is a requirement.',
-                    type: AlertType.Warning, // Assuming you have a warning type defined
+                    type: AlertType.Warning,
                 }),
             );
             return;
         }
-        setIsDefault(!!data?.checked);
+
+        if (!isCurrentlyDefault && data?.checked) {
+            setIsDefaultDialogOpen(true);
+        } else if (!isCurrentlyDefault && !data?.checked) {
+            setIsDefault(false);
+        }
+    };
+
+    // Confirm the default change
+    const confirmDefaultChange = () => {
+        setIsDefault(true);
+        setIsDefaultDialogOpen(false);
     };
 
     /**
@@ -417,11 +443,16 @@ export const SpecializationManager: React.FC = () => {
                         <Option key={specializationIndex}>{specializationIndex}</Option>
                     ))}
                 </Dropdown>
-                <Checkbox
-                    label="Set as Default Specialization"
-                    checked={isDefault}
-                    onChange={onChangeIsDefault}
-                />  
+                <Checkbox label="Set as Default Specialization" checked={isDefault} onChange={onChangeIsDefault} />
+                <ConfirmationDialog
+                    open={isDefaultDialogOpen}
+                    title="Change Default Specialization"
+                    content={`Are you sure you want to set ${name} as the default specialization?`}
+                    confirmLabel="Yes"
+                    cancelLabel="No"
+                    onConfirm={confirmDefaultChange}
+                    onCancel={() => { setIsDefaultDialogOpen(false); }}
+                />
                 {hasEnrichmentIndex && (
                     <>
                         <div>

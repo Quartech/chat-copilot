@@ -65,37 +65,34 @@ export const useSpecialization = () => {
         dispatch(showSpinner());
         try {
             const accessToken = await AuthHelper.getSKaaSAccessToken(instance, inProgress);
-            // Get all existing specializations
             const existingSpecializations = await specializationService.getAllSpecializationsAsync(accessToken);
 
-            // If this is the first specialization, make it default regardless of input
-            if (existingSpecializations.length === 0) {
-                data.isDefault = true;
-            }
             // If this specialization is set as default, update the current default
-            else if (data.isDefault) {
+            if (data.isDefault && existingSpecializations.length >= 1) {
                 const currentDefault = existingSpecializations.find((spec) => spec.isDefault);
                 if (currentDefault) {
+                    const updatedData: ISpecializationRequest = {
+                        ...currentDefault,
+                        isDefault: false,
+                        imageFile: null,
+                        iconFile: null,
+                    };
                     await specializationService
                         .updateSpecializationAsync(
                             currentDefault.id,
-                            { isDefault: false } as ISpecializationRequest,
+                            updatedData,
                             accessToken,
                         )
                         .then((result: ISpecialization) => {
                             dispatch(editSpecialization(result));
                         });
-                    dispatch(
-                        addAlert({
-                            message: `Specialization {${data.name}} updated successfully.`,
-                            type: AlertType.Success,
-                        }),
-                    );
                 }
             }
+
             await specializationService.createSpecializationAsync(data, accessToken).then((result: ISpecialization) => {
                 dispatch(addSpecialization(result));
             });
+
             dispatch(
                 addAlert({
                     message: `Specialization {${data.name}} created successfully.`,
@@ -103,7 +100,8 @@ export const useSpecialization = () => {
                 }),
             );
         } catch (e: any) {
-            const errorMessage = `Unable to load chats. Details: ${getErrorDetails(e)}`;
+            const errorMessage = `Unable to create specialization. Details: ${getErrorDetails(e)}`;
+            console.error('Error creating specialization:', e);
             dispatch(addAlert({ message: errorMessage, type: AlertType.Error }));
         } finally {
             dispatch(hideSpinner());
@@ -114,6 +112,25 @@ export const useSpecialization = () => {
         dispatch(showSpinner());
         try {
             const accessToken = await AuthHelper.getSKaaSAccessToken(instance, inProgress);
+            const existingSpecializations = await specializationService.getAllSpecializationsAsync(accessToken);
+
+            // If this specialization is set as default, update the current default
+            if (data.isDefault ) {
+                const currentDefault = existingSpecializations.find((spec) => spec.isDefault && spec.id !== id);
+                if (currentDefault) {
+                    const updatedData: ISpecializationRequest = {
+                        ...currentDefault,
+                        isDefault: false,
+                        imageFile: null,
+                        iconFile: null,
+                    };
+                    await specializationService
+                        .updateSpecializationAsync(currentDefault.id, updatedData, accessToken)
+                        .then((result: ISpecialization) => {
+                            dispatch(editSpecialization(result));
+                        });
+                }
+            }
             await specializationService
                 .updateSpecializationAsync(id, data, accessToken)
                 .then((result: ISpecialization) => {
