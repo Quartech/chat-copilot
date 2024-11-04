@@ -56,20 +56,30 @@ export class SpecializationService extends BaseService {
         formData.append('name', body.name);
         formData.append('description', body.description);
         formData.append('roleInformation', body.roleInformation);
-        formData.append('indexName', body.indexName);
         formData.append('deployment', body.deployment);
         formData.append('initialChatMessage', body.initialChatMessage);
-        formData.append('restrictResultScope', body.restrictResultScope.toString());
-        formData.append('strictness', body.strictness.toString());
-        formData.append('documentCount', body.documentCount.toString());
-        formData.append('order', body.order.toString());
-        // This will need to be parsed on the backend
+        formData.append('indexName', body.indexName);
         formData.append('groupMemberships', body.groupMemberships.join(','));
+        formData.append('order', body.order.toString());
 
+        if (body.restrictResultScope) {
+            formData.append('restrictResultScope', body.restrictResultScope.toString());
+        }
+        if (body.strictness) {
+            formData.append('strictness', body.strictness.toString());
+        }
+        if (body.documentCount) {
+            formData.append('documentCount', body.documentCount.toString());
+        }
+        if (body.pastMessagesIncludedCount) {
+            formData.append('pastMessagesIncludedCount', body.pastMessagesIncludedCount.toString());
+        }
+        if (body.maxResponseTokenLimit) {
+            formData.append('maxResponseTokenLimit', body.maxResponseTokenLimit.toString());
+        }
         if (body.imageFile) {
             formData.append('imageFile', body.imageFile);
         }
-
         if (body.iconFile) {
             formData.append('iconFile', body.iconFile);
         }
@@ -107,17 +117,28 @@ export class SpecializationService extends BaseService {
         formData.append('label', body.label);
         formData.append('name', body.name);
         formData.append('description', body.description);
-        formData.append('indexName', body.indexName);
         formData.append('roleInformation', body.roleInformation);
         formData.append('deployment', body.deployment);
         formData.append('initialChatMessage', body.initialChatMessage);
-        formData.append('restrictResultScope', body.restrictResultScope.toString());
-        formData.append('strictness', body.strictness.toString());
-        formData.append('documentCount', body.documentCount.toString());
-        formData.append('order', body.order.toString());
-        // This will need to be parsed on the backend
+        formData.append('indexName', body.indexName);
         formData.append('groupMemberships', body.groupMemberships.join(','));
+        formData.append('order', body.order.toString());
 
+        if (body.restrictResultScope) {
+            formData.append('restrictResultScope', body.restrictResultScope.toString());
+        }
+        if (body.strictness) {
+            formData.append('strictness', body.strictness.toString());
+        }
+        if (body.documentCount) {
+            formData.append('documentCount', body.documentCount.toString());
+        }
+        if (body.pastMessagesIncludedCount) {
+            formData.append('pastMessagesIncludedCount', body.pastMessagesIncludedCount.toString());
+        }
+        if (body.maxResponseTokenLimit) {
+            formData.append('maxResponseTokenLimit', body.maxResponseTokenLimit.toString());
+        }
         if (body.deleteImage) {
             formData.append('deleteImageFile', 'True');
         }

@@ -32,6 +32,7 @@ const useClasses = makeStyles({
     root: {
         display: 'flex',
         flexShrink: 0,
+        height: 'calc(100% - 60px)',
         width: '320px',
         backgroundColor: tokens.colorNeutralBackground4,
         flexDirection: 'column',
@@ -56,6 +57,7 @@ const useClasses = makeStyles({
     },
     header: {
         display: 'flex',
+        flexShrink: 0,
         flexDirection: 'row',
         justifyContent: 'space-between',
         marginRight: tokens.spacingVerticalM,
@@ -112,7 +114,7 @@ export const ChatList: FC = () => {
                 return -1;
             }
             // eslint-disable-next-line  @typescript-eslint/no-non-null-assertion
-            return conversations[a].lastUpdatedTimestamp - conversations[b].lastUpdatedTimestamp;
+            return conversations[b].lastUpdatedTimestamp - conversations[a].lastUpdatedTimestamp;
         });
 
         // Add conversations to sortedConversations in the order of sortedIds.

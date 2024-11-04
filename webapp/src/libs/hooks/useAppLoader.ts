@@ -10,6 +10,7 @@ import { setSelectedConversation } from '../../redux/features/conversations/conv
 import { AuthHelper } from '../auth/AuthHelper';
 import { UserSettingsResponse } from '../models/UserSettings';
 import { GraphService } from '../services/GraphService';
+import { maxBy } from '../utils/HelperMethods';
 import { useChat } from './useChat';
 import { useFile } from './useFile';
 import { useSettings } from './useSettings';
@@ -147,8 +148,8 @@ export const useAppLoader = (): [AppState, Dispatch<SetStateAction<AppState>>] =
     };
 
     const loadInitialChat = async () => {
-        const firstConvo = Object.values(conversations)[0];
-        if (firstConvo.createdOnServer) {
+        const firstConvo = maxBy(Object.values(conversations), (chatState) => chatState.lastUpdatedTimestamp ?? 0);
+        if (firstConvo?.createdOnServer) {
             try {
                 await chat.loadChatMessagesByChatId(firstConvo.id);
                 dispatch(setSelectedConversation(firstConvo.id));

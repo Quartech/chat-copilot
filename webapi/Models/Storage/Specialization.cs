@@ -113,6 +113,19 @@ public class Specialization : IStorageEntity
     /// </summary>>
     public int? DocumentCount { get; set; }
 
+    /// <summary>
+    /// Past Messages Included Count of specialization
+    /// </summary>>
+    public int? PastMessagesIncludedCount { get; set; }
+
+    /// <summary>
+    /// Max Response Token Limit of specialization
+    /// </summary>>
+    public int? MaxResponseTokenLimit { get; set; }
+
+    /// <summary>
+    /// Order of the specialization
+    /// </summary>>
     public int? Order { get; set; }
 
     public Specialization() { }
@@ -123,11 +136,13 @@ public class Specialization : IStorageEntity
         string Description,
         string RoleInformation,
         string InitialChatMessage,
-        string? IndexName,
         string? Deployment,
+        string? IndexName,
         bool? RestrictResultScope,
         int? Strictness,
         int? DocumentCount,
+        int? PastMessagesIncludedCount,
+        int? MaxResponseTokenLimit,
         string ImageFilePath,
         string IconFilePath,
         IList<string> GroupMemberships,
@@ -139,11 +154,13 @@ public class Specialization : IStorageEntity
         this.Name = Name;
         this.Description = Description;
         this.RoleInformation = RoleInformation;
-        this.IndexName = IndexName;
         this.Deployment = Deployment;
+        this.IndexName = IndexName;
         this.RestrictResultScope = RestrictResultScope;
         this.Strictness = Strictness;
         this.DocumentCount = DocumentCount;
+        this.PastMessagesIncludedCount = PastMessagesIncludedCount;
+        this.MaxResponseTokenLimit = MaxResponseTokenLimit;
         this.ImageFilePath = ImageFilePath;
         this.IconFilePath = IconFilePath;
         this.GroupMemberships = GroupMemberships;

@@ -13,6 +13,7 @@ import {
     ConversationSuggestionsChange,
     ConversationSystemDescriptionChange,
     ConversationTitleChange,
+    ConversationUpdateTimestampChange,
     initialState,
     UpdatePluginStatePayload,
 } from './ConversationsState';
@@ -29,6 +30,13 @@ export const conversationsSlice = createSlice({
             const newTitle = action.payload.newTitle;
             state.conversations[id].title = newTitle;
             frontLoadChat(state, id);
+        },
+        editConversationLastUpdate: (
+            state: ConversationsState,
+            action: PayloadAction<ConversationUpdateTimestampChange>,
+        ) => {
+            const id = action.payload.id;
+            state.conversations[id].lastUpdatedTimestamp = action.payload.newDate;
         },
         editConversationSpecialization: (
             state: ConversationsState,
@@ -154,10 +162,15 @@ export const conversationsSlice = createSlice({
                 messageIdOrIndex: string | number;
                 updatedContent?: string;
                 frontLoad?: boolean;
+                origin?: string;
             }>,
         ) => {
-            const { property, value, messageIdOrIndex, chatId, updatedContent, frontLoad } = action.payload;
+            const { property, value, messageIdOrIndex, chatId, updatedContent, frontLoad, origin } = action.payload;
             const conversation = state.conversations[chatId];
+            if (origin === 'hubMessage' && !conversation.botResponseStatus) {
+                // Exit early if this happens. This means the message was queued but the user cancelled the request.
+                return;
+            }
             const conversationMessage =
                 typeof messageIdOrIndex === 'number'
                     ? conversation.messages[messageIdOrIndex]
@@ -319,6 +332,7 @@ export const {
     editConversationSpecialization,
     updateSuggestions,
     deleteConversationHistory,
+    editConversationLastUpdate,
 } = conversationsSlice.actions;
 
 export default conversationsSlice.reducer;

@@ -12,7 +12,6 @@ using CopilotChat.WebApi.Options;
 using CopilotChat.WebApi.Plugins.Chat.Ext;
 using CopilotChat.WebApi.Services;
 using CopilotChat.WebApi.Storage;
-using CopilotChat.WebApi.Utilities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -67,16 +66,11 @@ public class SpecializationController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<OkObjectResult> GetAllSpecializations()
     {
-        var specializationResponses = new List<QSpecializationResponse>();
-        IEnumerable<Specialization> specializations = await this._qspecializationService.GetAllSpecializations();
-        foreach (Specialization specialization in specializations)
-        {
-            QSpecializationResponse qSpecializationResponse = new(specialization);
-            specializationResponses.Add(qSpecializationResponse);
-        }
-        var defaultSpecialization = this.GetDefaultSpecialization();
-        specializationResponses.Add(new QSpecializationResponse(defaultSpecialization));
-        return this.Ok(specializationResponses.OrderBy(spec => spec.Order!).ToList());
+        var specializations = await this._qspecializationService.GetAllSpecializations();
+
+        var specializationResponses = specializations.Select(s => new QSpecializationResponse(s));
+
+        return this.Ok(specializationResponses);
     }
 
     /// <summary>
@@ -234,32 +228,5 @@ public class SpecializationController : ControllerBase
 
             return this.StatusCode(500, $"Failed to order specializations: {ex.Message}.");
         }
-    }
-
-    /// <summary>
-    /// Gets the default specialization
-    /// </summary>
-    /// <returns>An instance of <see cref="Specialization"/></returns>
-    private Specialization GetDefaultSpecialization()
-    {
-        var defaultSpecialization = new Specialization()
-        {
-            Id = "general",
-            Label = "general",
-            Name = "General",
-            Description = string.IsNullOrEmpty(this._qAzureOpenAIChatOptions.DefaultSpecializationDescription)
-                ? "This is a chat between an intelligent AI bot named Copilot and one or more participants. SK stands for Semantic Kernel, the AI platform used to build the bot."
-                : this._qAzureOpenAIChatOptions.DefaultSpecializationDescription,
-            RoleInformation = this._promptOptions.SystemDescription,
-            ImageFilePath = ResourceUtils.GetImageAsDataUri(this._qAzureOpenAIChatOptions.DefaultSpecializationImage),
-            IconFilePath = ResourceUtils.GetImageAsDataUri(this._qAzureOpenAIChatOptions.DefaultSpecializationIcon),
-            Deployment = "gpt-4o",
-            RestrictResultScope = this._qAzureOpenAIChatOptions.DefaultRestrictResultScope,
-            Strictness = this._qAzureOpenAIChatOptions.DefaultStrictness,
-            DocumentCount = this._qAzureOpenAIChatOptions.DefaultDocumentCount,
-            Order = 0,
-        };
-
-        return defaultSpecialization;
     }
 }

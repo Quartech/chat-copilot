@@ -82,10 +82,12 @@ export const SpecializationListItem: FC<ISpecializationListItemProps> = ({
         dispatch(setSelectedKey(specializationId));
     };
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const [{ isDragging }, drag] = useDrag({
         type: 'Specialization',
         item: { id: specializationId },
         collect: (monitor) => ({
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             isDragging: monitor.isDragging(),
         }),
     });

@@ -93,6 +93,34 @@ export function replaceCitationLinksWithIndices(formattedMessageContent: string,
     return formattedMessageContent;
 }
 
+export function replaceBracketStyleCitationsWithCaret(formattedMessageContent: string) {
+    const docX = /\[(doc\d+)\](,)?/gm;
+    const citationIndexMap: Record<string, number> = {};
+    return formattedMessageContent.replace(docX, (_match, p1: string) => {
+        if (!citationIndexMap[p1]) {
+            const value = Object.values(citationIndexMap).length + 1;
+            citationIndexMap[p1] = value;
+        }
+        return `^${citationIndexMap[p1]}^`;
+    });
+}
+
+/**
+ * Will first escape all dollar signs present in the original string.
+ * Then, replace every occurrence of block style MathJax delimiters \[ and \] with $$ and $$
+ * Then, replace every occurrence of inline style MathJax delimiters \( and \) with $ and $.
+ */
+export function replaceMathBracketsWithDollarSigns(formattedMessageContent: string) {
+    const escapeDollars = /\$/gm;
+    const inlineDollar = /\\\((.*?)\\\)/gm;
+    const doubleDollars = /\\\[(.*?)\\\]/gms;
+    const ret = formattedMessageContent
+        .replace(escapeDollars, '\\$')
+        .replace(inlineDollar, '$$$1$$')
+        .replace(doubleDollars, '$$$$$1$$$$');
+    return ret;
+}
+
 /**
  * Gets message of error
  */

@@ -54,9 +54,8 @@ const setupSignalRConnectionToChatHub = () => {
 
     // Note: to keep the connection open the serverTimeout should be
     // larger than the KeepAlive value that is set on the server
-    // keepAliveIntervalInMilliseconds default is 15000 and we are using default
-    // serverTimeoutInMilliseconds default is 30000 and we are using 60000 set below
-    hubConnection.serverTimeoutInMilliseconds = 60000;
+    hubConnection.keepAliveIntervalInMilliseconds = 20000;
+    hubConnection.serverTimeoutInMilliseconds = 120000;
 
     return hubConnection;
 };
@@ -145,6 +144,7 @@ const registerSignalREvents = (hubConnection: signalR.HubConnection, store: Stor
                 property: message.tokenUsage ? 'tokenUsage' : 'content',
                 value: message.tokenUsage ?? content,
                 frontLoad: true,
+                origin: 'hubMessage',
             },
         });
 
@@ -158,6 +158,7 @@ const registerSignalREvents = (hubConnection: signalR.HubConnection, store: Stor
                     property: 'citations',
                     value: citations,
                     frontLoad: true,
+                    origin: 'hubMessage',
                 },
             });
         }

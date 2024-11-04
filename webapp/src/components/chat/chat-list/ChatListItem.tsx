@@ -1,6 +1,6 @@
 import { makeStyles, mergeClasses, Persona, shorthands, Text, tokens } from '@fluentui/react-components';
 import { ShieldTask16Regular } from '@fluentui/react-icons';
-import { FC, useState } from 'react';
+import React, { FC, useState } from 'react';
 import { useChat } from '../../../libs/hooks';
 import { AlertType } from '../../../libs/models/AlertType';
 import { useAppDispatch, useAppSelector } from '../../../redux/app/hooks';
@@ -118,7 +118,7 @@ export const ChatListItem: FC<IChatListItemProps> = ({
 
     const [editingTitle, setEditingTitle] = useState(false);
 
-    const onClick = (_ev: any) => {
+    const onClick = (_ev: React.MouseEvent<HTMLElement>) => {
         const specializationId = conversations[id].specializationId;
         if (specializationId) {
             const foundSpecialization = specializations.find(

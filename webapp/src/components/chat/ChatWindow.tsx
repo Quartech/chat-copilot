@@ -80,6 +80,7 @@ export const ChatWindow: React.FC = () => {
     const { features } = useAppSelector((state: RootState) => state.app);
     const { conversations, selectedId } = useAppSelector((state: RootState) => state.conversations);
     const botResponseStatus = conversations[selectedId].botResponseStatus;
+    const conversationSpecialization = conversations[selectedId].specializationId;
     const [selectedTab, setSelectedTab] = React.useState<TabValue>(ChatWindowTabEnum.CHAT);
     const showShareBotMenu = features[FeatureKeys.BotAsDocs].enabled || features[FeatureKeys.MultiUserChat].enabled;
     const chatName = conversations[selectedId].title;
@@ -89,6 +90,20 @@ export const ChatWindow: React.FC = () => {
     const onTabSelect: SelectTabEventHandler = (_event, data) => {
         setSelectedTab(data.value);
     };
+
+    // Set the chat specialization based on the conversation specialization, ensures UI is in sync with current selected chat
+    React.useEffect(() => {
+        if (conversationSpecialization) {
+            const specializationMatch = specializations.find((spec) => spec.id === conversationSpecialization);
+            specializationMatch && dispatch(setChatSpecialization(specializationMatch));
+        } else {
+            const generalSpecMatch = specializations.find((spec) => spec.id === 'general');
+            generalSpecMatch && dispatch(setChatSpecialization(generalSpecMatch));
+        }
+        // only want to fire when conversationSpecialization changes
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [conversationSpecialization]);
+
     const onNewChatClick = () => {
         chat.createChat(chatSpecialization?.id);
         if (chatSpecialization) {
