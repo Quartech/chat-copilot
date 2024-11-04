@@ -128,7 +128,7 @@ public class DocumentController : ControllerBase
     /// <summary>
     /// Service API for deleting a document.
     /// </summary>
-    [Route("chats/{sourceId:guid}/documents")]
+    [Route("documents/{sourceId:guid}")]
     [HttpDelete]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]

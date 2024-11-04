@@ -31,7 +31,7 @@ export class DocumentImportService extends BaseService {
     public deleteDocumentAsync = async (sourceId: string, accessToken: string) => {
         return await this.getResponseAsync(
             {
-                commandPath: `chats/${sourceId}/documents`,
+                commandPath: `documents/${sourceId}`,
                 method: 'DELETE',
             },
             accessToken,
