@@ -22,7 +22,9 @@ interface ChatHistoryTextContentProps {
 export const ChatHistoryTextContent: React.FC<ChatHistoryTextContentProps> = ({ message }) => {
     const classes = useClasses();
     const content = utils.replaceMathBracketsWithDollarSigns(
-        utils.replaceCitationLinksWithIndices(utils.formatChatTextContent(message.content), message),
+        utils.replaceBracketStyleCitationsWithCaret(
+            utils.replaceCitationLinksWithIndices(utils.formatChatTextContent(message.content), message),
+        ),
     );
 
     return (
