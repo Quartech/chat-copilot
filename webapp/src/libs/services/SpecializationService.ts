@@ -123,9 +123,7 @@ export class SpecializationService extends BaseService {
         formData.append('indexName', body.indexName);
         formData.append('groupMemberships', body.groupMemberships.join(','));
         formData.append('order', body.order.toString());
-        if (body.isDefault) {
-            formData.append('isDefault', body.isDefault.toString());
-        }
+        formData.append('isDefault', body.isDefault.toString());
         if (body.restrictResultScope) {
             formData.append('restrictResultScope', body.restrictResultScope.toString());
         }

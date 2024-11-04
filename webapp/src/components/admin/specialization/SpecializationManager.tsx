@@ -22,7 +22,9 @@ import { useSpecialization } from '../../../libs/hooks';
 import { useAppSelector } from '../../../redux/app/hooks';
 import { RootState } from '../../../redux/app/store';
 import { ImageUploaderPreview } from '../../files/ImageUploaderPreview';
-
+import { useAppDispatch } from '../../../redux/app/hooks';
+import { addAlert } from '../../../redux/features/app/appSlice';
+import { AlertType } from '../../../libs/models/AlertType';
 interface ISpecializationFile {
     file: File | null;
     src: string | null;
@@ -101,7 +103,7 @@ const Rows = 8;
 export const SpecializationManager: React.FC = () => {
     const classes = useClasses();
     const specialization = useSpecialization();
-
+    const dispatch = useAppDispatch();
     const { specializations, specializationIndexes, chatCompletionDeployments, selectedId } = useAppSelector(
         (state: RootState) => state.admin,
     );
@@ -219,6 +221,7 @@ export const SpecializationManager: React.FC = () => {
                 setDeployment(specializationObj.deployment);
                 setInitialChatMessage(specializationObj.initialChatMessage);
                 setIndexName(specializationObj.indexName);
+                setIsDefault(specializationObj.isDefault);
                 setRestrictResultScope(specializationObj.restrictResultScope ?? false);
                 setStrictness(specializationObj.strictness ?? 3);
                 setDocumentCount(specializationObj.documentCount ?? 5);
@@ -264,7 +267,31 @@ export const SpecializationManager: React.FC = () => {
         setRestrictResultScope(!!data?.checked);
     };
 
+    /**
+     * Automatically set the first specialization as default
+     */
+    useEffect(() => {
+        if (specializations.length === 0) {
+            setIsDefault(true);
+        }
+        else {
+            setIsDefault(false);
+        }
+    }, [specializations]);
+
+    /**
+     * Callback function for handling changes to the "Set as Default Specialization" checkbox.
+     */
     const onChangeIsDefault = (_event?: React.ChangeEvent<HTMLInputElement>, data?: CheckboxOnChangeData) => {
+        if (!data?.checked && specializations.length === 0) {
+            dispatch(
+                addAlert({
+                    message: 'Having a default specialization is a requirement.',
+                    type: AlertType.Warning, // Assuming you have a warning type defined
+                }),
+            );
+            return;
+        }
         setIsDefault(!!data?.checked);
     };
 

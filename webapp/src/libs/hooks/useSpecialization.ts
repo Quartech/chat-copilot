@@ -76,10 +76,20 @@ export const useSpecialization = () => {
             else if (data.isDefault) {
                 const currentDefault = existingSpecializations.find((spec) => spec.isDefault);
                 if (currentDefault) {
-                    await specializationService.updateSpecializationAsync(
-                        currentDefault.id,
-                        {isDefault: false } as ISpecializationRequest,
-                        accessToken,
+                    await specializationService
+                        .updateSpecializationAsync(
+                            currentDefault.id,
+                            { isDefault: false } as ISpecializationRequest,
+                            accessToken,
+                        )
+                        .then((result: ISpecialization) => {
+                            dispatch(editSpecialization(result));
+                        });
+                    dispatch(
+                        addAlert({
+                            message: `Specialization {${data.name}} updated successfully.`,
+                            type: AlertType.Success,
+                        }),
                     );
                 }
             }
