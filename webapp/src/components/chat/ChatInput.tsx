@@ -22,6 +22,7 @@ import { getErrorDetails } from '../utils/TextUtils';
 import { SpeechService } from './../../libs/services/SpeechService';
 import { updateUserIsTyping } from './../../redux/features/conversations/conversationsSlice';
 import { ChatStatus } from './ChatStatus';
+import { BotResponseStatus } from '../../libs/models/BotResponseStatus';
 
 const log = debug(Constants.debug.root).extend('chat-input');
 
@@ -107,7 +108,11 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
 
     const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
         // only submit if the user presses enter without shift and the bot is not generating a response
-        if (event.key === 'Enter' && !event.shiftKey && chatState.botResponseStatus !== 'Generating bot response') {
+        if (
+            event.key === 'Enter' &&
+            !event.shiftKey &&
+            chatState.botResponseStatus !== BotResponseStatus.GeneratingBotResponse
+        ) {
             event.preventDefault();
             handleSubmit(input);
         } else if (event.key === 'Enter' && !event.shiftKey) {
@@ -186,7 +191,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
         // Reset the input field and conversation input
         setInput('');
         dispatch(editConversationInput({ id: selectedId, newInput: '' }));
-        dispatch(updateBotResponseStatus({ chatId: selectedId, status: 'Calling the kernel' }));
+        dispatch(updateBotResponseStatus({ chatId: selectedId, status: BotResponseStatus.CallingTheKernel }));
 
         onSubmit({ value, messageType, chatId: selectedId, abortSignal: abortController.signal }).catch((error) => {
             const message = `Error submitting chat input: ${(error as Error).message}`;
@@ -225,7 +230,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
 
     // Aborting connection may cause issues if done before the bot has generated any text whatsoever.
     const shouldDisableBotCancellation = (chatState: ChatState) => {
-        if (chatState.botResponseStatus !== 'Generating bot response') {
+        if (chatState.botResponseStatus !== BotResponseStatus.GeneratingBotResponse) {
             return true;
         } else {
             const lastMessage = chatState.messages[chatState.messages.length - 1];
@@ -326,7 +331,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
                                 onClick={handleSpeech}
                             />
                         )}
-                        {chatState.botResponseStatus === 'Generating bot response' ? (
+                        {chatState.botResponseStatus === BotResponseStatus.GeneratingBotResponse ? (
                             <Button
                                 appearance="transparent"
                                 icon={<RecordStopRegular />}
