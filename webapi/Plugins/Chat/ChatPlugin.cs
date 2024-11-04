@@ -613,7 +613,7 @@ public class ChatPlugin
         var chatCompletion = this._kernel.GetRequiredService<IChatCompletionService>();
         var stream = await chatCompletion.GetChatMessageContentAsync(
             promptView.MetaPromptTemplate,
-            null,
+            null, // null because we currently do not use specialization data to generate suggestions.
             this._kernel,
             cancellationToken
         );
