@@ -295,9 +295,6 @@ export const SpecializationManager: React.FC = () => {
         if (specializations.length === 0) {
             setIsDefault(true);
         }
-        else {
-            setIsDefault(false);
-        }
     }, [specializations]);
 
     /**
@@ -305,7 +302,7 @@ export const SpecializationManager: React.FC = () => {
      */
     const onChangeIsDefault = (_event?: React.ChangeEvent<HTMLInputElement>, data?: CheckboxOnChangeData) => {
         const isCurrentlyDefault = id === defaultSpecializationId;
-        if (isCurrentlyDefault && !data?.checked) {
+        if (isCurrentlyDefault && !data?.checked || specializations.length === 0) {
             dispatch(
                 addAlert({
                     message: 'Having a default specialization is a requirement.',
