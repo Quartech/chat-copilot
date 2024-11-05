@@ -40,12 +40,18 @@ public class QAzureOpenAIChatOptions
     [Required]
     public BlobStorageOption BlobStorage { get; set; } = new BlobStorageOption();
 
+    public class ChatCompletionDeployment
+    {
+        public string Name { get; set; } = string.Empty;
+        public int CompletionTokenLimit { get; set; }
+    }
+
     public class OpenAIDeploymentConnection
     {
         public string Name { get; set; } = string.Empty;
         public Uri? Endpoint { get; set; } = null;
         public string APIKey { get; set; } = string.Empty;
-        public IList<string> ChatCompletionDeployments { get; set; } = new List<string>();
+        public IList<ChatCompletionDeployment> ChatCompletionDeployments { get; set; } = new List<ChatCompletionDeployment>();
         public IList<string> EmbeddingDeployments { get; set; } = new List<string>();
     }
 

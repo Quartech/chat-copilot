@@ -708,7 +708,7 @@ public class ChatPlugin
         // Clone the context to avoid modifying the original context variables
         KernelArguments audienceContext = new(context);
         int historyTokenBudget =
-            this._promptOptions.CompletionTokenLimit
+            this.GetCompletionTokenLimit()
             - this.GetResponseTokenLimit()
             - TokenUtils.TokenCount(
                 string.Join(
@@ -753,7 +753,7 @@ public class ChatPlugin
         KernelArguments intentContext = new(context);
 
         int tokenBudget =
-            this._promptOptions.CompletionTokenLimit
+            this.GetCompletionTokenLimit()
             - this.GetResponseTokenLimit()
             - TokenUtils.TokenCount(
                 string.Join(
@@ -1023,6 +1023,15 @@ public class ChatPlugin
     }
 
     /// <summary>
+    /// Calculate the maximum number of tokens usable to generate the response.
+    /// </summary>
+    private int GetCompletionTokenLimit()
+    {
+        var deploymentConnection = this._qAzureOpenAIChatExtension.GetAllChatCompletionDeployments().FirstOrDefault(w => w.Name == this._qSpecialization?.Deployment);
+        return deploymentConnection == null ? this._promptOptions.CompletionTokenLimit : deploymentConnection.CompletionTokenLimit;
+    }
+
+    /// <summary>
     /// Calculate the maximum number of tokens that can be sent in a request
     /// </summary>
     private int GetMaxRequestTokenBudget()
@@ -1031,7 +1040,7 @@ public class ChatPlugin
         // "content": "Assistant is a large language model.","role": "system"
         // This burns just under 20 tokens which need to be accounted for.
         const int ExtraOpenAiMessageTokens = 20;
-        return this._promptOptions.CompletionTokenLimit // Total token limit
+        return this.GetCompletionTokenLimit() // Total token limit
             - ExtraOpenAiMessageTokens
             // Token count reserved for model to generate a response
             - this.GetResponseTokenLimit()
