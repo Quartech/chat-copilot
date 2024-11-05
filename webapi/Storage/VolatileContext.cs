@@ -5,6 +5,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using CopilotChat.WebApi.Extensions;
 using CopilotChat.WebApi.Models.Storage;
@@ -34,9 +35,10 @@ public class VolatileContext<T> : IStorageContext<T>
     }
 
     /// <inheritdoc/>
-    public Task<IEnumerable<T>> QueryEntitiesAsync(Func<T, bool> predicate)
+    public Task<IEnumerable<T>> QueryEntitiesAsync(Expression<Func<T, bool>> predicate)
     {
-        return Task.FromResult(this._entities.Values.Where(predicate));
+        var compiledPredicate = predicate.Compile();
+        return Task.FromResult(this._entities.Values.Where(compiledPredicate));
     }
 
     /// <inheritdoc/>
@@ -107,13 +109,25 @@ public class VolatileCopilotChatMessageContext : VolatileContext<CopilotChatMess
 {
     /// <inheritdoc/>
     public Task<IEnumerable<CopilotChatMessage>> QueryEntitiesAsync(
-        Func<CopilotChatMessage, bool> predicate,
+        Expression<Func<CopilotChatMessage, bool>> predicate,
         int skip,
         int count
     )
     {
-        return Task.Run<IEnumerable<CopilotChatMessage>>(
-            () => this._entities.Values.Where(predicate).OrderByDescending(m => m.Timestamp).Skip(skip).TakeOrAll(count)
-        );
+        var compiledPredicate = predicate.Compile();
+
+        // Apply the compiled predicate, ordering, and pagination
+        var result = this._entities.Values
+                         .Where(compiledPredicate)
+                         .OrderByDescending(m => m.Timestamp)
+                         .Skip(skip);
+
+        // Apply Take only if count is greater than 0; otherwise, return all remaining results
+        if (count > 0)
+        {
+            result = result.Take(count);
+        }
+
+        return Task.FromResult(result);
     }
 }
