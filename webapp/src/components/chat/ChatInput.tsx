@@ -91,7 +91,6 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
     const { instance, inProgress } = useMsal();
 
     const { conversations, selectedId } = useAppSelector((state: RootState) => state.conversations);
-    const { specializations } = useAppSelector((state: RootState) => state.admin);
     const { activeUserInfo } = useAppSelector((state: RootState) => state.app);
 
     const [input, setInput] = useState('');
@@ -205,23 +204,6 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
         void fileHandler.handleImport(selectedId, documentFileRef, false, undefined, e.dataTransfer.files);
     };
 
-    const isSpecializationDisabled = () => {
-        if (conversations[selectedId].specializationId === '') {
-            return true;
-        } else {
-            const specialization = specializations.find(
-                (spec) => spec.id === conversations[selectedId].specializationId,
-            );
-            if (
-                specialization &&
-                specialization.id == conversations[selectedId].specializationId &&
-                specialization.isActive
-            ) {
-                return false;
-            }
-        }
-        return true;
-    };
 
     // Aborting connection may cause issues if done before the bot has generated any text whatsoever.
     const shouldDisableBotCancellation = (chatState: ChatState) => {
@@ -349,7 +331,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
                                 onClick={() => {
                                     handleSubmit(input);
                                 }}
-                                disabled={chatState.disabled || isSpecializationDisabled()}
+                                disabled={chatState.disabled}
                             />
                         )}
                     </div>
