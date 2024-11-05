@@ -48,6 +48,10 @@ const useClasses = makeStyles({
     },
     textarea: {
         resize: 'none',
+        '&::placeholder': {
+            color: tokens.colorBrandForeground1,
+        },
+        boxSizing: 'border-box',
     },
     controls: {
         display: 'flex',
@@ -63,13 +67,22 @@ const useClasses = makeStyles({
         flexDirection: 'row',
     },
     dragAndDrop: {
-        ...shorthands.border(tokens.strokeWidthThick, ' solid', tokens.colorBrandStroke1),
-        ...shorthands.padding('8px'),
+        border: `2px dotted ${tokens.colorBrandForeground1}`,
+        borderBottom: 'none',
         textAlign: 'center',
+        boxSizing: 'border-box',
         backgroundColor: tokens.colorNeutralBackgroundInvertedDisabled,
         fontSize: tokens.fontSizeBase300,
         color: tokens.colorBrandForeground1,
         caretColor: 'transparent',
+    },
+    dropZone: {
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        width: '100vw',
+        height: '100vh',
+        opacity: 0, // Keep it invisible but clickable
     },
 });
 
@@ -205,7 +218,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
         });
     };
 
-    const handleDrop = (e: React.DragEvent<HTMLTextAreaElement>) => {
+    const handleDrop = (e: React.DragEvent<HTMLDivElement | HTMLTextAreaElement>) => {
         onDragLeave(e);
         void fileHandler.handleImport(selectedId, documentFileRef, false, undefined, e.dataTransfer.files);
     };
@@ -240,6 +253,8 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
 
     return (
         <div className={classes.root}>
+            {/* only display the drop zone when the user is dragging files (will block other interactions while active) */}
+            {isDraggingOver && <div className={classes.dropZone} onDrop={handleDrop} />}
             <div className={classes.typingIndicator}>
                 <ChatStatus chatState={chatState} />
             </div>
@@ -250,8 +265,8 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
                         <input
                             type="file"
                             ref={documentFileRef}
-                            style={{ display: 'none' }}
                             accept={Constants.app.importTypes}
+                            style={{ display: 'none' }}
                             multiple={true}
                             onChange={() => {
                                 void fileHandler.handleImport(selectedId, documentFileRef);
@@ -281,14 +296,15 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
                     id="chat-input"
                     resize="vertical"
                     disabled={chatState.disabled}
+                    // onDrop={handleDrop}
                     textarea={{
                         className: isDraggingOver
                             ? mergeClasses(classes.dragAndDrop, classes.textarea)
                             : classes.textarea,
                     }}
                     className={classes.input}
-                    value={isDraggingOver ? 'Drop your files here' : input}
-                    onDrop={handleDrop}
+                    value={input}
+                    placeholder={isDraggingOver ? 'Drop files on screen' : undefined}
                     onFocus={() => {
                         // update the locally stored value to the current value
                         const chatInput = document.getElementById('chat-input');
