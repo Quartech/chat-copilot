@@ -27,6 +27,7 @@ const enum SignalRCallbackMethods {
     ReceiveUserTypingState = 'ReceiveUserTypingState',
     ReceiveBotResponseStatus = 'ReceiveBotResponseStatus',
     GlobalDocumentUploaded = 'GlobalDocumentUploaded',
+    DocumentDeleted = 'DocumentDeleted',
     ChatEdited = 'ChatEdited',
     ChatDeleted = 'ChatDeleted',
     ChatHistoryDeleted = 'ChatHistoryDeleted',
@@ -192,6 +193,10 @@ const registerSignalREvents = (hubConnection: signalR.HubConnection, store: Stor
 
     hubConnection.on(SignalRCallbackMethods.GlobalDocumentUploaded, (fileNames: string, userName: string) => {
         store.dispatch(addAlert({ message: `${userName} uploaded ${fileNames} to all chats`, type: AlertType.Info }));
+    });
+
+    hubConnection.on(SignalRCallbackMethods.DocumentDeleted, (fileName: string, userName: string) => {
+        store.dispatch(addAlert({ message: `${userName} deleted ${fileName}`, type: AlertType.Info }));
     });
 
     hubConnection.on(SignalRCallbackMethods.ChatEdited, (chat: ChatState) => {
