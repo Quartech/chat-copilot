@@ -51,7 +51,8 @@ public class QAzureOpenAIChatOptions
         public string Name { get; set; } = string.Empty;
         public Uri? Endpoint { get; set; } = null;
         public string APIKey { get; set; } = string.Empty;
-        public IList<ChatCompletionDeployment> ChatCompletionDeployments { get; set; } = new List<ChatCompletionDeployment>();
+        public IList<ChatCompletionDeployment> ChatCompletionDeployments { get; set; } =
+            new List<ChatCompletionDeployment>();
         public IList<string> EmbeddingDeployments { get; set; } = new List<string>();
     }
 

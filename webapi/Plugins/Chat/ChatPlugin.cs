@@ -1027,8 +1027,12 @@ public class ChatPlugin
     /// </summary>
     private int GetCompletionTokenLimit()
     {
-        var deploymentConnection = this._qAzureOpenAIChatExtension.GetAllChatCompletionDeployments().FirstOrDefault(w => w.Name == this._qSpecialization?.Deployment);
-        return deploymentConnection == null ? this._promptOptions.CompletionTokenLimit : deploymentConnection.CompletionTokenLimit;
+        var deploymentConnection = this
+            ._qAzureOpenAIChatExtension.GetAllChatCompletionDeployments()
+            .FirstOrDefault(w => w.Name == this._qSpecialization?.Deployment);
+        return deploymentConnection == null
+            ? this._promptOptions.CompletionTokenLimit
+            : deploymentConnection.CompletionTokenLimit;
     }
 
     /// <summary>
