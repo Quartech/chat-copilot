@@ -87,10 +87,12 @@ export const useFile = () => {
         }
     };
 
-    const deleteFile = async (sourceId: string) => {
+    const deleteFile = async (sourceId: string, chatId: string, deleteFromGlobal: boolean) => {
         try {
             await documentImportService.deleteDocumentAsync(
                 sourceId,
+                chatId,
+                deleteFromGlobal,
                 await AuthHelper.getSKaaSAccessToken(instance, inProgress),
             );
         } catch (error) {
