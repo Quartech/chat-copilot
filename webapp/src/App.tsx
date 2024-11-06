@@ -18,7 +18,7 @@ export const useClasses = makeStyles({
         flexDirection: 'column',
         height: '100vh',
         width: '100%',
-        ...shorthands.overflow('hidden'),
+        overflow: 'hidden',
     },
     header: {
         alignItems: 'center',
