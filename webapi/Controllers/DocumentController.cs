@@ -167,12 +167,12 @@ public class DocumentController : ControllerBase
     }
 
     private async Task<IActionResult> DocumentDeleteAsync(
-    IKernelMemory memoryClient,
-    IHubContext<MessageRelayHub> messageRelayHubContext,
-    DocumentScopes documentScope,
-    Guid sourceId,
-    Guid chatId
-)
+        IKernelMemory memoryClient,
+        IHubContext<MessageRelayHub> messageRelayHubContext,
+        DocumentScopes documentScope,
+        Guid sourceId,
+        Guid chatId
+    )
     {
         var sourceIdString = sourceId.ToString();
         var chatIdString = chatId.ToString();
