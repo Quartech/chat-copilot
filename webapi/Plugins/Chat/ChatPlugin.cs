@@ -1116,7 +1116,6 @@ public class ChatPlugin
             cancellationToken
         );
 
-
         // Create message on client
         var chatMessage = await this.CreateBotMessageOnClient(
             chatId,
@@ -1127,16 +1126,30 @@ public class ChatPlugin
             new List<CitationSource>()
         );
 
-        var citationsDic = new Dictionary<string, CitationSource>();
-
-        var responseCitations = new List<CitationSource>();
+        var citationsMap = new Dictionary<string, CitationSource>();
         var citationCountMap = new Dictionary<string, int>();
-        var citationRegex = new Regex(@"\[(doc\d+)\](,)?");
-        var accumulatedContent = new StringBuilder();
+        var citationRegex = new Regex(@"\[(doc\d+|chatmemory/[^]]+)\](,)?");
+
+        // Load uploaded citations into the citation map
+        if (citations != null)
+        {
+            foreach (var citation in citations.ToList())
+            {
+                citationsMap.Add(citation.Link, new CitationSource
+                {
+                    Link = citation.SourceName,
+                    SourceName = citation.SourceName,
+                    Snippet = citation.Snippet,
+                    SourceContentType = citation.SourceContentType
+                });
+            }
+        }
 
         // Stream the message to the client
         try
         {
+            var accumulatedContent = new StringBuilder();
+
             await foreach (var contentPiece in stream)
             {
                 if (cancellationToken.IsCancellationRequested)
@@ -1166,7 +1179,7 @@ public class ChatPlugin
                                 sourceName = $"{sourceName} - Part 1";
                             }
 
-                            citationsDic.Add($"doc{citation.Index + 1}", new CitationSource
+                            citationsMap.Add($"doc{citation.Index + 1}", new CitationSource
                             {
                                 Link = link,
                                 SourceName = sourceName,
@@ -1185,7 +1198,7 @@ public class ChatPlugin
                 {
                     if (match.Groups.Count > 1)
                     {
-                        referencedCitations.Add(citationsDic[match.Groups[1].Value]);
+                        referencedCitations.Add(citationsMap[match.Groups[1].Value.Trim()]);
                     }
                 }
 
