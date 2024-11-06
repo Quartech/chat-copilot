@@ -14,7 +14,7 @@ import {
     SliderOnChangeData,
     Textarea,
     tokens,
-    Tooltip
+    Tooltip,
 } from '@fluentui/react-components';
 import { Info20Regular } from '@fluentui/react-icons';
 import React, { useEffect, useId, useState } from 'react';
@@ -248,10 +248,26 @@ export const SpecializationManager: React.FC = () => {
 
     useEffect(() => {
         const isValid =
-            !!label && !!name && !!roleInformation && !!description && !!initialChatMessage && membershipId.length > 0 && !!deployment;
+            !!label &&
+            !!name &&
+            !!roleInformation &&
+            !!description &&
+            !!initialChatMessage &&
+            membershipId.length > 0 &&
+            !!deployment;
         setIsValid(isValid);
         return () => {};
-    }, [specializations, selectedId, label, name, roleInformation, membershipId, description, initialChatMessage, deployment]);
+    }, [
+        specializations,
+        selectedId,
+        label,
+        name,
+        roleInformation,
+        membershipId,
+        description,
+        initialChatMessage,
+        deployment,
+    ]);
 
     const onDeleteSpecialization = () => {
         setIsDeleteDialogOpen(true);
@@ -272,7 +288,6 @@ export const SpecializationManager: React.FC = () => {
         resetSpecialization();
         setIsDeleteDialogOpen(false);
     };
-
 
     /**
      * Callback function for handling changes to the "Enrichment Index" dropdown.
@@ -302,7 +317,7 @@ export const SpecializationManager: React.FC = () => {
      */
     const onChangeIsDefault = (_event?: React.ChangeEvent<HTMLInputElement>, data?: CheckboxOnChangeData) => {
         const isCurrentlyDefault = id === defaultSpecializationId;
-        if (isCurrentlyDefault && !data?.checked || specializations.length === 0) {
+        if ((isCurrentlyDefault && !data?.checked) || specializations.length === 0) {
             dispatch(
                 addAlert({
                     message: 'Having a default specialization is a requirement.',

@@ -1,5 +1,13 @@
 import React from 'react';
-import { Dialog, DialogSurface, DialogTitle, DialogContent, DialogActions, Button, makeStyles } from '@fluentui/react-components';
+import {
+    Dialog,
+    DialogSurface,
+    DialogTitle,
+    DialogContent,
+    DialogActions,
+    Button,
+    makeStyles,
+} from '@fluentui/react-components';
 
 const useStyles = makeStyles({
     dialogSurface: {
@@ -45,7 +53,9 @@ export const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
                 <DialogTitle className={classes.dialogTitle}>{title}</DialogTitle>
                 <DialogContent className={classes.dialogContent}>{content}</DialogContent>
                 <DialogActions className={classes.dialogActions}>
-                    <Button onClick={onConfirm} appearance="primary">{confirmLabel}</Button>
+                    <Button onClick={onConfirm} appearance="primary">
+                        {confirmLabel}
+                    </Button>
                     <Button onClick={onCancel}>{cancelLabel}</Button>
                 </DialogActions>
             </DialogSurface>

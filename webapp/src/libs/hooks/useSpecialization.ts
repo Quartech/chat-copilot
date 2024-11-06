@@ -78,11 +78,7 @@ export const useSpecialization = () => {
                         iconFile: null,
                     };
                     await specializationService
-                        .updateSpecializationAsync(
-                            currentDefault.id,
-                            updatedData,
-                            accessToken,
-                        )
+                        .updateSpecializationAsync(currentDefault.id, updatedData, accessToken)
                         .then((result: ISpecialization) => {
                             dispatch(editSpecialization(result));
                         });
@@ -115,7 +111,7 @@ export const useSpecialization = () => {
             const existingSpecializations = await specializationService.getAllSpecializationsAsync(accessToken);
 
             // If this specialization is set as default, update the current default
-            if (data.isDefault ) {
+            if (data.isDefault) {
                 const currentDefault = existingSpecializations.find((spec) => spec.isDefault && spec.id !== id);
                 if (currentDefault) {
                     const updatedData: ISpecializationRequest = {

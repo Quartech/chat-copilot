@@ -6,7 +6,7 @@ import { getErrorDetails } from '../../components/utils/TextUtils';
 import { useAppDispatch, useAppSelector } from '../../redux/app/hooks';
 import { RootState } from '../../redux/app/store';
 import { FeatureKeys } from '../../redux/features/app/AppState';
-import { addAlert, toggleFeatureState, updateTokenUsage} from '../../redux/features/app/appSlice';
+import { addAlert, toggleFeatureState, updateTokenUsage } from '../../redux/features/app/appSlice';
 import { ChatState } from '../../redux/features/conversations/ChatState';
 import { Conversations } from '../../redux/features/conversations/ConversationsState';
 import {

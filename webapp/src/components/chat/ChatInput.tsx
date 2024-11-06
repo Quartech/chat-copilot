@@ -204,7 +204,6 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
         void fileHandler.handleImport(selectedId, documentFileRef, false, undefined, e.dataTransfer.files);
     };
 
-
     // Aborting connection may cause issues if done before the bot has generated any text whatsoever.
     const shouldDisableBotCancellation = (chatState: ChatState) => {
         if (chatState.botResponseStatus !== 'Generating bot response') {
