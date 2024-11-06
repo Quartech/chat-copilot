@@ -20,12 +20,14 @@ do
     varname=$(printf '%s\n' "$line" | sed -e 's/=.*//')
     varvalue=$(printf '%s\n' "$line" | sed -e 's/^[^=]*=//')
   fi
-
+  
   # Read value of current variable if exists as Environment variable
   value=$(printf '%s\n' "${!varname}")
   # Otherwise use value from .env file
   [[ -z $value ]] && value=${varvalue}
-  
+    # If running in Windows, it will append new lines to value, remove them to avoid imprperly formatted JSON object
+  value=$(echo "$value" | tr -d '\r\n')
+
   # Append configuration property to JS file
   echo "  $varname: \"$value\"," >> ./env-config.js
 
@@ -40,12 +42,12 @@ security_group=$(grep -E '^SECURITY_GROUP_ID=' .env | cut -d '=' -f2)
 if [[ -z "$security_group" ]]; then
   echo "SECURITY_GROUP_ID not found in .env, using default. If you would like to override this, please add SECURITY_GROUP_ID to your .env file"
   security_group="$security_group_default"
+  # Add the security group to the env-config.js file
+  echo "  SECURITY_GROUP_ID: \"$security_group\"," >> ./env-config.js
 else
   echo "SECURITY_GROUP_ID found: $security_group"
 fi
 
-# Add the security group to the env-config.js file
-echo "  SECURITY_GROUP_ID: \"$security_group\"," >> ./env-config.js
 
 # Finish the JS file
 echo "}" >> ./env-config.js

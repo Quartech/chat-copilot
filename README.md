@@ -41,7 +41,7 @@ You will need the following items to run the sample:
    > NOTE: Ensure that you have [PowerShell Core 6+](https://github.com/PowerShell/PowerShell) installed. This is different from the default PowerShell installed on Windows.
 1. Clone this repository
    ```powershell
-   git clone https://github.com/microsoft/chat-copilot
+   git clone https://github.com/Quartech/chat-copilot.git
    ```
 1. Setup your environment.
 
