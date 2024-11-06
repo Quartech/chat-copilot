@@ -198,10 +198,7 @@ public class FileSystemCopilotChatMessageContext
         var compiledPredicate = predicate.Compile();
 
         // Apply the compiled predicate, ordering, and pagination
-        var result = this._entities.Values
-                         .Where(compiledPredicate)
-                         .OrderByDescending(m => m.Timestamp)
-                         .Skip(skip);
+        var result = this._entities.Values.Where(compiledPredicate).OrderByDescending(m => m.Timestamp).Skip(skip);
 
         // Apply Take only if count is greater than 0; otherwise, return all remaining results
         if (count > 0)

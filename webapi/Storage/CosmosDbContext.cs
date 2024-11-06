@@ -156,7 +156,11 @@ public class CosmosDbCopilotChatMessageContext : CosmosDbContext<CopilotChatMess
     )
     {
         var results = new List<CopilotChatMessage>();
-        var queryable = this._container.GetItemLinqQueryable<CopilotChatMessage>(true).Where(predicate).OrderByDescending(m => m.Timestamp).Skip(skip);
+        var queryable = this
+            ._container.GetItemLinqQueryable<CopilotChatMessage>(true)
+            .Where(predicate)
+            .OrderByDescending(m => m.Timestamp)
+            .Skip(skip);
         if (count > 0)
         {
             queryable = queryable.Take(count);
