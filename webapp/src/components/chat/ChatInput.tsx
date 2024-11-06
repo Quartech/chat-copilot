@@ -76,13 +76,14 @@ const useClasses = makeStyles({
         color: tokens.colorBrandForeground1,
         caretColor: 'transparent',
     },
+    // the below styles are used to make the drop zone cover the entire screen, this element is conditionally rendered when the user is dragging files
     dropZone: {
         position: 'fixed',
         top: 0,
         left: 0,
         width: '100vw',
         height: '100vh',
-        opacity: 0, // Keep it invisible but clickable
+        opacity: 0, // Keep it invisible but "interactive" to catch the drop event
     },
 });
 
@@ -95,7 +96,9 @@ interface ChatInputProps {
 /**
  * Chat input component to allow users to type messages, attach files, and submit messages.
  *
- * @param {ChatInputProps} props
+ * @param {boolean} [isDraggingOver] Whether the user is currently dragging files over the window
+ * @param {React.DragEventHandler<HTMLDivElement | HTMLTextAreaElement>} onDragLeave The event handler to call when the user stops dragging files
+ * @param {(options: GetResponseOptions) => Promise<void>} onSubmit The function to call when the user submits a message
  * @returns {*} The chat input component
  */
 export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeave, onSubmit }) => {
@@ -296,7 +299,6 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
                     id="chat-input"
                     resize="vertical"
                     disabled={chatState.disabled}
-                    // onDrop={handleDrop}
                     textarea={{
                         className: isDraggingOver
                             ? mergeClasses(classes.dragAndDrop, classes.textarea)
