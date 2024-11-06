@@ -25,7 +25,7 @@ do
   value=$(printf '%s\n' "${!varname}")
   # Otherwise use value from .env file
   [[ -z $value ]] && value=${varvalue}
-    # If running in Windows, it will append new lines to value, remove them to avoid imprperly formatted JSON object
+  # If running in Windows, it will append new lines to value, remove them to avoid improperly formatted JSON object
   value=$(echo "$value" | tr -d '\r\n')
 
   # Append configuration property to JS file

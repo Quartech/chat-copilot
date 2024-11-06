@@ -4,13 +4,13 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "bash ./setup-env-config.sh && react-scripts start",
+    "dev": "bash ./env-config.sh && react-scripts start",
     "format": "prettier src --check",
     "format:fix": "prettier src --write",
     "lint": "eslint src --max-warnings=0",
     "lint:fix": "eslint src --fix",
-    "serve": "bash ./setup-env-config.sh && serve -s build",
-    "start": "bash ./setup-env-config.sh && react-scripts start",
+    "serve": "bash ./env-config.sh && serve -s build",
+    "start": "bash ./env-config.sh && react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
