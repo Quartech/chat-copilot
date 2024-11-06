@@ -6,7 +6,7 @@ import { getErrorDetails } from '../../components/utils/TextUtils';
 import { useAppDispatch, useAppSelector } from '../../redux/app/hooks';
 import { RootState } from '../../redux/app/store';
 import { FeatureKeys } from '../../redux/features/app/AppState';
-import { addAlert, toggleFeatureState, updateTokenUsage } from '../../redux/features/app/appSlice';
+import { addAlert, toggleFeatureState, updateTokenUsage} from '../../redux/features/app/appSlice';
 import { ChatState } from '../../redux/features/conversations/ChatState';
 import { Conversations } from '../../redux/features/conversations/ConversationsState';
 import {
@@ -436,6 +436,7 @@ export const useChat = () => {
         try {
             // If chat exists but has no specialization selected, set it to default
             if (!conversations[chatId].specializationId) {
+                dispatch(addAlert({ message: 'Document is being processed. Please wait...', type: AlertType.Info }));
                 await selectSpecializationAndBeginChat(defaultSpecializationId, chatId);
                 dispatch(
                     editConversationSpecialization({
@@ -469,7 +470,7 @@ export const useChat = () => {
 
             const errorMessage = `Failed to upload document(s). Details: ${errorDetails}`;
             dispatch(addAlert({ message: errorMessage, type: AlertType.Error }));
-        } 
+        }
     };
 
     /*
