@@ -143,8 +143,8 @@ public class DocumentController : ControllerBase
             memoryClient,
             messageRelayHubContext,
             DocumentScopes.Global,
-            DocumentMemoryOptions.GlobalDocumentChatId,
-            sourceId
+            sourceId,
+            DocumentMemoryOptions.GlobalDocumentChatId
         );
     }
 
