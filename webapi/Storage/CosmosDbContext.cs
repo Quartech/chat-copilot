@@ -1,14 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Frozen;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Net;
 using System.Threading.Tasks;
-using CopilotChat.WebApi.Extensions;
 using CopilotChat.WebApi.Models.Storage;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Azure.Cosmos.Linq;
