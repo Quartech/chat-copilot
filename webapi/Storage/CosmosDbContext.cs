@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Frozen;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Net;
@@ -57,7 +58,6 @@ public class CosmosDbContext<T> : IStorageContext<T>, IDisposable
     {
         var results = new List<T>();
         var queryable = this._container.GetItemLinqQueryable<T>(true).Where(predicate);
-        Console.WriteLine($"(underlying type) BASE QUERY: {queryable.ToQueryDefinition().QueryText}");
         var iterator = queryable.ToFeedIterator();
         while (iterator.HasMoreResults)
         {
@@ -161,13 +161,13 @@ public class CosmosDbCopilotChatMessageContext : CosmosDbContext<CopilotChatMess
         {
             queryable = queryable.Take(count);
         }
-        Console.WriteLine($"BASE QUERY with {count} = {queryable.ToQueryDefinition().QueryText}");
         var iterator = queryable.ToFeedIterator();
         while (iterator.HasMoreResults)
         {
             var response = await iterator.ReadNextAsync();
             results.AddRange(response);
         }
+
         return results;
     }
 }
