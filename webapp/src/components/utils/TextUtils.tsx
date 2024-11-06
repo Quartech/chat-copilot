@@ -93,6 +93,18 @@ export function replaceCitationLinksWithIndices(formattedMessageContent: string,
     return formattedMessageContent;
 }
 
+export function replaceBracketStyleCitationsWithCaret(formattedMessageContent: string) {
+    const docX = /\[(doc\d+)\](,)?/gm;
+    const citationIndexMap: Record<string, number> = {};
+    return formattedMessageContent.replace(docX, (_match, p1: string) => {
+        if (!citationIndexMap[p1]) {
+            const value = Object.values(citationIndexMap).length + 1;
+            citationIndexMap[p1] = value;
+        }
+        return `^${citationIndexMap[p1]}^`;
+    });
+}
+
 /**
  * Will first escape all dollar signs present in the original string.
  * Then, replace every occurrence of block style MathJax delimiters \[ and \] with $$ and $$

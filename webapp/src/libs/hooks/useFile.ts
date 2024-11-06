@@ -3,9 +3,10 @@
 import { useMsal } from '@azure/msal-react';
 import { useAppDispatch } from '../../redux/app/hooks';
 import { FeatureKeys } from '../../redux/features/app/AppState';
-import { toggleFeatureState } from '../../redux/features/app/appSlice';
+import { addAlert, toggleFeatureState } from '../../redux/features/app/appSlice';
 import { setImportingDocumentsToConversation } from '../../redux/features/conversations/conversationsSlice';
 import { AuthHelper } from '../auth/AuthHelper';
+import { AlertType } from '../models/AlertType';
 import { DocumentImportService } from '../services/DocumentImportService';
 import { useChat } from './useChat';
 
@@ -86,6 +87,23 @@ export const useFile = () => {
         }
     };
 
+    const deleteFile = async (sourceId: string) => {
+        try {
+            await documentImportService.deleteDocumentAsync(
+                sourceId,
+                await AuthHelper.getSKaaSAccessToken(instance, inProgress),
+            );
+        } catch (error) {
+            const message = `Error deleting resource: ${(error as Error).message}`;
+            dispatch(
+                addAlert({
+                    type: AlertType.Error,
+                    message,
+                }),
+            );
+        }
+    };
+
     const getContentSafetyStatus = async () => {
         try {
             const result = await documentImportService.getContentSafetyStatusAsync(
@@ -106,6 +124,7 @@ export const useFile = () => {
         loadFile,
         downloadFile,
         handleImport,
+        deleteFile,
         getContentSafetyStatus,
     };
 };

@@ -6,6 +6,7 @@ import Alerts from '../shared/Alerts';
 import LoadingSpinner from '../shared/LoadingSpinner';
 import { BackendProbe, ChatView, Error, Loading, Unauth } from '../views';
 import { useAppSelector } from '../../redux/app/hooks';
+import { ReloadModal } from '../shared/ReloadModal';
 
 const Chat = ({
     classes,
@@ -30,9 +31,11 @@ const Chat = ({
                   AppState.LoadingChats,
         );
     }, [setAppState]);
+
     return (
         <div className={classes.container}>
             <Alerts />
+            <ReloadModal />
             <LoadingSpinner />
             <Header appState={appState} setAppState={setAppState} showPluginsAndSettings={true} />
             {appState === AppState.ProbeForBackend && <BackendProbe onBackendFound={onBackendFound} />}

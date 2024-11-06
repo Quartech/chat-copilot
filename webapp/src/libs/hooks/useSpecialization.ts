@@ -10,11 +10,10 @@ import {
     setChatCompletionDeployments,
     setSpecializationIndexes,
     setSpecializations,
-    swapSpecialization,
 } from '../../redux/features/admin/adminSlice';
 import { AuthHelper } from '../auth/AuthHelper';
 import { AlertType } from '../models/AlertType';
-import { ISpecialization, ISpecializationRequest, ISpecializationSwapOrder } from '../models/Specialization';
+import { ISpecialization, ISpecializationRequest } from '../models/Specialization';
 import { SpecializationService } from '../services/SpecializationService';
 
 export const useSpecialization = () => {
@@ -190,11 +189,11 @@ export const useSpecialization = () => {
             });
     };
 
-    const swapSpecializationOrder = async (specializationSwapOrder: ISpecializationSwapOrder) => {
-        dispatch(swapSpecialization(specializationSwapOrder));
+    const setSpecializationsOrder = async (specializations: ISpecialization[]) => {
+        dispatch(setSpecializations(specializations));
         try {
-            await specializationService.swapSpecializationOrder(
-                specializationSwapOrder,
+            await specializationService.setSpecializationsOrder(
+                specializations,
                 await AuthHelper.getSKaaSAccessToken(instance, inProgress),
             );
         } catch (e: any) {
@@ -211,6 +210,6 @@ export const useSpecialization = () => {
         updateSpecialization,
         toggleSpecialization,
         deleteSpecialization,
-        swapSpecializationOrder,
+        setSpecializationsOrder,
     };
 };
