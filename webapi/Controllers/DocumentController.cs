@@ -166,6 +166,49 @@ public class DocumentController : ControllerBase
         return this.DocumentDeleteAsync(memoryClient, messageRelayHubContext, DocumentScopes.Chat, sourceId, chatId);
     }
 
+    private async Task<IActionResult> DocumentDeleteAsync(
+    IKernelMemory memoryClient,
+    IHubContext<MessageRelayHub> messageRelayHubContext,
+    DocumentScopes documentScope,
+    Guid sourceId,
+    Guid chatId
+)
+    {
+        var sourceIdString = sourceId.ToString();
+        var chatIdString = chatId.ToString();
+
+        // Try to find and delete the source
+        MemorySource? source = await this._sourceRepository.FindByIdAsync(sourceIdString, chatIdString);
+        if (source == null)
+        {
+            return this.NotFound($"No document memory source found for id '{sourceId}' and partition '{chatId}'");
+        }
+
+        // Attempt deletion operations
+        try
+        {
+            await Task.WhenAll(
+                this._sourceRepository.DeleteAsync(source),
+                memoryClient.DeleteDocumentAsync(sourceIdString, this._promptOptions.MemoryIndexName)
+            );
+
+            await messageRelayHubContext.Clients.All.SendAsync(
+                DocumentDeletedClientCall,
+                source.Name,
+                this._authInfo.Name
+            );
+        }
+        catch (AggregateException ex)
+        {
+            return this.StatusCode(
+                500,
+                $"An error occurred while deleting document for source id '{sourceId}': {ex.Message}"
+            );
+        }
+
+        return this.NoContent();
+    }
+
     private async Task<IActionResult> DocumentImportAsync(
         IKernelMemory memoryClient,
         IHubContext<MessageRelayHub> messageRelayHubContext,
@@ -318,49 +361,6 @@ public class DocumentController : ControllerBase
                 return false;
             }
         }
-    }
-
-    private async Task<IActionResult> DocumentDeleteAsync(
-        IKernelMemory memoryClient,
-        IHubContext<MessageRelayHub> messageRelayHubContext,
-        DocumentScopes documentScope,
-        Guid sourceId,
-        Guid chatId
-    )
-    {
-        var sourceIdString = sourceId.ToString();
-        var chatIdString = chatId.ToString();
-
-        // Try to find and delete the source
-        MemorySource? source = await this._sourceRepository.FindByIdAsync(sourceIdString, chatIdString);
-        if (source == null)
-        {
-            return this.NotFound($"No document memory source found for id '{sourceId}' and partition '{chatId}'");
-        }
-
-        // Attempt deletion operations
-        try
-        {
-            await Task.WhenAll(
-                this._sourceRepository.DeleteAsync(source),
-                memoryClient.DeleteDocumentAsync(sourceIdString, this._promptOptions.MemoryIndexName)
-            );
-
-            await messageRelayHubContext.Clients.All.SendAsync(
-                DocumentDeletedClientCall,
-                source.Name,
-                this._authInfo.Name
-            );
-        }
-        catch (AggregateException ex)
-        {
-            return this.StatusCode(
-                500,
-                $"An error occurred while deleting document for source id '{sourceId}': {ex.Message}"
-            );
-        }
-
-        return this.NoContent();
     }
 
     #region Private
