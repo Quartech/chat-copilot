@@ -4,6 +4,7 @@ import { makeStyles, shorthands, Text, tokens } from '@fluentui/react-components
 import React from 'react';
 import { DropTargetMonitor, useDrop } from 'react-dnd';
 import { useSpecialization } from '../../../../libs/hooks';
+import { ISpecialization } from '../../../../libs/models/Specialization';
 import { useAppSelector } from '../../../../redux/app/hooks';
 import { RootState } from '../../../../redux/app/store';
 import { Breakpoints } from '../../../../styles';
@@ -54,11 +55,22 @@ export const SpecializationListSection: React.FC<IChatListSectionProps> = ({ hea
             const toId = getHoverId(monitor, dropRef.current);
             if (fromId === toId) return;
 
-            const fromOrder = specializations.find((s) => s.id === fromId)?.order ?? 0;
-            const toOrder = specializations.find((s) => s.id === toId)?.order ?? 0;
-            if (fromOrder !== toOrder) {
-                void specialization.swapSpecializationOrder({ fromId, fromOrder, toId, toOrder });
-            }
+            // Function to reorder items
+            const reorder = (list: ISpecialization[], startIndex: number, endIndex: number) => {
+                const result = Array.from(list);
+                const [removed] = result.splice(startIndex, 1);
+                result.splice(endIndex, 0, removed);
+                return result.map((spec, index) => ({ ...spec, order: index })); // Update order based on new index
+            };
+
+            // Assuming specializations is accessible here or can be fetched
+            const updatedSpecializations: ISpecialization[] = reorder(
+                specializations,
+                specializations.findIndex((spec) => spec.id === fromId),
+                specializations.findIndex((spec) => spec.id === toId),
+            );
+
+            void specialization.setSpecializationsOrder(updatedSpecializations);
         },
     });
 

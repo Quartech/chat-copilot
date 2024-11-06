@@ -10,7 +10,7 @@ import { IChatUser } from '../../../libs/models/ChatUser';
 import { PlanState } from '../../../libs/models/Plan';
 import { BackendServiceUrl } from '../../../libs/services/BaseService';
 import { StoreMiddlewareAPI } from '../../app/store';
-import { addAlert, setMaintenance } from '../app/appSlice';
+import { addAlert, setMaintenance, addReloadDialog } from '../app/appSlice';
 import { ChatState } from '../conversations/ChatState';
 import { UpdatePluginStatePayload } from '../conversations/ConversationsState';
 
@@ -94,7 +94,11 @@ const registerCommonSignalConnectionEvents = (hubConnection: signalR.HubConnecti
     hubConnection.onreconnected((connectionId = '') => {
         if (hubConnection.state === signalR.HubConnectionState.Connected) {
             const message = 'Connection reestablished. Please refresh the page to ensure you have the latest data.';
-            store.dispatch(addAlert({ message, type: AlertType.Success, id: Constants.app.CONNECTION_ALERT_ID }));
+            store.dispatch(
+                addReloadDialog({
+                    text: message,
+                }),
+            );
             console.log(message + ` Connected with connectionId ${connectionId}`);
         }
     });
