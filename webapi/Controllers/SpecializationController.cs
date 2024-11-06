@@ -215,23 +215,18 @@ public class SpecializationController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> SwapSpecializationOrderAsync(
-        [FromBody] QSpecializationSwapOrder qSpecializationSwapOrder
-    )
+    public async Task<IActionResult> OrderSpecializationsAsync([FromBody] QSpecializationOrder qSpecializationOrder)
     {
         try
         {
-            await this._qspecializationService.SwapSpecializationOrder(qSpecializationSwapOrder);
+            await this._qspecializationService.OrderSpecializations(qSpecializationOrder);
             return this.NoContent();
         }
         catch (Azure.RequestFailedException ex)
         {
             this._logger.LogError(ex, "Specialization swap order threw an exception");
 
-            return this.StatusCode(
-                500,
-                $"Failed to swap specialization order for fromId '{qSpecializationSwapOrder.FromId}' and toId '{qSpecializationSwapOrder.ToId}'."
-            );
+            return this.StatusCode(500, $"Failed to order specializations: {ex.Message}.");
         }
     }
 }

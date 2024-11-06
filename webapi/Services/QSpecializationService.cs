@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Threading.Tasks;
 using Azure.Storage.Blobs;
 using CopilotChat.WebApi.Models.Request;
@@ -241,43 +242,37 @@ public class QSpecializationService : IQSpecializationService
     }
 
     /// <summary>
-    /// Swaps the order of two specializations identified by their IDs. This method first retrieves
-    /// both specializations, then updates their orders in an atomic manner. If either specialization
-    /// is not found or if the input model is null, appropriate exceptions are thrown. This operation
-    /// maintains all other properties of the specializations unchanged except for their order.
+    /// Reorders specializations based on the provided ordering information. This method updates the order of existing specializations
+    /// in the database asynchronously, utilizing concurrent task execution for efficiency.
     /// </summary>
-    /// <param name="swapOrderModel">The model containing the IDs of the specializations to swap and their new orders.</param>
-    /// <returns>A Task representing the asynchronous operation of swapping the specialization orders.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when swapOrderModel is null.</exception>
-    /// <exception cref="InvalidOperationException">Thrown when one or both specializations could not be found.</exception>
-    public async Task SwapSpecializationOrder(QSpecializationSwapOrder swapOrderModel)
+    /// <param name="specializationOrder">A QSpecializationOrder object containing the new order for specializations, where each key is a specialization ID and each value is the intended order.</param>
+    /// <returns>A Task representing the asynchronous operation of updating all relevant specializations.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when the <paramref name="specializationOrder"/> is null.</exception>
+    public async Task OrderSpecializations(QSpecializationOrder specializationOrder)
     {
-        if (swapOrderModel == null)
+        if (specializationOrder == null)
         {
-            throw new ArgumentNullException(nameof(swapOrderModel), "QSpecializationSwapOrder must be provided.");
+            throw new ArgumentNullException(nameof(specializationOrder), "QSpecializationOrder must be provided.");
         }
 
-        var fromSpecTask = this._specializationSourceRepository.FindByIdAsync(swapOrderModel.FromId.ToString());
-        var toSpecTask = this._specializationSourceRepository.FindByIdAsync(swapOrderModel.ToId.ToString());
+        var specializations = (await this.GetAllSpecializations()).ToList();
 
-        await Task.WhenAll(fromSpecTask, toSpecTask);
+        var upsertTasks = new List<Task>();
 
-        var fromSpec = await fromSpecTask;
-        var toSpec = await toSpecTask;
-
-        if (fromSpec == null || toSpec == null)
+        foreach (var order in specializationOrder.Ordering)
         {
-            throw new InvalidOperationException("One or both specializations were not found.");
+            string specId = order.Key;
+            int newOrder = order.Value;
+
+            var specialization = specializations.FirstOrDefault(s => s.Id == specId);
+            if (specialization != null)
+            {
+                // Update the order
+                specialization.Order = newOrder;
+                upsertTasks.Add(this._specializationSourceRepository.UpsertAsync(specialization));
+            }
         }
-
-        // Swap the orders
-        fromSpec.Order = swapOrderModel.ToOrder;
-        toSpec.Order = swapOrderModel.FromOrder;
-
-        await Task.WhenAll(
-            this._specializationSourceRepository.UpsertAsync(fromSpec),
-            this._specializationSourceRepository.UpsertAsync(toSpec)
-        );
+        await Task.WhenAll(upsertTasks);
     }
 
     /// <summary>
