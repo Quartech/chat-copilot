@@ -170,7 +170,7 @@ public class QSpecializationService : IQSpecializationService
 
         specializationToUpdate.Deployment = qSpecializationMutate.Deployment ?? specializationToUpdate.Deployment;
 
-        specializationToUpdate.IndexName = qSpecializationMutate.IndexName;
+        specializationToUpdate.IndexName = qSpecializationMutate.IndexName ?? specializationToUpdate.IndexName;
 
         specializationToUpdate.RestrictResultScope =
             qSpecializationMutate.IndexName == null
