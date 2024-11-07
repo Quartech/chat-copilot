@@ -174,7 +174,6 @@ public class QSpecializationService : IQSpecializationService
         specializationToUpdate.IndexName = qSpecializationMutate.IndexName ?? specializationToUpdate.IndexName;
         specializationToUpdate.IsDefault = qSpecializationMutate.IsDefault ?? specializationToUpdate.IsDefault;
 
-
         specializationToUpdate.RestrictResultScope =
             qSpecializationMutate.IndexName == null
                 ? null
