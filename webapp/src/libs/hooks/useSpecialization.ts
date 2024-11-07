@@ -1,7 +1,7 @@
 import { useMsal } from '@azure/msal-react';
 import { useAppDispatch } from '../../redux/app/hooks';
 import { addAlert, hideSpinner, showSpinner } from '../../redux/features/app/appSlice';
-
+import { store } from '../../redux/app/store';
 import { getErrorDetails } from '../../components/utils/TextUtils';
 import {
     addSpecialization,
@@ -148,9 +148,8 @@ export const useSpecialization = () => {
     const toggleSpecialization = async (id: string, isActive: boolean) => {
         try {
             if (!isActive) {
-                const accessToken = await AuthHelper.getSKaaSAccessToken(instance, inProgress);
-                const existingSpecializations = await specializationService.getAllSpecializationsAsync(accessToken);
-                const targetSpecialization = existingSpecializations.find((spec) => spec.id === id);
+                const { specializations } = store.getState().admin;
+                const targetSpecialization = specializations.find((spec) => spec.id === id);
                 if (targetSpecialization?.isDefault) {
                     dispatch(
                         addAlert({
@@ -158,7 +157,7 @@ export const useSpecialization = () => {
                             type: AlertType.Warning,
                         }),
                     );
-                    return; // Prevent the toggle
+                    return false; // Prevent the toggle
                 }
             }
             const accessToken = await AuthHelper.getSKaaSAccessToken(instance, inProgress);
@@ -167,9 +166,11 @@ export const useSpecialization = () => {
                 .then((result: ISpecialization) => {
                     dispatch(editSpecialization(result));
                 });
+            return true;
         } catch (e: any) {
             const errorMessage = `Unable to load chats. Details: ${getErrorDetails(e)}`;
             dispatch(addAlert({ message: errorMessage, type: AlertType.Error }));
+            return false;
         }
     };
 
