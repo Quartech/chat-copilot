@@ -154,8 +154,7 @@ export const useSpecialization = () => {
                 if (targetSpecialization?.isDefault) {
                     dispatch(
                         addAlert({
-                            message:
-                                'Set another specialization as default to toggle this specialization off.',
+                            message: 'Set another specialization as default to toggle this specialization off.',
                             type: AlertType.Warning,
                         }),
                     );
