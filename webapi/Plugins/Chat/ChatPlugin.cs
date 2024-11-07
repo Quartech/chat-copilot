@@ -1125,7 +1125,7 @@ public class ChatPlugin
             new List<CitationSource>()
         );
 
-        var citationsMap = new Dictionary<string, CitationSource>();
+        var citationMap = new Dictionary<string, CitationSource>();
         var citationCountMap = new Dictionary<string, int>();
         var citationRegex = new Regex(@"\[(doc\d+|chatmemory/[^]]+)\](,)?");
 
@@ -1134,7 +1134,7 @@ public class ChatPlugin
         {
             foreach (var citation in citations.ToList())
             {
-                citationsMap.Add(
+                citationMap.Add(
                     citation.Link,
                     new CitationSource
                     {
@@ -1190,7 +1190,7 @@ public class ChatPlugin
                                 sourceName = $"{sourceName} - Part 1";
                             }
 
-                            citationsMap.Add(
+                            citationMap.Add(
                                 $"doc{citation.Index + 1}",
                                 new CitationSource
                                 {
@@ -1213,7 +1213,7 @@ public class ChatPlugin
                 {
                     if (match.Groups.Count > 1)
                     {
-                        referencedCitations.Add(citationsMap[match.Groups[1].Value.Trim()]);
+                        referencedCitations.Add(citationMap[match.Groups[1].Value.Trim()]);
                     }
                 }
 
