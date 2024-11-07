@@ -90,6 +90,7 @@ public class QSpecializationService : IQSpecializationService
                 InitialChatMessage: qSpecializationMutate.InitialChatMessage,
                 Deployment: qSpecializationMutate.Deployment,
                 IndexName: qSpecializationMutate.IndexName,
+                IsDefault: qSpecializationMutate.IsDefault,
                 RestrictResultScope: qSpecializationMutate.IndexName != null
                     ? qSpecializationMutate.RestrictResultScope
                     : null,
@@ -171,6 +172,7 @@ public class QSpecializationService : IQSpecializationService
         specializationToUpdate.Deployment = qSpecializationMutate.Deployment ?? specializationToUpdate.Deployment;
 
         specializationToUpdate.IndexName = qSpecializationMutate.IndexName ?? specializationToUpdate.IndexName;
+        specializationToUpdate.IsDefault = qSpecializationMutate.IsDefault ?? specializationToUpdate.IsDefault;
 
         specializationToUpdate.RestrictResultScope =
             qSpecializationMutate.IndexName == null

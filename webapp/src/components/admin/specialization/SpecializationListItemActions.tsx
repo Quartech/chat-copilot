@@ -35,8 +35,11 @@ export const SpecializationListItemActions: React.FC<ISpecializationListItemActi
                 height={20}
                 checked={on}
                 onChange={(_event, { checked }) => {
-                    turnOn(checked);
-                    void specialization.toggleSpecialization(specializationId, checked);
+                    void specialization.toggleSpecialization(specializationId, checked).then((success) => {
+                        if (success) {
+                            turnOn(checked);
+                        }
+                    });
                 }}
                 className="react-switch"
             />
