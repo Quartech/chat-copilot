@@ -125,7 +125,6 @@ export const SpecializationManager: React.FC = () => {
     const [iconFile, setIconFile] = useState<ISpecializationFile>({ file: null, src: null });
     const [restrictResultScope, setRestrictResultScope] = useState<boolean | null>(false);
     const [isDefault, setIsDefault] = useState<boolean>(false);
-    const [isDefaultDialogOpen, setIsDefaultDialogOpen] = useState(false);
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [strictness, setStrictness] = useState<number | null>(0);
     const [documentCount, setDocumentCount] = useState<number | null>(0);
@@ -328,16 +327,16 @@ export const SpecializationManager: React.FC = () => {
         }
 
         if (!isCurrentlyDefault && data?.checked) {
-            setIsDefaultDialogOpen(true);
+            dispatch(
+                addAlert({
+                    message: `You are trying to set ${name} as the default specialization.`,
+                    type: AlertType.Info,
+                }),
+            );
+            setIsDefault(true);
         } else if (!isCurrentlyDefault && !data?.checked) {
             setIsDefault(false);
         }
-    };
-
-    // Confirm the default change
-    const confirmDefaultChange = () => {
-        setIsDefault(true);
-        setIsDefaultDialogOpen(false);
     };
 
     /**
@@ -465,17 +464,6 @@ export const SpecializationManager: React.FC = () => {
                     ))}
                 </Dropdown>
                 <Checkbox label="Set as Default Specialization" checked={isDefault} onChange={onChangeIsDefault} />
-                <ConfirmationDialog
-                    open={isDefaultDialogOpen}
-                    title="Change Default Specialization"
-                    content={`Are you sure you want to set ${name} as the default specialization?`}
-                    confirmLabel="Yes"
-                    cancelLabel="No"
-                    onConfirm={confirmDefaultChange}
-                    onCancel={() => {
-                        setIsDefaultDialogOpen(false);
-                    }}
-                />
                 <ConfirmationDialog
                     open={isDeleteDialogOpen}
                     title="Delete Specialization"
