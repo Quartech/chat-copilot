@@ -81,7 +81,7 @@ public class QSpecializationResponse
     /// Is Default flag of the specialization
     /// </summary>
     [JsonPropertyName("isDefault")]
-    public bool? IsDefault { get; set; } = false;
+    public bool? IsDefault { get; set; }
 
     /// <summary>
     /// Restrict result scope flag of the specialization.
