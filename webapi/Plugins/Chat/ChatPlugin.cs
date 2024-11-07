@@ -11,7 +11,6 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using Azure.AI.OpenAI;
 using CopilotChat.WebApi.Hubs;
 using CopilotChat.WebApi.Models.Response;
 using CopilotChat.WebApi.Models.Storage;
@@ -20,6 +19,7 @@ using CopilotChat.WebApi.Plugins.Chat.Ext;
 using CopilotChat.WebApi.Plugins.Utils;
 using CopilotChat.WebApi.Services;
 using CopilotChat.WebApi.Storage;
+using CopilotChat.WebApi.Utilities;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -1128,24 +1128,13 @@ public class ChatPlugin
         {
             throw new InvalidOperationException($"ChatCompletionService for deployment '{deployment}' not found.");
         }
+
         var stream = chatCompletion.GetStreamingChatMessageContentsAsync(
             prompt.MetaPromptTemplate,
             this.CreateChatRequestSettings(),
             this._kernel,
             cancellationToken
         );
-
-        var responseCitations = new List<CitationSource>();
-        var citationCountMap = new Dictionary<string, int>();
-        var citationIndexMap = new Dictionary<string, int>();
-        var citationPattern = new Regex(@"\[(doc\d+)\](,)?");
-        var accumulatedContent = new StringBuilder();
-
-        // Determine the citations based on whether the current specialization matches the default
-        var citationsToUse =
-            this._qSpecialization?.Id == this._qAzureOpenAIChatExtension.DefaultSpecialization
-                ? citations
-                : new List<CitationSource>();
 
         // Create message on client
         var chatMessage = await this.CreateBotMessageOnClient(
@@ -1154,11 +1143,36 @@ public class ChatPlugin
             JsonSerializer.Serialize(prompt),
             string.Empty,
             cancellationToken,
-            citationsToUse
+            new List<CitationSource>()
         );
+
+        var citationMap = new Dictionary<string, CitationSource>();
+        var citationCountMap = new Dictionary<string, int>();
+        var citationRegex = new Regex(@"\[(doc\d+|chatmemory/[^]]+)\](,)?");
+
+        // Load uploaded citations into the citation map
+        if (citations != null)
+        {
+            foreach (var citation in citations.ToList())
+            {
+                citationMap.Add(
+                    citation.Link,
+                    new CitationSource
+                    {
+                        Link = citation.SourceName,
+                        SourceName = citation.SourceName,
+                        Snippet = citation.Snippet,
+                        SourceContentType = citation.SourceContentType,
+                    }
+                );
+            }
+        }
+
         // Stream the message to the client
         try
         {
+            var accumulatedContent = new StringBuilder();
+
             await foreach (var contentPiece in stream)
             {
                 if (cancellationToken.IsCancellationRequested)
@@ -1167,109 +1181,66 @@ public class ChatPlugin
                 }
 
                 accumulatedContent.Append(contentPiece.ToString());
-                if (contentPiece.InnerContent is not null)
+
+                if (contentPiece.InnerContent is Azure.AI.OpenAI.StreamingChatCompletionsUpdate actx)
                 {
-                    Azure.AI.OpenAI.StreamingChatCompletionsUpdate actx =
-                        (Azure.AI.OpenAI.StreamingChatCompletionsUpdate)contentPiece.InnerContent;
-                    if (actx.AzureExtensionsContext != null && actx.AzureExtensionsContext.Citations != null)
+                    if (actx.AzureExtensionsContext?.Citations != null)
                     {
+                        // Load data source citations into the citation map, with part numbering for repeated sources.
                         foreach (
-                            AzureChatExtensionDataSourceResponseCitation citation in actx.AzureExtensionsContext.Citations
+                            var citation in actx.AzureExtensionsContext.Citations.Select(
+                                (c, index) => new { Citation = c, Index = index }
+                            )
                         )
                         {
-                            var sourceName = citation.Filepath;
-                            var link = citation.Filepath;
-                            if (citationCountMap.TryGetValue(sourceName, out int count))
-                            {
-                                citationCountMap[sourceName]++;
-                                sourceName = $"{sourceName} - Part {citationCountMap[sourceName]}";
-                            }
-                            else
-                            {
-                                citationCountMap[sourceName] = 1;
-                                // Check if this is the only occurrence
-                                if (
-                                    actx.AzureExtensionsContext.Citations.Count(c => c.Filepath == citation.Filepath)
-                                    > 1
-                                )
-                                {
-                                    sourceName = $"{sourceName} - Part 1";
-                                }
-                            }
-                            // Collect citation here
-                            string fileExtension = Path.GetExtension(link).TrimStart('.').ToLower(); // Extract and normalize the file extension
-                            string contentType = fileExtension switch
-                            {
-                                "pdf" => "application/pdf", // PDF files
-                                "doc" => "application/msword", // Microsoft Word documents
-                                "docx" => "application/vnd.openxmlformats-officedocument.wordprocessingml.document", // Microsoft Word (OpenXML)
-                                "jpg" => "image/jpeg", // JPEG images
-                                "jpeg" => "image/jpeg", // JPEG images
-                                "png" => "image/png", // PNG images
-                                "gif" => "image/gif", // GIF images
-                                "csv" => "text/csv", // CSV files
-                                _ =>
-                                    "application/octet-stream" // Default content type for unknown extensions
-                                ,
-                            };
+                            var sourceName = citation.Citation.Filepath;
+                            var link = citation.Citation.Filepath;
 
-                            responseCitations.Add(
+                            CitationUtils.UpdateMapCount(ref citationCountMap, sourceName);
+                            var partNumber = citationCountMap[sourceName];
+                            if (partNumber > 1)
+                            {
+                                sourceName = $"{sourceName} - Part {partNumber}";
+                            }
+                            else if (
+                                actx.AzureExtensionsContext.Citations.Count(c =>
+                                    c.Filepath == citation.Citation.Filepath
+                                ) > 1
+                            )
+                            {
+                                sourceName = $"{sourceName} - Part 1";
+                            }
+
+                            citationMap.Add(
+                                $"doc{citation.Index + 1}",
                                 new CitationSource
                                 {
                                     Link = link,
                                     SourceName = sourceName,
-                                    Snippet = citation.Content,
-                                    SourceContentType = contentType, // Use the dynamically determined content type
+                                    Snippet = citation.Citation.Content,
+                                    SourceContentType = CitationUtils.GetContentType(link),
                                 }
                             );
                         }
                     }
                 }
 
-                // Filter citations to include only those referenced in the current content piece
-                var referencedCitations = new HashSet<string>();
-                var matches = citationPattern.Matches(accumulatedContent.ToString());
+                var referencedCitations = new HashSet<CitationSource>();
+                // Check for citations that are referenced in the bot response.
+                // [docX] for data source citations.
+                // [chatmemoryX] for uploaded citations.
+                var matches = citationRegex.Matches(accumulatedContent.ToString());
                 foreach (Match match in matches)
                 {
                     if (match.Groups.Count > 1)
                     {
-                        var referenceIndex =
-                            int.Parse(match.Groups[1].Value.AsSpan(3), CultureInfo.InvariantCulture) - 1; // Extract the index from "docX"
-                        if (referenceIndex >= 0 && referenceIndex < responseCitations.Count)
-                        {
-                            referencedCitations.Add(responseCitations[referenceIndex].SourceName);
-                        }
+                        referencedCitations.Add(citationMap[match.Groups[1].Value.Trim()]);
                     }
                 }
 
-                var filteredCitations = responseCitations
-                    .Where(citation => referencedCitations.Contains(citation.SourceName))
-                    .ToList();
-
-                // This can corrupt the way the bot formats citations in its answers! Deferring this formatting to the frontend.
-                // var processedContentPiece = citationPattern.Replace(
-                //     contentPiece.ToString(),
-                //     match =>
-                //     {
-                //         var citationKey = match.Groups[1].Value;
-                //         if (!citationIndexMap.TryGetValue(citationKey, out int value))
-                //         {
-                //             value = citationIndexMap.Count + 1;
-                //             citationIndexMap[citationKey] = value;
-                //         }
-                //         return $"^{value}^";
-                //     }
-                // );
-                var processedContentPiece = contentPiece;
-
                 // Update the message content and citations on the client
-                chatMessage.Content += processedContentPiece;
-
-                // Determine citations based on specialization
-                if (this._qSpecialization?.Id != this._qAzureOpenAIChatExtension.DefaultSpecialization)
-                {
-                    chatMessage.Citations = filteredCitations;
-                }
+                chatMessage.Content += contentPiece;
+                chatMessage.Citations = referencedCitations;
 
                 // Update the message on the client with the new content and possibly updated citations
                 await this.UpdateMessageOnClient(chatMessage, cancellationToken);
