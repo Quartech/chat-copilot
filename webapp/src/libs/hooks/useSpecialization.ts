@@ -1,7 +1,7 @@
 import { useMsal } from '@azure/msal-react';
 import { useAppDispatch } from '../../redux/app/hooks';
 import { addAlert, hideSpinner, showSpinner } from '../../redux/features/app/appSlice';
-
+import { store } from '../../redux/app/store';
 import { getErrorDetails } from '../../components/utils/TextUtils';
 import {
     addSpecialization,
@@ -10,11 +10,10 @@ import {
     setChatCompletionDeployments,
     setSpecializationIndexes,
     setSpecializations,
-    swapSpecialization,
 } from '../../redux/features/admin/adminSlice';
 import { AuthHelper } from '../auth/AuthHelper';
 import { AlertType } from '../models/AlertType';
-import { ISpecialization, ISpecializationRequest, ISpecializationSwapOrder } from '../models/Specialization';
+import { ISpecialization, ISpecializationRequest } from '../models/Specialization';
 import { SpecializationService } from '../services/SpecializationService';
 
 export const useSpecialization = () => {
@@ -65,9 +64,30 @@ export const useSpecialization = () => {
         dispatch(showSpinner());
         try {
             const accessToken = await AuthHelper.getSKaaSAccessToken(instance, inProgress);
+            const existingSpecializations = await specializationService.getAllSpecializationsAsync(accessToken);
+
+            // If this specialization is set as default, update the current default
+            if (data.isDefault && existingSpecializations.length >= 1) {
+                const currentDefault = existingSpecializations.find((spec) => spec.isDefault);
+                if (currentDefault) {
+                    const updatedData: ISpecializationRequest = {
+                        ...currentDefault,
+                        isDefault: false,
+                        imageFile: null,
+                        iconFile: null,
+                    };
+                    await specializationService
+                        .updateSpecializationAsync(currentDefault.id, updatedData, accessToken)
+                        .then((result: ISpecialization) => {
+                            dispatch(editSpecialization(result));
+                        });
+                }
+            }
+
             await specializationService.createSpecializationAsync(data, accessToken).then((result: ISpecialization) => {
                 dispatch(addSpecialization(result));
             });
+
             dispatch(
                 addAlert({
                     message: `Specialization {${data.name}} created successfully.`,
@@ -75,7 +95,8 @@ export const useSpecialization = () => {
                 }),
             );
         } catch (e: any) {
-            const errorMessage = `Unable to load chats. Details: ${getErrorDetails(e)}`;
+            const errorMessage = `Unable to create specialization. Details: ${getErrorDetails(e)}`;
+            console.error('Error creating specialization:', e);
             dispatch(addAlert({ message: errorMessage, type: AlertType.Error }));
         } finally {
             dispatch(hideSpinner());
@@ -86,6 +107,25 @@ export const useSpecialization = () => {
         dispatch(showSpinner());
         try {
             const accessToken = await AuthHelper.getSKaaSAccessToken(instance, inProgress);
+            const existingSpecializations = await specializationService.getAllSpecializationsAsync(accessToken);
+
+            // If this specialization is set as default, update the current default
+            if (data.isDefault) {
+                const currentDefault = existingSpecializations.find((spec) => spec.isDefault && spec.id !== id);
+                if (currentDefault) {
+                    const updatedData: ISpecializationRequest = {
+                        ...currentDefault,
+                        isDefault: false,
+                        imageFile: null,
+                        iconFile: null,
+                    };
+                    await specializationService
+                        .updateSpecializationAsync(currentDefault.id, updatedData, accessToken)
+                        .then((result: ISpecialization) => {
+                            dispatch(editSpecialization(result));
+                        });
+                }
+            }
             await specializationService
                 .updateSpecializationAsync(id, data, accessToken)
                 .then((result: ISpecialization) => {
@@ -107,15 +147,30 @@ export const useSpecialization = () => {
 
     const toggleSpecialization = async (id: string, isActive: boolean) => {
         try {
+            if (!isActive) {
+                const { specializations } = store.getState().admin;
+                const targetSpecialization = specializations.find((spec) => spec.id === id);
+                if (targetSpecialization?.isDefault) {
+                    dispatch(
+                        addAlert({
+                            message: 'Set another specialization as default to toggle this specialization off.',
+                            type: AlertType.Warning,
+                        }),
+                    );
+                    return false; // Prevent the toggle
+                }
+            }
             const accessToken = await AuthHelper.getSKaaSAccessToken(instance, inProgress);
             await specializationService
                 .onOffSpecializationAsync(id, isActive, accessToken)
                 .then((result: ISpecialization) => {
                     dispatch(editSpecialization(result));
                 });
+            return true;
         } catch (e: any) {
             const errorMessage = `Unable to load chats. Details: ${getErrorDetails(e)}`;
             dispatch(addAlert({ message: errorMessage, type: AlertType.Error }));
+            return false;
         }
     };
 
@@ -149,11 +204,11 @@ export const useSpecialization = () => {
             });
     };
 
-    const swapSpecializationOrder = async (specializationSwapOrder: ISpecializationSwapOrder) => {
-        dispatch(swapSpecialization(specializationSwapOrder));
+    const setSpecializationsOrder = async (specializations: ISpecialization[]) => {
+        dispatch(setSpecializations(specializations));
         try {
-            await specializationService.swapSpecializationOrder(
-                specializationSwapOrder,
+            await specializationService.setSpecializationsOrder(
+                specializations,
                 await AuthHelper.getSKaaSAccessToken(instance, inProgress),
             );
         } catch (e: any) {
@@ -170,6 +225,6 @@ export const useSpecialization = () => {
         updateSpecialization,
         toggleSpecialization,
         deleteSpecialization,
-        swapSpecializationOrder,
+        setSpecializationsOrder,
     };
 };

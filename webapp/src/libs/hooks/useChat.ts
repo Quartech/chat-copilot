@@ -75,11 +75,11 @@ export const useChat = () => {
         return users.find((user) => user.id === id);
     };
 
-    const defaultSpecializationId = specializationsState.find((a) => a.id === 'general')?.id ?? '';
+    const defaultSpecializationId = specializationsState.find((a) => a.isDefault)?.id ?? '';
     /**
      * Create chat - This function will create an entry in the redux conversation state with default values.
      * It does not send any information to the server.
-     * @param specializationId specify the desired specializationId, otherwise default to general
+     * @param specializationId specify the desired specializationId, otherwise default to the default specialization
      * @returns
      */
     const createChat = (specializationId = defaultSpecializationId) => {
@@ -434,6 +434,17 @@ export const useChat = () => {
 
     const importDocument = async (chatId: string, files: File[], uploadToGlobal: boolean) => {
         try {
+            // If chat exists but has no specialization selected, set it to default
+            if (!conversations[chatId].specializationId) {
+                dispatch(addAlert({ message: 'Document is being processed. Please wait...', type: AlertType.Info }));
+                await selectSpecializationAndBeginChat(defaultSpecializationId, chatId);
+                dispatch(
+                    editConversationSpecialization({
+                        id: chatId,
+                        specializationId: defaultSpecializationId,
+                    }),
+                );
+            }
             await documentImportService.importDocumentAsync(
                 chatId,
                 files,

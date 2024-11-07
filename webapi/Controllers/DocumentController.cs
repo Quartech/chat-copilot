@@ -34,6 +34,7 @@ namespace CopilotChat.WebApi.Controllers;
 public class DocumentController : ControllerBase
 {
     private const string GlobalDocumentUploadedClientCall = "GlobalDocumentUploaded";
+    private const string DocumentDeletedClientCall = "DocumentDeleted";
     private const string ReceiveMessageClientCall = "ReceiveMessage";
 
     private readonly ILogger<DocumentController> _logger;
@@ -122,6 +123,54 @@ public class DocumentController : ControllerBase
             chatId,
             documentImportForm
         );
+    }
+
+    /// <summary>
+    /// Service API for deleting a document.
+    /// </summary>
+    [Route("documents/{sourceId:guid}")]
+    [HttpDelete]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> DocumentDeleteAsync(
+        [FromServices] IKernelMemory memoryClient,
+        [FromServices] IHubContext<MessageRelayHub> messageRelayHubContext,
+        [FromRoute] Guid sourceId
+    )
+    {
+        var sourceIdString = sourceId.ToString();
+
+        // Try to find and delete the source
+        MemorySource? source = await this._sourceRepository.FindByIdAsync(sourceIdString);
+        if (source == null)
+        {
+            return this.NotFound($"No document memory source found for source id '{sourceId}'.");
+        }
+
+        // Attempt deletion operations
+        try
+        {
+            await Task.WhenAll(
+                this._sourceRepository.DeleteAsync(source),
+                memoryClient.DeleteDocumentAsync(sourceIdString, this._promptOptions.MemoryIndexName)
+            );
+
+            await messageRelayHubContext.Clients.All.SendAsync(
+                DocumentDeletedClientCall,
+                source.Name,
+                this._authInfo.Name
+            );
+        }
+        catch (AggregateException ex)
+        {
+            return this.StatusCode(
+                500,
+                $"An error occurred while deleting document for source id '{sourceId}': {ex.Message}"
+            );
+        }
+
+        return this.NoContent();
     }
 
     private async Task<IActionResult> DocumentImportAsync(

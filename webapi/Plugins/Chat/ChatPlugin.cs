@@ -229,7 +229,8 @@ public class ChatPlugin
         string userId,
         KernelArguments chatContext,
         CopilotChatMessage userMessage,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken,
+        bool silent = false
     )
     {
         // Render system instruction components and create the meta-prompt template
@@ -292,7 +293,6 @@ public class ChatPlugin
             .GetContextMessagesTokenCount(metaPrompt)
             .ToString(CultureInfo.CurrentCulture);
 
-        // Stream the response to the client
         var botPrompt = new BotResponsePrompt(
             systemInstructions,
             audience,
@@ -302,13 +302,24 @@ public class ChatPlugin
             metaPrompt
         );
 
-        return await this.StreamBotResponseAsync(
-            chatId,
-            userId,
-            chatContext,
-            botPrompt,
-            citationMap.Values.AsEnumerable(),
-            cancellationToken
+        return await (
+            silent
+                ? this.OneOffBotResponseAsync(
+                    chatId,
+                    userId,
+                    chatContext,
+                    botPrompt,
+                    citationMap.Values.AsEnumerable(),
+                    cancellationToken
+                )
+                : this.StreamBotResponseAsync(
+                    chatId,
+                    userId,
+                    chatContext,
+                    botPrompt,
+                    citationMap.Values.AsEnumerable(),
+                    cancellationToken
+                )
         );
     }
 
@@ -332,19 +343,14 @@ public class ChatPlugin
         // Set the system description in the prompt options
         await this.SetSystemDescriptionAsync(chatId, cancellationToken);
 
-        var newUserMessage = new CopilotChatMessage(
+        this._logger.LogInformation("Saving suggestions user message to chat history.");
+        var suggestionsMessage = await this.SaveNewMessageAsync(
+            message,
             userId,
             userName,
             chatId,
-            message,
-            string.Empty,
-            null,
-            CopilotChatMessage.AuthorRoles.User,
-            // Default to a standard message if the `type` is not recognized
-            Enum.TryParse(messageType, out CopilotChatMessage.ChatMessageType typeAsEnum)
-            && Enum.IsDefined(typeof(CopilotChatMessage.ChatMessageType), typeAsEnum)
-                ? typeAsEnum
-                : CopilotChatMessage.ChatMessageType.Message
+            messageType,
+            cancellationToken
         );
 
         // Clone the context to avoid modifying the original context variables.
@@ -352,13 +358,14 @@ public class ChatPlugin
         chatContext["knowledgeCutoff"] = this._promptOptions.KnowledgeCutoffDate;
 
         this._logger.LogInformation("Getting chat response! Silent version.");
-        // Directly get the chat response without extracting user intent
-        CopilotChatMessage chatMessage = await this.GetChatResponseSilentAsync(
+
+        CopilotChatMessage chatMessage = await this.GetChatResponseAsync(
             chatId,
             userId,
             chatContext,
-            newUserMessage,
-            cancellationToken
+            suggestionsMessage,
+            cancellationToken,
+            silent: true
         );
         context["input"] = chatMessage.Content;
 
@@ -369,9 +376,12 @@ public class ChatPlugin
         else
         {
             this._logger.LogWarning(
-                "ChatPlugin.ChatAsync token usage unknown. Ensure token management has been implemented correctly."
+                "ChatPlugin.ChatSilentAsync token usage unknown. Ensure token management has been implemented correctly."
             );
         }
+
+        this._logger.LogInformation("Delete suggestions user message from chat history.");
+        await this._chatMessageRepository.DeleteAsync(suggestionsMessage);
 
         return context;
     }
@@ -600,17 +610,15 @@ public class ChatPlugin
         CancellationToken cancellationToken
     )
     {
-        string speckey = (string)chatContext[this._qAzureOpenAIChatExtension.ContextKey]!;
-
         var chatCompletion = this._kernel.GetRequiredService<IChatCompletionService>();
         var stream = await chatCompletion.GetChatMessageContentAsync(
             promptView.MetaPromptTemplate,
-            this.CreateChatRequestSettings(),
+            null, // null because we currently do not use specialization data to generate suggestions.
             this._kernel,
             cancellationToken
         );
         // Return the constructed message without saving to chat history.
-        var chatmessage = new CopilotChatMessage(
+        var chatMessage = new CopilotChatMessage(
             userId,
             "Bot",
             chatId,
@@ -618,7 +626,7 @@ public class ChatPlugin
             promptView.MetaPromptTemplate.ToString(),
             citations
         );
-        return chatmessage;
+        return chatMessage;
     }
 
     /// <summary>
@@ -708,7 +716,7 @@ public class ChatPlugin
         // Clone the context to avoid modifying the original context variables
         KernelArguments audienceContext = new(context);
         int historyTokenBudget =
-            this._promptOptions.CompletionTokenLimit
+            this.GetCompletionTokenLimit()
             - this.GetResponseTokenLimit()
             - TokenUtils.TokenCount(
                 string.Join(
@@ -753,7 +761,7 @@ public class ChatPlugin
         KernelArguments intentContext = new(context);
 
         int tokenBudget =
-            this._promptOptions.CompletionTokenLimit
+            this.GetCompletionTokenLimit()
             - this.GetResponseTokenLimit()
             - TokenUtils.TokenCount(
                 string.Join(
@@ -1023,6 +1031,19 @@ public class ChatPlugin
     }
 
     /// <summary>
+    /// Calculate the maximum number of tokens usable to generate the response.
+    /// </summary>
+    private int GetCompletionTokenLimit()
+    {
+        var deploymentConnection = this
+            ._qAzureOpenAIChatExtension.GetAllChatCompletionDeployments()
+            .FirstOrDefault(w => w.Name == this._qSpecialization?.Deployment);
+        return deploymentConnection == null
+            ? this._promptOptions.CompletionTokenLimit
+            : deploymentConnection.CompletionTokenLimit;
+    }
+
+    /// <summary>
     /// Calculate the maximum number of tokens that can be sent in a request
     /// </summary>
     private int GetMaxRequestTokenBudget()
@@ -1031,7 +1052,7 @@ public class ChatPlugin
         // "content": "Assistant is a large language model.","role": "system"
         // This burns just under 20 tokens which need to be accounted for.
         const int ExtraOpenAiMessageTokens = 20;
-        return this._promptOptions.CompletionTokenLimit // Total token limit
+        return this.GetCompletionTokenLimit() // Total token limit
             - ExtraOpenAiMessageTokens
             // Token count reserved for model to generate a response
             - this.GetResponseTokenLimit()

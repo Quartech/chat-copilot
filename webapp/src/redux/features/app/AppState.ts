@@ -22,6 +22,10 @@ export interface Alert {
     onRetry?: () => void;
 }
 
+export interface ReloadDialog {
+    text: string;
+}
+
 interface Feature {
     enabled: boolean; // Whether to show the feature in the UX
     label: string;
@@ -39,6 +43,7 @@ export interface Setting {
 
 export interface AppState {
     alerts: Alert[];
+    reloadDialog?: ReloadDialog;
     activeUserInfo?: ActiveUserInfo;
     authConfig?: AuthConfig | null;
     tokenUsage: TokenUsage;

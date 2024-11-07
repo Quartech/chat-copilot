@@ -99,6 +99,11 @@ public class Specialization : IStorageEntity
     public DateTimeOffset UpdatedAt { get; set; }
 
     /// <summary>
+    /// Is Default flag of the specialization
+    /// </summary>
+    public bool? IsDefault { get; set; }
+
+    /// <summary>
     /// Restrict Result Scope of specialization
     /// </summary>
     public bool? RestrictResultScope { get; set; }
@@ -138,6 +143,7 @@ public class Specialization : IStorageEntity
         string InitialChatMessage,
         string? Deployment,
         string? IndexName,
+        bool? IsDefault,
         bool? RestrictResultScope,
         int? Strictness,
         int? DocumentCount,
@@ -156,6 +162,7 @@ public class Specialization : IStorageEntity
         this.RoleInformation = RoleInformation;
         this.Deployment = Deployment;
         this.IndexName = IndexName;
+        this.IsDefault = IsDefault;
         this.RestrictResultScope = RestrictResultScope;
         this.Strictness = Strictness;
         this.DocumentCount = DocumentCount;

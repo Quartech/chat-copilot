@@ -48,6 +48,10 @@ const useClasses = makeStyles({
     },
     textarea: {
         resize: 'none',
+        '&::placeholder': {
+            color: tokens.colorBrandForeground1,
+        },
+        boxSizing: 'border-box',
     },
     controls: {
         display: 'flex',
@@ -63,13 +67,23 @@ const useClasses = makeStyles({
         flexDirection: 'row',
     },
     dragAndDrop: {
-        ...shorthands.border(tokens.strokeWidthThick, ' solid', tokens.colorBrandStroke1),
-        ...shorthands.padding('8px'),
+        border: `2px dotted ${tokens.colorBrandForeground1}`,
+        borderBottom: 'none',
         textAlign: 'center',
+        boxSizing: 'border-box',
         backgroundColor: tokens.colorNeutralBackgroundInvertedDisabled,
         fontSize: tokens.fontSizeBase300,
         color: tokens.colorBrandForeground1,
         caretColor: 'transparent',
+    },
+    // the below styles are used to make the drop zone cover the entire screen, this element is conditionally rendered when the user is dragging files
+    dropZone: {
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        width: '100vw',
+        height: '100vh',
+        opacity: 0, // Keep it invisible but "interactive" to catch the drop event
     },
 });
 
@@ -82,7 +96,9 @@ interface ChatInputProps {
 /**
  * Chat input component to allow users to type messages, attach files, and submit messages.
  *
- * @param {ChatInputProps} props
+ * @param {boolean} [isDraggingOver] Whether the user is currently dragging files over the window
+ * @param {React.DragEventHandler<HTMLDivElement | HTMLTextAreaElement>} onDragLeave The event handler to call when the user stops dragging files
+ * @param {(options: GetResponseOptions) => Promise<void>} onSubmit The function to call when the user submits a message
  * @returns {*} The chat input component
  */
 export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeave, onSubmit }) => {
@@ -92,7 +108,6 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
     const { instance, inProgress } = useMsal();
 
     const { conversations, selectedId } = useAppSelector((state: RootState) => state.conversations);
-    const { specializations } = useAppSelector((state: RootState) => state.admin);
     const { activeUserInfo } = useAppSelector((state: RootState) => state.app);
 
     const [input, setInput] = useState('');
@@ -205,27 +220,9 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
         });
     };
 
-    const handleDrop = (e: React.DragEvent<HTMLTextAreaElement>) => {
+    const handleDrop = (e: React.DragEvent<HTMLDivElement | HTMLTextAreaElement>) => {
         onDragLeave(e);
         void fileHandler.handleImport(selectedId, documentFileRef, false, undefined, e.dataTransfer.files);
-    };
-
-    const isSpecializationDisabled = () => {
-        if (conversations[selectedId].specializationId === '') {
-            return true;
-        } else {
-            const specialization = specializations.find(
-                (spec) => spec.id === conversations[selectedId].specializationId,
-            );
-            if (
-                specialization &&
-                specialization.id == conversations[selectedId].specializationId &&
-                specialization.isActive
-            ) {
-                return false;
-            }
-        }
-        return true;
     };
 
     // Aborting connection may cause issues if done before the bot has generated any text whatsoever.
@@ -240,6 +237,8 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
 
     return (
         <div className={classes.root}>
+            {/* only display the drop zone when the user is dragging files (will block other interactions while active) */}
+            {isDraggingOver && <div className={classes.dropZone} onDrop={handleDrop} />}
             <div className={classes.typingIndicator}>
                 <ChatStatus chatState={chatState} />
             </div>
@@ -250,8 +249,8 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
                         <input
                             type="file"
                             ref={documentFileRef}
-                            style={{ display: 'none' }}
                             accept={Constants.app.importTypes}
+                            style={{ display: 'none' }}
                             multiple={true}
                             onChange={() => {
                                 void fileHandler.handleImport(selectedId, documentFileRef);
@@ -287,8 +286,8 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
                             : classes.textarea,
                     }}
                     className={classes.input}
-                    value={isDraggingOver ? 'Drop your files here' : input}
-                    onDrop={handleDrop}
+                    value={input}
+                    placeholder={isDraggingOver ? 'Drop files on screen' : undefined}
                     onFocus={() => {
                         // update the locally stored value to the current value
                         const chatInput = document.getElementById('chat-input');
@@ -354,7 +353,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
                                 onClick={() => {
                                     handleSubmit(input);
                                 }}
-                                disabled={chatState.disabled || isSpecializationDisabled()}
+                                disabled={chatState.disabled}
                             />
                         )}
                     </div>

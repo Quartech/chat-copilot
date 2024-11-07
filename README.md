@@ -41,7 +41,7 @@ You will need the following items to run the sample:
    > NOTE: Ensure that you have [PowerShell Core 6+](https://github.com/PowerShell/PowerShell) installed. This is different from the default PowerShell installed on Windows.
 1. Clone this repository
    ```powershell
-   git clone https://github.com/microsoft/chat-copilot
+   git clone https://github.com/Quartech/chat-copilot
    ```
 1. Setup your environment.
 
@@ -169,6 +169,10 @@ You will need the following items to run the sample:
      ```powershell
      ./start-backend.sh
      ```
+     
+## Configuring SharePoint Indexer
+
+To configure the SharePoint Indexer, I followed the documentation [here](https://learn.microsoft.com/en-us/azure/search/search-howto-index-sharepoint-online). You will have to read this document to get famiiar with everything thats happening with the sharepoint indexer. As per the tweaks I did to make ours work and our current configurations for the current indexer, I talk about it in detail in the section referenced [here](./sharepoint-indexer/README.md).
 
 ## (Optional) Run the [memory pipeline](./memorypipeline/README.md)
 
