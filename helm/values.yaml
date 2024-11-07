@@ -295,6 +295,11 @@ webapi:
         secretKeyRef:
           name: q-pilot-webapi-secret
           key: QAzureOpenAIChatConfig-OpenAIDeploymentConnections-1-ApiKey
+    - name: "QAzureOpenAIChatConfig__OpenAIDeploymentConnections__2__ApiKey"
+      valueFrom:
+        secretKeyRef:
+          name: q-pilot-webapi-secret
+          key: QAzureOpenAIChatConfig-OpenAIDeploymentConnections-2-ApiKey
     - name: "QAzureOpenAIChatConfig__AISearchDeploymentConnections__0__ApiKey"
       valueFrom:
         secretKeyRef:
@@ -305,6 +310,11 @@ webapi:
         secretKeyRef:
           name: q-pilot-webapi-secret
           key: QAzureOpenAIChatConfig-AISearchDeploymentConnections-1-ApiKey
+    - name: "QAzureOpenAIChatConfig__AISearchDeploymentConnections__2__ApiKey"
+      valueFrom:
+        secretKeyRef:
+          name: q-pilot-webapi-secret
+          key: QAzureOpenAIChatConfig-AISearchDeploymentConnections-2-ApiKey
     - name: "QAzureOpenAIChatConfig__BlobStorage__ConnectionString"
       valueFrom:
         secretKeyRef:
@@ -373,8 +383,10 @@ webapi:
         QAzureOpenAIChatConfig-BlobStorage-ConnectionString,
         QAzureOpenAIChatConfig-OpenAIDeploymentConnections-0-ApiKey,
         QAzureOpenAIChatConfig-OpenAIDeploymentConnections-1-ApiKey,
+        QAzureOpenAIChatConfig-OpenAIDeploymentConnections-2-ApiKey,
         QAzureOpenAIChatConfig-AISearchDeploymentConnections-0-ApiKey,
         QAzureOpenAIChatConfig-AISearchDeploymentConnections-1-ApiKey,
+        QAzureOpenAIChatConfig-AISearchDeploymentConnections-2-ApiKey,
         KernelMemory-Services-AzureVision-Key,
         KernelMemory-Services-AzureVision-Endpoint,
       ]
