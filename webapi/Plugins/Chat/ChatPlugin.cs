@@ -1035,9 +1035,10 @@ public class ChatPlugin
     /// </summary>
     private int GetCompletionTokenLimit()
     {
+        var deploymentName = this._qAzureOpenAIChatExtension.ExtractDeploymentName(this._qSpecialization?.Deployment);
         var deploymentConnection = this
             ._qAzureOpenAIChatExtension.GetAllChatCompletionDeployments()
-            .FirstOrDefault(w => w.Name == this._qSpecialization?.Deployment);
+            .FirstOrDefault(w => w.Name == deploymentName);
         return deploymentConnection == null
             ? this._promptOptions.CompletionTokenLimit
             : deploymentConnection.CompletionTokenLimit;
@@ -1121,12 +1122,12 @@ public class ChatPlugin
     {
         // Create the stream
         var provider = this._kernel.GetRequiredService<IServiceProvider>();
-        var deployment = this._qSpecialization?.Deployment;
-        var chatCompletion = provider.GetKeyedService<IChatCompletionService>(deployment);
+        var deploymentName = this._qAzureOpenAIChatExtension.ExtractDeploymentName(this._qSpecialization?.Deployment);
+        var chatCompletion = provider.GetKeyedService<IChatCompletionService>(deploymentName);
 
         if (chatCompletion == null)
         {
-            throw new InvalidOperationException($"ChatCompletionService for deployment '{deployment}' not found.");
+            throw new InvalidOperationException($"ChatCompletionService for deployment '{deploymentName}' not found.");
         }
         var stream = chatCompletion.GetStreamingChatMessageContentsAsync(
             prompt.MetaPromptTemplate,
