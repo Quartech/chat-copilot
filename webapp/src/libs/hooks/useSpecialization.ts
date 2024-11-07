@@ -147,6 +147,21 @@ export const useSpecialization = () => {
 
     const toggleSpecialization = async (id: string, isActive: boolean) => {
         try {
+            if (!isActive) {
+                const accessToken = await AuthHelper.getSKaaSAccessToken(instance, inProgress);
+                const existingSpecializations = await specializationService.getAllSpecializationsAsync(accessToken);
+                const targetSpecialization = existingSpecializations.find((spec) => spec.id === id);
+                if (targetSpecialization?.isDefault) {
+                    dispatch(
+                        addAlert({
+                            message:
+                                'Set another specialization as default to toggle this specialization off.',
+                            type: AlertType.Warning,
+                        }),
+                    );
+                    return; // Prevent the toggle
+                }
+            }
             const accessToken = await AuthHelper.getSKaaSAccessToken(instance, inProgress);
             await specializationService
                 .onOffSpecializationAsync(id, isActive, accessToken)
