@@ -15,37 +15,37 @@ public class QSpecializationBase
     /// Key of the specialization
     /// </summary>
     [JsonPropertyName("label")]
-    public string Label { get; set; } = string.Empty;
+    public string? Label { get; set; }
 
     /// <summary>
     /// Name of the specialization
     /// </summary>
     [JsonPropertyName("name")]
-    public string Name { get; set; } = string.Empty;
+    public string? Name { get; set; }
 
     /// <summary>
     /// Description of the specialization
     /// </summary>
     [JsonPropertyName("description")]
-    public string Description { get; set; } = string.Empty;
+    public string? Description { get; set; }
 
     /// <summary>
     /// RoleInformation of the specialization
     /// </summary>
     [JsonPropertyName("roleInformation")]
-    public string RoleInformation { get; set; } = string.Empty;
+    public string? RoleInformation { get; set; }
 
     /// <summary>
     /// List of group memberships for the user.
     /// </summary>
     [JsonPropertyName("groupMemberships")]
-    public IList<string> GroupMemberships { get; set; } = new List<string>();
+    public IList<string>? GroupMemberships { get; set; }
 
     /// <summary>
     /// IndexName of the specialization
     /// </summary>
     [JsonPropertyName("indexName")]
-    public string? IndexName { get; set; } = string.Empty;
+    public string? IndexName { get; set; }
 
     /// <summary>
     /// Enable/Disable flag of the specialization.
@@ -57,13 +57,13 @@ public class QSpecializationBase
     /// Deployment of the specialization
     /// </summary>
     [JsonPropertyName("deployment")]
-    public string? Deployment { get; set; } = string.Empty;
+    public string? Deployment { get; set; }
 
     /// <summary>
     /// Initial chat message that should be displayed to the client for this specialization.
     /// </summary>
     [JsonPropertyName("initialChatMessage")]
-    public string InitialChatMessage { get; set; } = string.Empty;
+    public string? InitialChatMessage { get; set; }
 
     /// <summary>
     /// Restrict Result Scope of the specialization
