@@ -5,7 +5,7 @@ import { IChatMessage } from '../../libs/models/ChatMessage';
  * Function to check if date is today.
  */
 export function isToday(date: Date) {
-    return new Date(date).setHours(0,0,0,0) === new Date().setHours(0,0,0,0);
+    return new Date(date).setHours(0, 0, 0, 0) === new Date().setHours(0, 0, 0, 0);
 }
 
 /*
