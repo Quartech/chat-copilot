@@ -63,11 +63,11 @@ public sealed class SemanticKernelProvider
                     {
 #pragma warning disable CA2000 // No need to dispose of HttpClient instances from IHttpClientFactory
                         builder.AddAzureOpenAIChatCompletion(
-                            deployment,
+                            deployment.Name,
                             connection.Endpoint?.ToString(),
                             connection.APIKey,
                             httpClient: httpClientFactory.CreateClient(),
-                            serviceId: deployment
+                            serviceId: deployment.Name
                         );
                     }
                 }

@@ -99,7 +99,7 @@ public class SpecializationController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public List<string> GetAllChatCompletionDeployments()
     {
-        return this._qAzureOpenAIChatExtension.GetAllChatCompletionDeployments();
+        return this._qAzureOpenAIChatExtension.GetAllChatCompletionDeployments().Select(deploy => deploy.Name).ToList();
     }
 
     /// <summary>
