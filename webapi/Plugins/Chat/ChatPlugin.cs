@@ -11,7 +11,6 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using Azure.AI.OpenAI;
 using CopilotChat.WebApi.Hubs;
 using CopilotChat.WebApi.Models.Response;
 using CopilotChat.WebApi.Models.Storage;
@@ -1135,13 +1134,16 @@ public class ChatPlugin
         {
             foreach (var citation in citations.ToList())
             {
-                citationsMap.Add(citation.Link, new CitationSource
-                {
-                    Link = citation.SourceName,
-                    SourceName = citation.SourceName,
-                    Snippet = citation.Snippet,
-                    SourceContentType = citation.SourceContentType
-                });
+                citationsMap.Add(
+                    citation.Link,
+                    new CitationSource
+                    {
+                        Link = citation.SourceName,
+                        SourceName = citation.SourceName,
+                        Snippet = citation.Snippet,
+                        SourceContentType = citation.SourceContentType,
+                    }
+                );
             }
         }
 
@@ -1163,7 +1165,12 @@ public class ChatPlugin
                 {
                     if (actx.AzureExtensionsContext?.Citations != null)
                     {
-                        foreach (var citation in actx.AzureExtensionsContext.Citations.Select((c, index) => new { Citation = c, Index = index }))
+                        // Load data source citations into the citation map, with part numbering for repeated sources.
+                        foreach (
+                            var citation in actx.AzureExtensionsContext.Citations.Select(
+                                (c, index) => new { Citation = c, Index = index }
+                            )
+                        )
                         {
                             var sourceName = citation.Citation.Filepath;
                             var link = citation.Citation.Filepath;
@@ -1174,25 +1181,33 @@ public class ChatPlugin
                             {
                                 sourceName = $"{sourceName} - Part {partNumber}";
                             }
-                            else if (actx.AzureExtensionsContext.Citations.Count(c => c.Filepath == citation.Citation.Filepath) > 1)
+                            else if (
+                                actx.AzureExtensionsContext.Citations.Count(c =>
+                                    c.Filepath == citation.Citation.Filepath
+                                ) > 1
+                            )
                             {
                                 sourceName = $"{sourceName} - Part 1";
                             }
 
-                            citationsMap.Add($"doc{citation.Index + 1}", new CitationSource
-                            {
-                                Link = link,
-                                SourceName = sourceName,
-                                Snippet = citation.Citation.Content,
-                                SourceContentType = CitationUtils.GetContentType(link),
-                            });
+                            citationsMap.Add(
+                                $"doc{citation.Index + 1}",
+                                new CitationSource
+                                {
+                                    Link = link,
+                                    SourceName = sourceName,
+                                    Snippet = citation.Citation.Content,
+                                    SourceContentType = CitationUtils.GetContentType(link),
+                                }
+                            );
                         }
                     }
                 }
 
-                // Filter citations to include only those referenced in the current content piece
-                var referencedCitations = new List<CitationSource>();
-
+                var referencedCitations = new HashSet<CitationSource>();
+                // Check for citations that are referenced in the bot response.
+                // [docX] for data source citations.
+                // [chatmemoryX] for uploaded citations.
                 var matches = citationRegex.Matches(accumulatedContent.ToString());
                 foreach (Match match in matches)
                 {

@@ -39,7 +39,7 @@ public static class CitationUtils
     /// </summary>
     /// <param name="map">The dictionary to update, passed by reference.</param>
     /// <param name="key">The source name or identifier to count.</param>
-    public static  void UpdateMapCount(ref Dictionary<string, int> map, string key)
+    public static void UpdateMapCount(ref Dictionary<string, int> map, string key)
     {
         if (map.TryGetValue(key, out int count))
         {
