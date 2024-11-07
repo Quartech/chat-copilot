@@ -78,21 +78,29 @@ export const SpecializationCardList: React.FC<SpecializationProps> = ({ speciali
 
     return (
         <>
-            <h1 className={classes.innertitle}>Choose Specialization</h1>
-            <Carousel
-                className={filteredSpecializations.length === 1 ? classes.carouselrootSingleItem : classes.carouselroot}
-                responsive={responsive}
-                showDots={true}
-                swipeable={true}
-                arrows={true}
-                dotListClass="custom-dot-list-style"
-            >
-                {filteredSpecializations.map((_specialization, index) => (
-                    <div key={index} className={classes.innercontainerclass}>
-                        <SpecializationCard key={_specialization.id} specialization={_specialization} />
-                    </div>
-                ))}
-            </Carousel>
+            {filteredSpecializations.length > 0 ? (
+                <>
+                    <h1 className={classes.innertitle}>Choose Specialization</h1>
+                    <Carousel
+                        className={
+                            filteredSpecializations.length === 1 ? classes.carouselrootSingleItem : classes.carouselroot
+                        }
+                        responsive={responsive}
+                        showDots={true}
+                        swipeable={true}
+                        arrows={true}
+                        dotListClass="custom-dot-list-style"
+                    >
+                        {filteredSpecializations.map((_specialization, index) => (
+                            <div key={index} className={classes.innercontainerclass}>
+                                <SpecializationCard key={_specialization.id} specialization={_specialization} />
+                            </div>
+                        ))}
+                    </Carousel>
+                </>
+            ) : (
+                <div>No specializations found. Please create one or contact your administrator.</div>
+            )}
         </>
     );
 };
