@@ -2,7 +2,7 @@ import { makeStyles, shorthands } from '@fluentui/react-components';
 import { FC } from 'react';
 import { useAppSelector } from '../../redux/app/hooks';
 import { RootState } from '../../redux/app/store';
-import { AdminWindow } from '../admin/specialization/SpecializationWindow';
+import { AdminWindow } from '../admin/AdminWindow';
 import { ChatWindow } from '../chat/ChatWindow';
 import { ChatType } from '../chat/chat-list/ChatType';
 import { SearchWindow } from '../search/SearchWindow';
