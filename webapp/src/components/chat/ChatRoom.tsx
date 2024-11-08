@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 import { makeStyles, shorthands, tokens } from '@fluentui/react-components';
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { SpecializationCardList } from '../../components/specialization/SpecializationCardList';
 import { getFriendlyChatName, GetResponseOptions, useChat } from '../../libs/hooks/useChat';
 import { ChatMessageType } from '../../libs/models/ChatMessage';
@@ -75,6 +75,23 @@ export const ChatRoom: React.FC = () => {
         setIsDraggingOver(false);
     };
     const { specializations } = useAppSelector((state: RootState) => state.admin);
+    const { activeUserInfo } = useAppSelector((state: RootState) => state.app);
+
+    // Memoize the filtered specializations based on the user's group memberships
+    const filteredSpecializations = useMemo(() => {
+        const filtered = specializations.filter((_specialization) => {
+            const hasMembership =
+                activeUserInfo?.groups.some((val) => _specialization.groupMemberships.includes(val)) ?? false;
+
+            // Check if the user has membership to the specialization group and the specialization is active
+            const canViewSpecialization =
+                ((hasMembership || _specialization.groupMemberships.length === 0) && _specialization.isActive) ||
+                _specialization.id == 'general';
+
+            return canViewSpecialization ? _specialization : undefined;
+        });
+        return [...filtered].sort((a, b) => a.order - b.order);
+    }, [activeUserInfo?.groups, specializations]);
 
     const [showSpecialization, setShowSpecialization] = useState(false);
     const [showSuggestions, setShowSuggestions] = useState(true);
@@ -163,7 +180,7 @@ export const ChatRoom: React.FC = () => {
             {showSpecialization && (
                 <div className={classes.carouselroot}>
                     <div className={classes.carouselwrapper}>
-                        <SpecializationCardList specializations={specializations} />
+                        <SpecializationCardList specializations={filteredSpecializations} />
                     </div>
                 </div>
             )}
@@ -180,7 +197,12 @@ export const ChatRoom: React.FC = () => {
                 </div>
             )}
             <div className={classes.input}>
-                <ChatInput isDraggingOver={isDraggingOver} onDragLeave={onDragLeave} onSubmit={handleSubmit} />
+                <ChatInput
+                    disabled={filteredSpecializations.length < 1}
+                    isDraggingOver={isDraggingOver}
+                    onDragLeave={onDragLeave}
+                    onSubmit={handleSubmit}
+                />
             </div>
         </div>
     );

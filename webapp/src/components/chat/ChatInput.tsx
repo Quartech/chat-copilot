@@ -12,6 +12,7 @@ import { AuthHelper } from '../../libs/auth/AuthHelper';
 import { useFile } from '../../libs/hooks';
 import { GetResponseOptions } from '../../libs/hooks/useChat';
 import { AlertType } from '../../libs/models/AlertType';
+import { BotResponseStatus } from '../../libs/models/BotResponseStatus';
 import { ChatMessageType } from '../../libs/models/ChatMessage';
 import { useAppDispatch, useAppSelector } from '../../redux/app/hooks';
 import { RootState } from '../../redux/app/store';
@@ -22,7 +23,6 @@ import { getErrorDetails } from '../utils/TextUtils';
 import { SpeechService } from './../../libs/services/SpeechService';
 import { updateUserIsTyping } from './../../redux/features/conversations/conversationsSlice';
 import { ChatStatus } from './ChatStatus';
-import { BotResponseStatus } from '../../libs/models/BotResponseStatus';
 
 const log = debug(Constants.debug.root).extend('chat-input');
 
@@ -88,6 +88,7 @@ const useClasses = makeStyles({
 });
 
 interface ChatInputProps {
+    disabled?: boolean;
     isDraggingOver?: boolean;
     onDragLeave: React.DragEventHandler<HTMLDivElement | HTMLTextAreaElement>;
     onSubmit: (options: GetResponseOptions) => Promise<void>;
@@ -101,7 +102,8 @@ interface ChatInputProps {
  * @param {(options: GetResponseOptions) => Promise<void>} onSubmit The function to call when the user submits a message
  * @returns {*} The chat input component
  */
-export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeave, onSubmit }) => {
+export const ChatInput: React.FC<ChatInputProps> = ({ disabled, isDraggingOver, onDragLeave, onSubmit }) => {
+    const inputDisabled = !!disabled;
     const classes = useClasses();
     const fileHandler = useFile();
     const dispatch = useAppDispatch();
@@ -259,6 +261,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
                         <Button
                             disabled={
                                 chatState.disabled ||
+                                inputDisabled ||
                                 (chatState.importingDocuments && chatState.importingDocuments.length > 0)
                             }
                             size="large"
@@ -279,7 +282,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
                     ref={textAreaRef}
                     id="chat-input"
                     resize="vertical"
-                    disabled={chatState.disabled}
+                    disabled={chatState.disabled || inputDisabled}
                     textarea={{
                         className: isDraggingOver
                             ? mergeClasses(classes.dragAndDrop, classes.textarea)
@@ -353,7 +356,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
                                 onClick={() => {
                                     handleSubmit(input);
                                 }}
-                                disabled={chatState.disabled}
+                                disabled={chatState.disabled || inputDisabled}
                             />
                         )}
                     </div>
