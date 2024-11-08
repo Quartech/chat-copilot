@@ -839,10 +839,9 @@ public class ChatPlugin
     /// </summary>
     private int GetCompletionTokenLimit()
     {
-        var deploymentName = this._qAzureOpenAIChatExtension.ExtractDeploymentName(this._qSpecialization?.Deployment);
         var deploymentConnection = this
             ._qAzureOpenAIChatExtension.GetAllChatCompletionDeployments()
-            .FirstOrDefault(w => w.Name == deploymentName);
+            .FirstOrDefault(w => w.Name == this._qSpecialization?.Deployment);
         return deploymentConnection == null
             ? this._promptOptions.CompletionTokenLimit
             : deploymentConnection.CompletionTokenLimit;
