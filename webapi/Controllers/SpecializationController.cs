@@ -70,7 +70,13 @@ public class SpecializationController : ControllerBase
 
         var specializationResponses = specializations.Select(s => new QSpecializationResponse(s));
 
-        return this.Ok(specializationResponses);
+        var orderedSpecializations = specializationResponses
+            .Select((spec, index) => (spec, index))
+            .OrderBy(x => x.spec.Order ?? x.index)
+            .Select(x => x.spec)
+            .ToList();
+
+        return this.Ok(orderedSpecializations);
     }
 
     /// <summary>
