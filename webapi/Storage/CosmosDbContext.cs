@@ -3,11 +3,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Net;
 using System.Threading.Tasks;
-using CopilotChat.WebApi.Extensions;
 using CopilotChat.WebApi.Models.Storage;
 using Microsoft.Azure.Cosmos;
+using Microsoft.Azure.Cosmos.Linq;
 
 namespace CopilotChat.WebApi.Storage;
 
@@ -50,11 +51,17 @@ public class CosmosDbContext<T> : IStorageContext<T>, IDisposable
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<T>> QueryEntitiesAsync(Func<T, bool> predicate)
+    public async Task<IEnumerable<T>> QueryEntitiesAsync(Expression<Func<T, bool>> predicate)
     {
-        return await Task.Run<IEnumerable<T>>(
-            () => this._container.GetItemLinqQueryable<T>(true).Where(predicate).AsEnumerable()
-        );
+        var results = new List<T>();
+        var queryable = this._container.GetItemLinqQueryable<T>(true).Where(predicate);
+        var iterator = queryable.ToFeedIterator();
+        while (iterator.HasMoreResults)
+        {
+            var response = await iterator.ReadNextAsync();
+            results.AddRange(response);
+        }
+        return results;
     }
 
     /// <inheritdoc/>
@@ -139,21 +146,29 @@ public class CosmosDbCopilotChatMessageContext : CosmosDbContext<CopilotChatMess
         : base(connectionString, database, container) { }
 
     /// <inheritdoc/>
-    public Task<IEnumerable<CopilotChatMessage>> QueryEntitiesAsync(
-        Func<CopilotChatMessage, bool> predicate,
+    public async Task<IEnumerable<CopilotChatMessage>> QueryEntitiesAsync(
+        Expression<Func<CopilotChatMessage, bool>> predicate,
         int skip,
         int count
     )
     {
-        return Task.Run<IEnumerable<CopilotChatMessage>>(
-            () =>
-                this
-                    ._container.GetItemLinqQueryable<CopilotChatMessage>(true)
-                    .Where(predicate)
-                    .OrderByDescending(m => m.Timestamp)
-                    .Skip(skip)
-                    .TakeOrAll(count)
-                    .AsEnumerable()
-        );
+        var results = new List<CopilotChatMessage>();
+        var queryable = this
+            ._container.GetItemLinqQueryable<CopilotChatMessage>(true)
+            .Where(predicate)
+            .OrderByDescending(m => m.Timestamp)
+            .Skip(skip);
+        if (count > 0)
+        {
+            queryable = queryable.Take(count);
+        }
+        var iterator = queryable.ToFeedIterator();
+        while (iterator.HasMoreResults)
+        {
+            var response = await iterator.ReadNextAsync();
+            results.AddRange(response);
+        }
+
+        return results;
     }
 }
