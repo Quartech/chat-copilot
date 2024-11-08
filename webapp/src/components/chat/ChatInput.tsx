@@ -12,6 +12,7 @@ import { AuthHelper } from '../../libs/auth/AuthHelper';
 import { useFile } from '../../libs/hooks';
 import { GetResponseOptions } from '../../libs/hooks/useChat';
 import { AlertType } from '../../libs/models/AlertType';
+import { BotResponseStatus } from '../../libs/models/BotResponseStatus';
 import { ChatMessageType } from '../../libs/models/ChatMessage';
 import { useAppDispatch, useAppSelector } from '../../redux/app/hooks';
 import { RootState } from '../../redux/app/store';
@@ -22,7 +23,6 @@ import { getErrorDetails } from '../utils/TextUtils';
 import { SpeechService } from './../../libs/services/SpeechService';
 import { updateUserIsTyping } from './../../redux/features/conversations/conversationsSlice';
 import { ChatStatus } from './ChatStatus';
-import { BotResponseStatus } from '../../libs/models/BotResponseStatus';
 
 const log = debug(Constants.debug.root).extend('chat-input');
 
@@ -298,7 +298,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
                     ref={textAreaRef}
                     id="chat-input"
                     resize="vertical"
-                    disabled={chatState.disabled}
+                    disabled={chatState.disabled || chatState.loadingMessages}
                     textarea={{
                         className: isDraggingOver
                             ? mergeClasses(classes.dragAndDrop, classes.textarea)
@@ -372,7 +372,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
                                 onClick={() => {
                                     handleSubmit(input);
                                 }}
-                                disabled={chatState.disabled || isSpecializationDisabled()}
+                                disabled={chatState.disabled || chatState.loadingMessages || isSpecializationDisabled()}
                             />
                         )}
                     </div>

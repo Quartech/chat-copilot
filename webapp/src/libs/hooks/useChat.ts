@@ -15,6 +15,7 @@ import {
     deleteConversation,
     editConversationLastUpdate,
     editConversationSpecialization,
+    setChatMessagesLoading,
     setConversations,
     updateBotResponseStatus,
 } from '../../redux/features/conversations/conversationsSlice';
@@ -103,6 +104,7 @@ export const useChat = () => {
             suggestions: [],
             createdOnServer: false,
             lastUpdatedTimestamp: new Date().getTime(),
+            loadingMessages: false,
         };
 
         dispatch(addConversation(newChat));
@@ -144,6 +146,7 @@ export const useChat = () => {
                     suggestions: [],
                     createdOnServer: true,
                     lastUpdatedTimestamp: new Date().getTime(),
+                    loadingMessages: false,
                 };
                 dispatch(addConversation(newChat));
                 return newChat.id;
@@ -306,6 +309,7 @@ export const useChat = () => {
                         createdOnServer: true,
                         suggestions: [],
                         lastUpdatedTimestamp: new Date(chatSession.lastUpdatedTimestamp ?? 0).getTime(),
+                        loadingMessages: false,
                     };
                 }
 
@@ -332,15 +336,19 @@ export const useChat = () => {
 
     const loadChatMessagesByChatId = async (chatId: string) => {
         const accessToken = await AuthHelper.getSKaaSAccessToken(instance, inProgress);
+        dispatch(setChatMessagesLoading({ id: chatId, isLoading: true }));
         const participantsMessagesPromises = Promise.all([
             chatService.getAllChatParticipantsAsync(chatId, accessToken),
             chatService.getChatMessagesAsync(chatId, 0, 100, accessToken),
         ]);
         const [chatUsers, chatMessages] = await participantsMessagesPromises;
-        const conversation = Object.assign({}, conversations[chatId]);
-        conversation.users = chatUsers;
-        conversation.messages = chatMessages;
-        dispatch(addConversation(conversation));
+        if (Object.keys(conversations).includes(chatId)) {
+            const conversation = Object.assign({}, conversations[chatId]);
+            conversation.users = chatUsers;
+            conversation.messages = chatMessages;
+            conversation.loadingMessages = false;
+            dispatch(addConversation(conversation));
+        }
     };
 
     const downloadBot = async (chatId: string) => {
@@ -377,6 +385,7 @@ export const useChat = () => {
                     specializationId: chatSession.specializationId,
                     createdOnServer: true,
                     suggestions: [],
+                    loadingMessages: false,
                 };
 
                 dispatch(addConversation(newChat));
@@ -498,6 +507,7 @@ export const useChat = () => {
                     specializationId: result.specializationId,
                     createdOnServer: true,
                     suggestions: [],
+                    loadingMessages: false,
                 };
 
                 dispatch(addConversation(newChat));
