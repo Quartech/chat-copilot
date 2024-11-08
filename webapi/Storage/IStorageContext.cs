@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using CopilotChat.WebApi.Models.Storage;
 
@@ -17,7 +18,7 @@ public interface IStorageContext<T>
     /// Query entities in the storage context.
     /// <param name="predicate">Predicate that needs to evaluate to true for a particular entryto be returned.</param>
     /// </summary>
-    Task<IEnumerable<T>> QueryEntitiesAsync(Func<T, bool> predicate);
+    Task<IEnumerable<T>> QueryEntitiesAsync(Expression<Func<T, bool>> predicate);
 
     /// <summary>
     /// Read an entity from the storage context by id.
@@ -59,7 +60,7 @@ public interface ICopilotChatMessageStorageContext : IStorageContext<CopilotChat
     /// <param name="count">The number of messages to return. -1 returns all messages.</param>
     /// <returns>A list of ChatMessages matching the given chatId sorted from most recent to oldest.</returns>
     Task<IEnumerable<CopilotChatMessage>> QueryEntitiesAsync(
-        Func<CopilotChatMessage, bool> predicate,
+        Expression<Func<CopilotChatMessage, bool>> predicate,
         int skip = 0,
         int count = -1
     );

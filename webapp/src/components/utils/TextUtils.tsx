@@ -94,7 +94,7 @@ export function replaceCitationLinksWithIndices(formattedMessageContent: string,
 }
 
 export function replaceBracketStyleCitationsWithCaret(formattedMessageContent: string) {
-    const docX = /\[(doc\d+)\](,)?/gm;
+    const docX = /\[(doc\d+|chatmemory[^\]]*)\](,)?/gm;
     const citationIndexMap: Record<string, number> = {};
     return formattedMessageContent.replace(docX, (_match, p1: string) => {
         if (!citationIndexMap[p1]) {

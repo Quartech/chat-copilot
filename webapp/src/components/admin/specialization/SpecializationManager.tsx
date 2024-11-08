@@ -22,6 +22,10 @@ import { useSpecialization } from '../../../libs/hooks';
 import { useAppSelector } from '../../../redux/app/hooks';
 import { RootState } from '../../../redux/app/store';
 import { ImageUploaderPreview } from '../../files/ImageUploaderPreview';
+import { useAppDispatch } from '../../../redux/app/hooks';
+import { addAlert } from '../../../redux/features/app/appSlice';
+import { AlertType } from '../../../libs/models/AlertType';
+import { ConfirmationDialog } from '../../shared/ConfirmationDialog';
 
 interface ISpecializationFile {
     file: File | null;
@@ -101,13 +105,13 @@ const Rows = 8;
 export const SpecializationManager: React.FC = () => {
     const classes = useClasses();
     const specialization = useSpecialization();
-
+    const dispatch = useAppDispatch();
     const { specializations, specializationIndexes, chatCompletionDeployments, selectedId } = useAppSelector(
         (state: RootState) => state.admin,
     );
 
     const [editMode, setEditMode] = useState(false);
-
+    const defaultSpecializationId = specializations.find((spec) => spec.isDefault)?.id;
     const [id, setId] = useState('');
     const [label, setLabel] = useState('');
     const [name, setName] = useState('');
@@ -120,6 +124,8 @@ export const SpecializationManager: React.FC = () => {
     const [imageFile, setImageFile] = useState<ISpecializationFile>({ file: null, src: null });
     const [iconFile, setIconFile] = useState<ISpecializationFile>({ file: null, src: null });
     const [restrictResultScope, setRestrictResultScope] = useState<boolean | null>(false);
+    const [isDefault, setIsDefault] = useState<boolean>(false);
+    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [strictness, setStrictness] = useState<number | null>(0);
     const [documentCount, setDocumentCount] = useState<number | null>(0);
     const [pastMessagesIncludedCount, setPastMessagesIncludedCount] = useState<number | null>(0);
@@ -154,6 +160,7 @@ export const SpecializationManager: React.FC = () => {
                 deployment,
                 groupMemberships: membershipId,
                 initialChatMessage,
+                isDefault,
                 restrictResultScope,
                 strictness,
                 documentCount,
@@ -173,6 +180,7 @@ export const SpecializationManager: React.FC = () => {
                 deployment,
                 groupMemberships: membershipId,
                 initialChatMessage,
+                isDefault,
                 restrictResultScope,
                 strictness,
                 documentCount,
@@ -195,6 +203,7 @@ export const SpecializationManager: React.FC = () => {
         setIndexName('');
         setDeployment('');
         setInitialChatMessage('');
+        setIsDefault(false);
         setRestrictResultScope(false);
         setStrictness(3);
         setDocumentCount(5);
@@ -216,6 +225,7 @@ export const SpecializationManager: React.FC = () => {
                 setDeployment(specializationObj.deployment);
                 setInitialChatMessage(specializationObj.initialChatMessage);
                 setIndexName(specializationObj.indexName);
+                setIsDefault(specializationObj.isDefault);
                 setRestrictResultScope(specializationObj.restrictResultScope ?? false);
                 setStrictness(specializationObj.strictness ?? 3);
                 setDocumentCount(specializationObj.documentCount ?? 5);
@@ -237,14 +247,45 @@ export const SpecializationManager: React.FC = () => {
 
     useEffect(() => {
         const isValid =
-            !!label && !!name && !!roleInformation && !!description && !!initialChatMessage && membershipId.length > 0;
+            !!label &&
+            !!name &&
+            !!roleInformation &&
+            !!description &&
+            !!initialChatMessage &&
+            membershipId.length > 0 &&
+            !!deployment;
         setIsValid(isValid);
         return () => {};
-    }, [specializations, selectedId, label, name, roleInformation, membershipId, description, initialChatMessage]);
+    }, [
+        specializations,
+        selectedId,
+        label,
+        name,
+        roleInformation,
+        membershipId,
+        description,
+        initialChatMessage,
+        deployment,
+    ]);
 
     const onDeleteSpecialization = () => {
+        setIsDeleteDialogOpen(true);
+    };
+
+    const confirmDelete = () => {
+        if (isDefault && specializations.length > 1) {
+            dispatch(
+                addAlert({
+                    message: 'Please set another specialization as default before deleting this one.',
+                    type: AlertType.Warning,
+                }),
+            );
+            setIsDeleteDialogOpen(false);
+            return;
+        }
         void specialization.deleteSpecialization(id, name);
         resetSpecialization();
+        setIsDeleteDialogOpen(false);
     };
 
     /**
@@ -259,6 +300,43 @@ export const SpecializationManager: React.FC = () => {
      */
     const onChangeRestrictResultScope = (_event?: React.ChangeEvent<HTMLInputElement>, data?: CheckboxOnChangeData) => {
         setRestrictResultScope(!!data?.checked);
+    };
+
+    /**
+     * Automatically set the first specialization as default
+     */
+    useEffect(() => {
+        if (specializations.length === 0) {
+            setIsDefault(true);
+        }
+    }, [specializations]);
+
+    /**
+     * Callback function for handling changes to the "Set as Default Specialization" checkbox.
+     */
+    const onChangeIsDefault = (_event?: React.ChangeEvent<HTMLInputElement>, data?: CheckboxOnChangeData) => {
+        const isCurrentlyDefault = id === defaultSpecializationId;
+        if ((isCurrentlyDefault && !data?.checked) || specializations.length === 0) {
+            dispatch(
+                addAlert({
+                    message: 'Having a default specialization is a requirement.',
+                    type: AlertType.Warning,
+                }),
+            );
+            return;
+        }
+
+        if (!isCurrentlyDefault && data?.checked) {
+            dispatch(
+                addAlert({
+                    message: `You are trying to set ${name} as the default specialization.`,
+                    type: AlertType.Info,
+                }),
+            );
+            setIsDefault(true);
+        } else if (!isCurrentlyDefault && !data?.checked) {
+            setIsDefault(false);
+        }
     };
 
     /**
@@ -360,7 +438,9 @@ export const SpecializationManager: React.FC = () => {
                         setLabel(data.value);
                     }}
                 />
-                <label htmlFor="deployment">Deployment</label>
+                <label htmlFor="deployment">
+                    Deployment<span className={classes.required}>*</span>
+                </label>
                 <Dropdown
                     clearable
                     id="deployment"
@@ -383,6 +463,18 @@ export const SpecializationManager: React.FC = () => {
                         <Option key={specializationIndex}>{specializationIndex}</Option>
                     ))}
                 </Dropdown>
+                <Checkbox label="Set as Default Specialization" checked={isDefault} onChange={onChangeIsDefault} />
+                <ConfirmationDialog
+                    open={isDeleteDialogOpen}
+                    title="Delete Specialization"
+                    content={`Are you sure you want to delete the ${name} specialization?`}
+                    confirmLabel="Delete"
+                    cancelLabel="Cancel"
+                    onConfirm={confirmDelete}
+                    onCancel={() => {
+                        setIsDeleteDialogOpen(false);
+                    }}
+                />
                 {hasEnrichmentIndex && (
                     <>
                         <div>

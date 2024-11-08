@@ -66,6 +66,12 @@ public class QSpecializationBase
     public string? InitialChatMessage { get; set; }
 
     /// <summary>
+    /// Is Default flag of the specialization
+    /// </summary>
+    [JsonPropertyName("isDefault")]
+    public bool? IsDefault { get; set; }
+
+    /// <summary>
     /// Restrict Result Scope of the specialization
     /// </summary>
     [JsonPropertyName("restrictResultScope")]
