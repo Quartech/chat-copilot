@@ -102,7 +102,7 @@ export const DocumentsTab: React.FC = () => {
     const globalDocumentFileRef = useRef<HTMLInputElement | null>(null);
 
     React.useEffect(() => {
-        if (!conversations[selectedId].disabled) {
+        if (!conversations[selectedId].disabled && conversations[selectedId].createdOnServer) {
             const importingResources = importingDocuments
                 ? importingDocuments.map((document, index) => {
                       return {
@@ -121,6 +121,8 @@ export const DocumentsTab: React.FC = () => {
             void chat.getChatMemorySources(selectedId).then((sources) => {
                 setResources([...importingResources, ...sources]);
             });
+        } else {
+            setResources([]);
         }
         // We don't want to have chat as one of the dependencies as it will cause infinite loop.
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -169,6 +171,7 @@ export const DocumentsTab: React.FC = () => {
                                 icon={<DocumentArrowUp20Regular />}
                                 disabled={
                                     conversations[selectedId].disabled ||
+                                    !conversations[selectedId].createdOnServer ||
                                     (importingDocuments && importingDocuments.length > 0)
                                 }
                             >
