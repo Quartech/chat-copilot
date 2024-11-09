@@ -11,6 +11,7 @@ import {
 import React from 'react';
 
 import { SpecializationManager } from './specialization/SpecializationManager';
+import { UserFeedbackManager } from './user-feedback/UserFeedbackManager';
 
 enum AdminWindowTabEnum {
     SPECIALIZATION = 'SPECIALIZATION',
@@ -78,7 +79,7 @@ export const AdminWindow: React.FC = () => {
                 </div>
             </div>
             {selectedTab === AdminWindowTabEnum.SPECIALIZATION && <SpecializationManager />}
-            {selectedTab === AdminWindowTabEnum.USERFEEDBACK && <></>}
+            {selectedTab === AdminWindowTabEnum.USERFEEDBACK && <UserFeedbackManager />}
         </div>
     );
 };
