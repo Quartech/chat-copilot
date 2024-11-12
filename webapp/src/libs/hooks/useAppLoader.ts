@@ -150,9 +150,9 @@ export const useAppLoader = (): [AppState, Dispatch<SetStateAction<AppState>>] =
     const loadInitialChat = async () => {
         const firstConvo = maxBy(Object.values(conversations), (chatState) => chatState.lastUpdatedTimestamp ?? 0);
         if (firstConvo?.createdOnServer) {
+            dispatch(setSelectedConversation(firstConvo.id));
             try {
                 await chat.loadChatMessagesByChatId(firstConvo.id);
-                dispatch(setSelectedConversation(firstConvo.id));
             } catch (err) {
                 console.log((err as Error).message);
                 setAppState(AppState.ErrorLoadingChats);
