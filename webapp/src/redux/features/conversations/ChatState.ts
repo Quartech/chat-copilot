@@ -24,4 +24,5 @@ export interface ChatState {
     specializationId?: string;
     createdOnServer: boolean; //Flag used to check whether this piece of state has been persisted to the server store yet or not
     suggestions: string[];
+    loadingMessages: boolean;
 }
