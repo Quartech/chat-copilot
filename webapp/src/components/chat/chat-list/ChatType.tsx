@@ -14,7 +14,7 @@ import { AuthHelper } from '../../../libs/auth/AuthHelper';
 import { SpecializationIndexService } from '../../../libs/services/SpecializationIndexService';
 import { useAppDispatch, useAppSelector } from '../../../redux/app/hooks';
 import { RootState } from '../../../redux/app/store';
-import { setAdminSelected } from '../../../redux/features/admin/adminSlice';
+import { setAdminSelected, setIndexSelected } from '../../../redux/features/admin/adminSlice';
 import { setSearchSelected } from '../../../redux/features/search/searchSlice';
 import { Breakpoints } from '../../../styles';
 import { SpecializationList } from '../../admin/specialization/specialization-list/SpecializationList';
@@ -62,12 +62,19 @@ export const ChatType: FC = () => {
                 dispatch(setSearchSelected({ selected: true, specializationId: '' }));
             }
             dispatch(setAdminSelected(false));
+            dispatch(setIndexSelected(false));
         } else if (selectedTab === 'admin') {
             dispatch(setAdminSelected(true));
             dispatch(setSearchSelected({ selected: false, specializationId: '' }));
+            dispatch(setIndexSelected(false));
+        } else if (selectedTab == 'index') {
+            dispatch(setSearchSelected({ selected: false, specializationId: '' }));
+            dispatch(setAdminSelected(false));
+            dispatch(setIndexSelected(true));
         } else {
             dispatch(setSearchSelected({ selected: false, specializationId: '' }));
             dispatch(setAdminSelected(false));
+            dispatch(setIndexSelected(false));
         }
     }, [selectedTab, conversations, selectedId, dispatch]);
 

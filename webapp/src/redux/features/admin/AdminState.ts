@@ -4,6 +4,7 @@ export type Specializations = Record<string, AdminState>;
 
 export interface AdminState {
     isAdminSelected: boolean;
+    isIndexSelected: boolean;
     chatSpecialization: ISpecialization | undefined;
     specializations: ISpecialization[];
     specializationIndexes: string[];
@@ -36,6 +37,7 @@ export const Specializations = [
 ];
 export const initialState: AdminState = {
     isAdminSelected: false,
+    isIndexSelected: false,
     chatSpecialization: undefined,
     specializations: Specializations,
     specializationIndexes: [],
