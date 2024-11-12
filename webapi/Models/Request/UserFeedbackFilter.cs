@@ -16,5 +16,5 @@ public enum UserFeedbackSortOptions
 {
     DateAsc,
     DateDesc,
-    FeedbackPosNeg
+    FeedbackPosNeg,
 }

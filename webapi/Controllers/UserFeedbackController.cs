@@ -1,4 +1,7 @@
-﻿using CopilotChat.WebApi.Models.Request;
+﻿using System.Threading.Tasks;
+using CopilotChat.WebApi.Models.Request;
+using CopilotChat.WebApi.Services;
+using CopilotChat.WebApi.Storage;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
@@ -8,17 +11,20 @@ namespace CopilotChat.WebApi.Controllers;
 public class UserFeedbackController : ControllerBase
 {
     private readonly ILogger<UserFeedbackController> _logger;
+    private readonly UserFeedbackService _userFeedbackService;
 
-    public UserFeedbackController(ILogger<UserFeedbackController> logger)
+    public UserFeedbackController(ILogger<UserFeedbackController> logger, ChatMessageRepository messageRepository)
     {
         this._logger = logger;
+        this._userFeedbackService = new UserFeedbackService(messageRepository);
     }
 
     [HttpPost]
     [Route("userfeedback/search")]
-    public IActionResult SearchUserFeedback([FromBody] UserFeedbackFilter filter)
+    public async Task<IActionResult> SearchUserFeedback([FromBody] UserFeedbackFilter filter)
     {
-        // Implementation to fetch feedback based on filter
-        return this.Ok(/* Feedback results */);
+        var chatMessages = await this._userFeedbackService.Search(filter);
+
+        return this.Ok(chatMessages);
     }
 }
