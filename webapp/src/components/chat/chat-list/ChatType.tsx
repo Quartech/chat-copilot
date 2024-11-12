@@ -1,4 +1,6 @@
+import { useMsal } from '@azure/msal-react';
 import {
+    Button,
     makeStyles,
     SelectTabEventHandler,
     shorthands,
@@ -8,6 +10,8 @@ import {
     tokens,
 } from '@fluentui/react-components';
 import React, { FC, useEffect, useState } from 'react';
+import { AuthHelper } from '../../../libs/auth/AuthHelper';
+import { SpecializationIndexService } from '../../../libs/services/SpecializationIndexService';
 import { useAppDispatch, useAppSelector } from '../../../redux/app/hooks';
 import { RootState } from '../../../redux/app/store';
 import { setAdminSelected } from '../../../redux/features/admin/adminSlice';
@@ -34,6 +38,7 @@ const useClasses = makeStyles({
 export const ChatType: FC = () => {
     const classes = useClasses();
     const dispatch = useAppDispatch();
+    const { instance, inProgress } = useMsal();
     const { conversations, selectedId } = useAppSelector((state: RootState) => state.conversations);
     const activeUserInfo = useAppSelector((state: RootState) => state.app.activeUserInfo);
     const [selectedTab, setSelectedTab] = React.useState<TabValue>('chat');
@@ -85,10 +90,43 @@ export const ChatType: FC = () => {
                 >
                     Admin
                 </Tab>
+                <Tab
+                    disabled={!hasAdmin}
+                    data-testid="indexTab"
+                    id="index"
+                    value="index"
+                    aria-label="index Tab"
+                    title="Index Tab"
+                >
+                    Indexes
+                </Tab>
             </TabList>
             {selectedTab === 'chat' && <ChatList />}
             {selectedTab === 'search' && <SearchList />}
             {selectedTab === 'admin' && <SpecializationList />}
+            {selectedTab === 'index' && (
+                <Button
+                    onClick={() => {
+                        AuthHelper.getSKaaSAccessToken(instance, inProgress)
+                            .then((token) => {
+                                const service = new SpecializationIndexService();
+                                service
+                                    .getAllSpecializationIndexesAsync(token)
+                                    .then((result) => {
+                                        console.log(result);
+                                    })
+                                    .catch((e) => {
+                                        console.error(e);
+                                    });
+                            })
+                            .catch((e) => {
+                                console.error(e);
+                            });
+                    }}
+                >
+                    Get Indexes
+                </Button>
+            )}
         </div>
     );
 };
