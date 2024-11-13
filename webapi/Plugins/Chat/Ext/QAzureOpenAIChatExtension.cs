@@ -213,20 +213,6 @@ public class QAzureOpenAIChatExtension
     }
 
     /// <summary>
-    /// Extracts the deployment name from a deployment string that may include connection information
-    /// </summary>
-    /// <param name="deploymentWithConnection">Deployment string in format "deployment (connection)"</param>
-    /// <returns>Just the deployment name</returns>
-    public string ExtractDeploymentName(string? deploymentWithConnection)
-    {
-        if (string.IsNullOrEmpty(deploymentWithConnection))
-        {
-            return string.Empty;
-        }
-        return deploymentWithConnection.Split('(')[0].Trim();
-    }
-
-    /// <summary>
     /// Get the default chat completion deployment.
     /// </summary>
 #pragma warning disable CA1024

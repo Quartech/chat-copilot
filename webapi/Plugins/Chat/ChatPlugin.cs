@@ -925,12 +925,13 @@ public class ChatPlugin
     {
         // Create the stream
         var provider = this._kernel.GetRequiredService<IServiceProvider>();
-        var deploymentName = this._qAzureOpenAIChatExtension.ExtractDeploymentName(this._qSpecialization?.Deployment);
-        var chatCompletion = provider.GetKeyedService<IChatCompletionService>(deploymentName);
+        var chatCompletion = provider.GetKeyedService<IChatCompletionService>(this._qSpecialization?.Deployment);
 
         if (chatCompletion == null)
         {
-            throw new InvalidOperationException($"ChatCompletionService for deployment '{deploymentName}' not found.");
+            throw new InvalidOperationException(
+                $"ChatCompletionService for deployment '{this._qSpecialization?.Deployment}' not found."
+            );
         }
 
         var stream = chatCompletion.GetStreamingChatMessageContentsAsync(
