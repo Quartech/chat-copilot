@@ -128,8 +128,9 @@ export const DocumentsTab: React.FC = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [importingDocuments, selectedId]);
 
-    const handleDeleteResource = (sourceId: string) => {
-        void fileHandler.deleteFile(sourceId).then(() => {
+    const handleDeleteResource = (sourceId: string, chatId: string) => {
+        const deleteFromGlobal = chatId === Constants.EMPTY_GUID;
+        void fileHandler.deleteFile(sourceId, chatId, deleteFromGlobal).then(() => {
             setResources((resources) => resources.filter((resource) => resource.id !== sourceId));
         });
     };
@@ -242,7 +243,7 @@ export const DocumentsTab: React.FC = () => {
     );
 };
 
-function useTable(resources: ChatMemorySource[], onDeleteResource: (sourceId: string) => void) {
+function useTable(resources: ChatMemorySource[], onDeleteResource: (sourceId: string, chatId: string) => void) {
     const headerSortProps = (columnId: TableColumnId): TableHeaderCellProps => ({
         onClick: (e: React.MouseEvent) => {
             toggleColumnSort(e, columnId);
@@ -357,7 +358,7 @@ function useTable(resources: ChatMemorySource[], onDeleteResource: (sourceId: st
                 <TableCell key={`${item.id}-delete`}>
                     <Button
                         onClick={() => {
-                            onDeleteResource(item.id);
+                            onDeleteResource(item.id, item.chatId);
                         }}
                         icon={<DeleteRegular />}
                     ></Button>
