@@ -5,7 +5,7 @@ import { IChatMessage } from '../../libs/models/ChatMessage';
  * Function to check if date is today.
  */
 export function isToday(date: Date) {
-    return date.toDateString() !== new Date().toDateString();
+    return new Date(date).setHours(0, 0, 0, 0) === new Date().setHours(0, 0, 0, 0);
 }
 
 /*
@@ -94,7 +94,7 @@ export function replaceCitationLinksWithIndices(formattedMessageContent: string,
 }
 
 export function replaceBracketStyleCitationsWithCaret(formattedMessageContent: string) {
-    const docX = /\[(doc\d+)\](,)?/gm;
+    const docX = /\[(doc\d+|chatmemory[^\]]*)\](,)?/gm;
     const citationIndexMap: Record<string, number> = {};
     return formattedMessageContent.replace(docX, (_match, p1: string) => {
         if (!citationIndexMap[p1]) {

@@ -70,7 +70,13 @@ public class SpecializationController : ControllerBase
 
         var specializationResponses = specializations.Select(s => new QSpecializationResponse(s));
 
-        return this.Ok(specializationResponses);
+        var orderedSpecializations = specializationResponses
+            .Select((spec, index) => (spec, index))
+            .OrderBy(x => x.spec.Order ?? x.index)
+            .Select(x => x.spec)
+            .ToList();
+
+        return this.Ok(orderedSpecializations);
     }
 
     /// <summary>
@@ -99,7 +105,7 @@ public class SpecializationController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public List<string> GetAllChatCompletionDeployments()
     {
-        return this._qAzureOpenAIChatExtension.GetAllChatCompletionDeployments();
+        return this._qAzureOpenAIChatExtension.GetAllChatCompletionDeployments().Select(deploy => deploy.Name).ToList();
     }
 
     /// <summary>

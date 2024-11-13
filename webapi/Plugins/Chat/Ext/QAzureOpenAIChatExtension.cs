@@ -192,16 +192,16 @@ public class QAzureOpenAIChatExtension
     /// <summary>
     /// Retrieve all chat completion deployments from the available OpenAI deployment connections.
     /// </summary>
-    public List<string> GetAllChatCompletionDeployments()
+    public List<QAzureOpenAIChatOptions.ChatCompletionDeployment> GetAllChatCompletionDeployments()
     {
-        var chatCompletionDeployments = new List<string>();
+        var chatCompletionDeployments = new List<QAzureOpenAIChatOptions.ChatCompletionDeployment>();
         foreach (
             QAzureOpenAIChatOptions.OpenAIDeploymentConnection connection in this._qAzureOpenAIChatOptions.OpenAIDeploymentConnections
         )
         {
             foreach (var deployment in connection.ChatCompletionDeployments)
             {
-                chatCompletionDeployments.Add($"{deployment}");
+                chatCompletionDeployments.Add(deployment);
             }
         }
         return chatCompletionDeployments;

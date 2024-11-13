@@ -128,14 +128,17 @@ export const ChatListItem: FC<IChatListItemProps> = ({
                 dispatch(setChatSpecialization(foundSpecialization));
             }
         }
-        if (conversations[id].createdOnServer && conversations[id].messages.length < 1) {
+        dispatch(setSelectedConversation(id));
+        if (
+            conversations[id].createdOnServer &&
+            conversations[id].messages.length < 1 &&
+            !conversations[id].loadingMessages
+        ) {
             chat.loadChatMessagesByChatId(id).catch((e: Error) => {
                 dispatch(
                     addAlert({ message: `Could not retrieve chat messages. ${e.message}`, type: AlertType.Error }),
                 );
             });
-        } else {
-            dispatch(setSelectedConversation(id));
         }
     };
 

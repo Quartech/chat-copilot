@@ -15,6 +15,7 @@ import {
     ConversationTitleChange,
     ConversationUpdateTimestampChange,
     initialState,
+    MessageLoadingStatusChange,
     UpdatePluginStatePayload,
 } from './ConversationsState';
 
@@ -81,7 +82,7 @@ export const conversationsSlice = createSlice({
         addConversation: (state: ConversationsState, action: PayloadAction<ChatState>) => {
             const newId = action.payload.id;
             state.conversations = { ...state.conversations, [newId]: action.payload };
-            state.selectedId = newId;
+            // state.selectedId = newId;
         },
         addUserToConversation: (
             state: ConversationsState,
@@ -239,6 +240,9 @@ export const conversationsSlice = createSlice({
         updateSuggestions: (state: ConversationsState, action: PayloadAction<ConversationSuggestionsChange>) => {
             setConversationSuggestions(state, action.payload.id, action.payload.chatSuggestionMessage);
         },
+        setChatMessagesLoading: (state: ConversationsState, action: PayloadAction<MessageLoadingStatusChange>) => {
+            state.conversations[action.payload.id].loadingMessages = action.payload.isLoading;
+        },
     },
 });
 
@@ -333,6 +337,7 @@ export const {
     updateSuggestions,
     deleteConversationHistory,
     editConversationLastUpdate,
+    setChatMessagesLoading,
 } = conversationsSlice.actions;
 
 export default conversationsSlice.reducer;
