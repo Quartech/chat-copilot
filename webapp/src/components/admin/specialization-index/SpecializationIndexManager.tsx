@@ -1,6 +1,9 @@
 import { Button, Input, makeStyles, shorthands, tokens } from '@fluentui/react-components';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useSpecializationIndex } from '../../../libs/hooks/useSpecializationIndex';
+import { ISpecializationIndex } from '../../../libs/models/SpecializationIndex';
+import { useAppSelector } from '../../../redux/app/hooks';
+import { RootState } from '../../../redux/app/store';
 
 const useClasses = makeStyles({
     root: {
@@ -76,22 +79,56 @@ const useClasses = makeStyles({
 export const SpecializationIndexManager: React.FC = () => {
     const classes = useClasses();
     const indexes = useSpecializationIndex();
+    const { selectedIndexId, specializationIndexes } = useAppSelector((state: RootState) => state.admin);
     const [name, setName] = useState('');
     const [queryType, setQueryType] = useState('');
     const [aiSearchDeploymentConnection, setAiSearchDeploymentConnection] = useState('');
     const [openAIDeploymentConnection, setOpenAIDeploymentConnection] = useState('');
     const [embeddingDeployment, setEmbeddingDeployment] = useState('');
+    const [editMode, setEditMode] = useState(false);
 
-    const onSaveSpecializationIndex = (): void => {
-        void indexes.saveSpecialization({
-            id: '',
-            name,
-            queryType,
-            aiSearchDeploymentConnection,
-            openAIDeploymentConnection,
-            embeddingDeployment,
-        });
+    const onSaveSpecializationIndex = (editMode: boolean): void => {
+        if (editMode) {
+            console.log('Update not implemented!');
+        } else {
+            void indexes.saveSpecializationIndex({
+                id: '',
+                name,
+                queryType,
+                aiSearchDeploymentConnection,
+                openAIDeploymentConnection,
+                embeddingDeployment,
+            });
+        }
     };
+
+    const fillState = (index: ISpecializationIndex) => {
+        setName(index.name);
+        setQueryType(index.queryType);
+        setAiSearchDeploymentConnection(index.aiSearchDeploymentConnection);
+        setOpenAIDeploymentConnection(index.openAIDeploymentConnection);
+        setEmbeddingDeployment(index.embeddingDeployment);
+    };
+
+    useEffect(() => {
+        if (selectedIndexId != '') {
+            setEditMode(true);
+            const specializationIndex = specializationIndexes.find((a) => a.id === selectedIndexId);
+            if (specializationIndex) {
+                fillState(specializationIndex);
+            }
+        } else {
+            setEditMode(false);
+            fillState({
+                name: '',
+                id: '',
+                queryType: '',
+                aiSearchDeploymentConnection: '',
+                openAIDeploymentConnection: '',
+                embeddingDeployment: '',
+            });
+        }
+    }, [editMode, selectedIndexId, specializationIndexes]);
 
     return (
         <div className={classes.scrollableContainer}>
@@ -145,7 +182,12 @@ export const SpecializationIndexManager: React.FC = () => {
                 <div className={classes.controls}>
                     <Button appearance="secondary">Delete</Button>
 
-                    <Button appearance="primary" onClick={onSaveSpecializationIndex}>
+                    <Button
+                        appearance="primary"
+                        onClick={() => {
+                            onSaveSpecializationIndex(editMode);
+                        }}
+                    >
                         Save
                     </Button>
                 </div>

@@ -1,7 +1,9 @@
 import { useMsal } from '@azure/msal-react';
 import { useAppDispatch } from '../../redux/app/hooks';
-import { setSpecializationIndexes } from '../../redux/features/admin/adminSlice';
+import { addSpecializationIndex, setSpecializationIndexes } from '../../redux/features/admin/adminSlice';
+import { addAlert } from '../../redux/features/app/appSlice';
 import { AuthHelper } from '../auth/AuthHelper';
+import { AlertType } from '../models/AlertType';
 import { ISpecializationIndex } from '../models/SpecializationIndex';
 import { SpecializationIndexService } from '../services/SpecializationIndexService';
 
@@ -21,11 +23,13 @@ export const useSpecializationIndex = () => {
         }
     };
 
-    const saveSpecialization = async (body: ISpecializationIndex): Promise<ISpecializationIndex | undefined> => {
+    const saveSpecializationIndex = async (body: ISpecializationIndex): Promise<ISpecializationIndex | undefined> => {
         try {
             const accessToken = await AuthHelper.getSKaaSAccessToken(instance, inProgress);
-            const indexes = await specializationIndexService.createSpecializationIndex(body, accessToken);
-            return indexes;
+            const index = await specializationIndexService.createSpecializationIndex(body, accessToken);
+            dispatch(addSpecializationIndex(index));
+            dispatch(addAlert({ message: `Index ${index.name} was created successfully.`, type: AlertType.Success }));
+            return index;
         } catch (e: any) {
             return undefined;
         }
@@ -33,6 +37,6 @@ export const useSpecializationIndex = () => {
 
     return {
         loadSpecializationIndexes,
-        saveSpecialization,
+        saveSpecializationIndex,
     };
 };

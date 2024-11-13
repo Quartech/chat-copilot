@@ -269,7 +269,10 @@ public static class CopilotChatServiceExtensions
                 );
                 specializationIndexStorageContext = new FileSystemContext<SpecializationIndex>(
                     new FileInfo(
-                        Path.Combine(directory, $"{Path.GetFileNameWithoutExtension(fullPath)}_indexes{Path.GetExtension(fullPath)}")
+                        Path.Combine(
+                            directory,
+                            $"{Path.GetFileNameWithoutExtension(fullPath)}_indexes{Path.GetExtension(fullPath)}"
+                        )
                     )
                 );
                 break;
@@ -335,7 +338,9 @@ public static class CopilotChatServiceExtensions
         services.AddSingleton<ChatParticipantRepository>(new ChatParticipantRepository(chatParticipantStorageContext));
         services.AddSingleton<SpecializationRepository>(new SpecializationRepository(specializationStorageContext));
         services.AddSingleton<ChatUserRepository>(new ChatUserRepository(chatUserStorageContext));
-        services.AddSingleton<SpecializationIndexRepository>(new SpecializationIndexRepository(specializationIndexStorageContext));
+        services.AddSingleton<SpecializationIndexRepository>(
+            new SpecializationIndexRepository(specializationIndexStorageContext)
+        );
 
         return services;
     }
