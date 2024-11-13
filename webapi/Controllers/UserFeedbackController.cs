@@ -13,10 +13,14 @@ public class UserFeedbackController : ControllerBase
     private readonly ILogger<UserFeedbackController> _logger;
     private readonly UserFeedbackService _userFeedbackService;
 
-    public UserFeedbackController(ILogger<UserFeedbackController> logger, ChatMessageRepository messageRepository)
+    public UserFeedbackController(
+        ILogger<UserFeedbackController> logger,
+        ChatSessionRepository sessionRepository,
+        ChatMessageRepository messageRepository
+    )
     {
         this._logger = logger;
-        this._userFeedbackService = new UserFeedbackService(messageRepository);
+        this._userFeedbackService = new UserFeedbackService(sessionRepository, messageRepository);
     }
 
     [HttpPost]

@@ -13,16 +13,17 @@ import {
 } from '@fluentui/react-components';
 import React, { useEffect, useRef, useState } from 'react';
 import { AuthHelper } from '../../../libs/auth/AuthHelper';
-import { IChatMessage } from '../../../libs/models/ChatMessage';
-import { IUserFeedbackFilterRequest } from '../../../libs/models/UserFeedback';
+import { IUserFeedbackFilterRequest, IUserFeedbackResult } from '../../../libs/models/UserFeedback';
 import { UserFeedbackService } from '../../../libs/services/UserFeedbackService';
 
 const useClasses = makeStyles({
     root: {
         display: 'flex',
         flexDirection: 'column',
+        height: '400px',
         ...shorthands.gap(tokens.spacingVerticalSNudge),
         ...shorthands.padding('80px'),
+        ...shorthands.overflow('auto'),
     },
 });
 
@@ -36,7 +37,7 @@ export const UserFeedbackManager: React.FC = () => {
     const { instance, inProgress } = useMsal();
     const userFeedbackService = new UserFeedbackService();
 
-    const [userFeedbackData, setUserFeedbackData] = useState<IChatMessage[] | null>(null);
+    const [userFeedbackData, setUserFeedbackData] = useState<IUserFeedbackResult | null>(null);
 
     const initalFetch = useRef(false);
 
@@ -60,9 +61,11 @@ export const UserFeedbackManager: React.FC = () => {
     });
 
     const columns = [
-        { columnKey: 'date', label: 'Date' },
         { columnKey: 'feedback', label: 'Feedback' },
-        { columnKey: 'content', label: 'Content' },
+        { columnKey: 'specialization', label: 'Specialization' },
+        { columnKey: 'prompt', label: 'User Prompt' },
+        { columnKey: 'content', label: 'Bot Response' },
+        { columnKey: 'date', label: 'Date' },
     ];
 
     return (
@@ -76,16 +79,22 @@ export const UserFeedbackManager: React.FC = () => {
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {userFeedbackData?.map((data) => (
-                        <TableRow key={data.id}>
+                    {userFeedbackData?.items.map((item) => (
+                        <TableRow key={item.messageId}>
                             <TableCell>
-                                <TableCellLayout>{data.timestamp}</TableCellLayout>
+                                <TableCellLayout>{item.userFeedback}</TableCellLayout>
                             </TableCell>
                             <TableCell>
-                                <TableCellLayout>{data.userFeedback}</TableCellLayout>
+                                <TableCellLayout>{item.specializationId}</TableCellLayout>
                             </TableCell>
                             <TableCell>
-                                <TableCellLayout>{data.content}</TableCellLayout>
+                                <TableCellLayout>{item.prompt}</TableCellLayout>
+                            </TableCell>
+                            <TableCell>
+                                <TableCellLayout>{item.content}</TableCellLayout>
+                            </TableCell>
+                            <TableCell>
+                                <TableCellLayout>{item.timestamp}</TableCellLayout>
                             </TableCell>
                         </TableRow>
                     ))}

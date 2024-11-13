@@ -1,10 +1,12 @@
-import { IChatMessage } from '../models/ChatMessage';
-import { IUserFeedbackFilterRequest } from '../models/UserFeedback';
+import { IUserFeedbackFilterRequest, IUserFeedbackResult } from '../models/UserFeedback';
 import { BaseService } from './BaseService';
 
 export class UserFeedbackService extends BaseService {
-    public fetchFeedback = async (filter: IUserFeedbackFilterRequest, accessToken: string): Promise<IChatMessage[]> => {
-        const result = await this.getResponseAsync<IChatMessage[]>(
+    public fetchFeedback = async (
+        filter: IUserFeedbackFilterRequest,
+        accessToken: string,
+    ): Promise<IUserFeedbackResult> => {
+        const result = await this.getResponseAsync<IUserFeedbackResult>(
             {
                 commandPath: 'userfeedback/search',
                 method: 'POST',
