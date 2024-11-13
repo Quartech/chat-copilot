@@ -1,6 +1,10 @@
 import { useMsal } from '@azure/msal-react';
 import { useAppDispatch } from '../../redux/app/hooks';
-import { addSpecializationIndex, setSpecializationIndexes } from '../../redux/features/admin/adminSlice';
+import {
+    addSpecializationIndex,
+    editSpecializationIndex,
+    setSpecializationIndexes,
+} from '../../redux/features/admin/adminSlice';
 import { addAlert } from '../../redux/features/app/appSlice';
 import { AuthHelper } from '../auth/AuthHelper';
 import { AlertType } from '../models/AlertType';
@@ -35,8 +39,24 @@ export const useSpecializationIndex = () => {
         }
     };
 
+    const updateSpecializationIndex = async (
+        id: string,
+        body: ISpecializationIndex,
+    ): Promise<ISpecializationIndex | undefined> => {
+        try {
+            const accessToken = await AuthHelper.getSKaaSAccessToken(instance, inProgress);
+            const index = await specializationIndexService.updateSpecializationIndex(id, body, accessToken);
+            dispatch(editSpecializationIndex(index));
+            dispatch(addAlert({ message: `Index ${index.name} was updated successfully.`, type: AlertType.Success }));
+            return index;
+        } catch (e: any) {
+            return undefined;
+        }
+    };
+
     return {
         loadSpecializationIndexes,
         saveSpecializationIndex,
+        updateSpecializationIndex,
     };
 };

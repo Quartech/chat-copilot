@@ -17,7 +17,7 @@ public class QSpecializationIndexResponse
     [JsonPropertyName("aiSearchDeploymentConnection")]
     public string AISearchDeploymentConnection { get; set; } = string.Empty;
 
-    [JsonPropertyName("openAIDeploymentConnetion")]
+    [JsonPropertyName("openAIDeploymentConnection")]
     public string OpenAIDeploymentConnection { get; set; } = string.Empty;
 
     [JsonPropertyName("embeddingDeployment")]

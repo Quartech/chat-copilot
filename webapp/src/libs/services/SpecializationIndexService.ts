@@ -31,4 +31,20 @@ export class SpecializationIndexService extends BaseService {
         );
         return result;
     };
+
+    public updateSpecializationIndex = async (id: string, body: ISpecializationIndex, accessToken: string) => {
+        const formData = new FormData();
+
+        formData.append('name', body.name);
+        formData.append('queryType', body.queryType);
+        formData.append('aiSearchDeploymentConnection', body.aiSearchDeploymentConnection);
+        formData.append('openAIDeploymentConnection', body.openAIDeploymentConnection);
+        formData.append('embeddingDeployment', body.embeddingDeployment);
+
+        const result = await this.getResponseAsync<ISpecializationIndex>(
+            { commandPath: `indexes/${id}`, method: 'PATCH', body: formData },
+            accessToken,
+        );
+        return result;
+    };
 }

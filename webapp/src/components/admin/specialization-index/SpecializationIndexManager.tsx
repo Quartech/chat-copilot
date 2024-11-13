@@ -88,17 +88,19 @@ export const SpecializationIndexManager: React.FC = () => {
     const [editMode, setEditMode] = useState(false);
 
     const onSaveSpecializationIndex = (editMode: boolean): void => {
+        const index: ISpecializationIndex = {
+            id: '',
+            name,
+            queryType,
+            aiSearchDeploymentConnection,
+            openAIDeploymentConnection,
+            embeddingDeployment,
+        };
+
         if (editMode) {
-            console.log('Update not implemented!');
+            void indexes.updateSpecializationIndex(selectedIndexId, index);
         } else {
-            void indexes.saveSpecializationIndex({
-                id: '',
-                name,
-                queryType,
-                aiSearchDeploymentConnection,
-                openAIDeploymentConnection,
-                embeddingDeployment,
-            });
+            void indexes.saveSpecializationIndex(index);
         }
     };
 

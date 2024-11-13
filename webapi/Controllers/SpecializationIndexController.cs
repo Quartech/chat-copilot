@@ -61,7 +61,7 @@ public class SpecializationIndexController : ControllerBase
     }
 
     [HttpPatch]
-    [Route("specializations/{indexId:guid}")]
+    [Route("indexes/{indexId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
