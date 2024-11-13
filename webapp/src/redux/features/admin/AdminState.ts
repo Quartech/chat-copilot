@@ -1,4 +1,5 @@
 import { ISpecialization } from '../../../libs/models/Specialization';
+import { ISpecializationIndex } from '../../../libs/models/SpecializationIndex';
 
 export type Specializations = Record<string, AdminState>;
 
@@ -7,9 +8,10 @@ export interface AdminState {
     isIndexSelected: boolean;
     chatSpecialization: ISpecialization | undefined;
     specializations: ISpecialization[];
-    specializationIndexes: string[];
+    specializationIndexes: ISpecializationIndex[];
     chatCompletionDeployments: string[];
     selectedId: string;
+    selectedIndexId: string;
 }
 export const Specializations = [
     {
@@ -43,4 +45,5 @@ export const initialState: AdminState = {
     specializationIndexes: [],
     chatCompletionDeployments: [],
     selectedId: '',
+    selectedIndexId: '',
 };

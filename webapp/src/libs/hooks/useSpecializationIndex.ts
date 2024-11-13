@@ -1,10 +1,12 @@
 import { useMsal } from '@azure/msal-react';
+import { useAppDispatch } from '../../redux/app/hooks';
+import { setSpecializationIndexes } from '../../redux/features/admin/adminSlice';
 import { AuthHelper } from '../auth/AuthHelper';
 import { ISpecializationIndex } from '../models/SpecializationIndex';
 import { SpecializationIndexService } from '../services/SpecializationIndexService';
 
 export const useSpecializationIndex = () => {
-    //const dispatch = useAppDispatch();
+    const dispatch = useAppDispatch();
     const { instance, inProgress } = useMsal();
     const specializationIndexService = new SpecializationIndexService();
 
@@ -12,6 +14,7 @@ export const useSpecializationIndex = () => {
         try {
             const accessToken = await AuthHelper.getSKaaSAccessToken(instance, inProgress);
             const indexes = await specializationIndexService.getAllSpecializationIndexesAsync(accessToken);
+            dispatch(setSpecializationIndexes(indexes));
             return indexes;
         } catch (e: any) {
             return undefined;

@@ -1,5 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { ISpecialization } from '../../../libs/models/Specialization';
+import { ISpecializationIndex } from '../../../libs/models/SpecializationIndex';
 import { AdminState, initialState } from './AdminState';
 
 export const adminSlice = createSlice({
@@ -16,7 +17,7 @@ export const adminSlice = createSlice({
             // );
             state.specializations = action.payload;
         },
-        setSpecializationIndexes: (state: AdminState, action: PayloadAction<string[]>) => {
+        setSpecializationIndexes: (state: AdminState, action: PayloadAction<ISpecializationIndex[]>) => {
             state.specializationIndexes = action.payload;
         },
         setChatCompletionDeployments: (state: AdminState, action: PayloadAction<string[]>) => {
@@ -30,6 +31,9 @@ export const adminSlice = createSlice({
         },
         setSelectedKey: (state: AdminState, action: PayloadAction<string>) => {
             state.selectedId = action.payload;
+        },
+        setSelectedIndexKey: (state: AdminState, action: PayloadAction<string>) => {
+            state.selectedIndexId = action.payload;
         },
         addSpecialization: (state: AdminState, action: PayloadAction<ISpecialization>) => {
             state.specializations.push(action.payload);
@@ -61,6 +65,7 @@ export const {
     setAdminSelected,
     setIndexSelected,
     setSelectedKey,
+    setSelectedIndexKey,
     addSpecialization,
     editSpecialization,
     removeSpecialization,

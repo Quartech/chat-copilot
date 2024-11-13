@@ -19,12 +19,11 @@ import {
 import { Info20Regular } from '@fluentui/react-icons';
 import React, { useEffect, useId, useState } from 'react';
 import { useSpecialization } from '../../../libs/hooks';
-import { useAppSelector } from '../../../redux/app/hooks';
-import { RootState } from '../../../redux/app/store';
-import { ImageUploaderPreview } from '../../files/ImageUploaderPreview';
-import { useAppDispatch } from '../../../redux/app/hooks';
-import { addAlert } from '../../../redux/features/app/appSlice';
 import { AlertType } from '../../../libs/models/AlertType';
+import { useAppDispatch, useAppSelector } from '../../../redux/app/hooks';
+import { RootState } from '../../../redux/app/store';
+import { addAlert } from '../../../redux/features/app/appSlice';
+import { ImageUploaderPreview } from '../../files/ImageUploaderPreview';
 import { ConfirmationDialog } from '../../shared/ConfirmationDialog';
 
 interface ISpecializationFile {
@@ -460,7 +459,7 @@ export const SpecializationManager: React.FC = () => {
                 <Dropdown clearable id="index-name" onOptionSelect={onChangeIndexName} value={indexName || 'None'}>
                     <Option value="">None</Option>
                     {specializationIndexes.map((specializationIndex) => (
-                        <Option key={specializationIndex}>{specializationIndex}</Option>
+                        <Option key={specializationIndex.id}>{specializationIndex.name}</Option>
                     ))}
                 </Dropdown>
                 <Checkbox label="Set as Default Specialization" checked={isDefault} onChange={onChangeIsDefault} />
