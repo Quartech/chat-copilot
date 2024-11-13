@@ -30,34 +30,36 @@ export const UserFeedbackActions: React.FC<IUserFeedbackProps> = ({ messageId, w
     const classes = useClasses();
 
     const { instance, inProgress } = useMsal();
-
     const dispatch = useAppDispatch();
     const { selectedId } = useAppSelector((state: RootState) => state.conversations);
 
     const onUserFeedbackProvided = useCallback(
         async (positive: boolean) => {
             const chatService = new ChatService();
-            const userRating = positive ? UserFeedback.Positive : UserFeedback.Negative;
+            const currentFeedback = positive ? UserFeedback.Positive : UserFeedback.Negative;
+
+            // Determine if we're toggling the current selection off
+            const newFeedback = wasHelpful === currentFeedback ? undefined : currentFeedback;
             const token = await AuthHelper.getSKaaSAccessToken(instance, inProgress);
 
             chatService
-                .rateMessageAync(selectedId, messageId, positive, token)
+                .rateMessageAync(selectedId, messageId, newFeedback === UserFeedback.Positive, token)
                 .then(() => {
                     dispatch(
                         updateMessageProperty({
                             chatId: selectedId,
                             messageIdOrIndex: messageId,
                             property: 'userFeedback',
-                            value: userRating,
+                            value: newFeedback,
                             frontLoad: true,
-                        }),
+                        })
                     );
                 })
                 .catch((e) => {
                     console.error(e);
                 });
         },
-        [instance, inProgress, selectedId, messageId, dispatch],
+        [instance, inProgress, selectedId, messageId, wasHelpful, dispatch]
     );
 
     return (
@@ -66,7 +68,7 @@ export const UserFeedbackActions: React.FC<IUserFeedbackProps> = ({ messageId, w
                 <Button
                     icon={wasHelpful === UserFeedback.Positive ? <ThumbLike20Filled /> : <ThumbLike20Regular />}
                     appearance="transparent"
-                    aria-label="Edit"
+                    aria-label="Like"
                     onClick={() => {
                         void onUserFeedbackProvided(true);
                     }}
@@ -76,7 +78,7 @@ export const UserFeedbackActions: React.FC<IUserFeedbackProps> = ({ messageId, w
                 <Button
                     icon={wasHelpful === UserFeedback.Negative ? <ThumbDislike20Filled /> : <ThumbDislike20Regular />}
                     appearance="transparent"
-                    aria-label="Edit"
+                    aria-label="Dislike"
                     onClick={() => {
                         void onUserFeedbackProvided(false);
                     }}
@@ -85,3 +87,4 @@ export const UserFeedbackActions: React.FC<IUserFeedbackProps> = ({ messageId, w
         </div>
     );
 };
+
