@@ -115,13 +115,13 @@ export const SpecializationIndexManager: React.FC = () => {
                         setQueryType(data.value);
                     }}
                 />
-                <label htmlFor="searchDeploymentConnection">Search Deployment Connection</label>
+                <label htmlFor="aiSearchDeploymentConnection">Search Deployment Connection</label>
                 <Input
-                    id="searchDeploymentConnection"
+                    id="aiSearchDeploymentConnection"
                     required
-                    value={searchDeploymentConnection}
+                    value={aiSearchDeploymentConnection}
                     onChange={(_event, data) => {
-                        setSearchDeploymentConnection(data.value);
+                        setAiSearchDeploymentConnection(data.value);
                     }}
                 />
                 <label htmlFor="openAIDeploymentConnection">Open AI Deployment Connection</label>

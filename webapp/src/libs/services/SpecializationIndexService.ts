@@ -21,7 +21,7 @@ export class SpecializationIndexService extends BaseService {
 
         formData.append('name', body.name);
         formData.append('queryType', body.queryType);
-        formData.append('searchDeploymentConnection', body.searchDeploymentConnection);
+        formData.append('aiSearchDeploymentConnection', body.aiSearchDeploymentConnection);
         formData.append('openAIDeploymentConnection', body.openAIDeploymentConnection);
         formData.append('embeddingDeployment', body.embeddingDeployment);
 
