@@ -28,10 +28,15 @@ export class DocumentImportService extends BaseService {
         );
     };
 
-    public deleteDocumentAsync = async (sourceId: string, accessToken: string) => {
+    public deleteDocumentAsync = async (
+        sourceId: string,
+        chatId: string,
+        deleteFromGlobal: boolean,
+        accessToken: string,
+    ) => {
         return await this.getResponseAsync(
             {
-                commandPath: `documents/${sourceId}`,
+                commandPath: deleteFromGlobal ? `documents/${sourceId}` : `chats/${chatId}/documents/${sourceId}`,
                 method: 'DELETE',
             },
             accessToken,
