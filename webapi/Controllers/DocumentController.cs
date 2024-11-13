@@ -128,12 +128,12 @@ public class DocumentController : ControllerBase
     /// <summary>
     /// Service API for deleting a global document.
     /// </summary>
-    [Route("documents/{sourceId:guid}/global")]
+    [Route("documents/{sourceId:guid}")]
     [HttpDelete]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public Task<IActionResult> DocumentDeleteAsync(
+    public Task<IActionResult> DocumentDeleteGlobalAsync(
         [FromServices] IKernelMemory memoryClient,
         [FromServices] IHubContext<MessageRelayHub> messageRelayHubContext,
         [FromRoute] Guid sourceId
@@ -142,40 +142,38 @@ public class DocumentController : ControllerBase
         return this.DocumentDeleteAsync(
             memoryClient,
             messageRelayHubContext,
-            DocumentScopes.Global,
-            sourceId,
-            DocumentMemoryOptions.GlobalDocumentChatId
+            DocumentMemoryOptions.GlobalDocumentChatId,
+            sourceId
         );
     }
 
     /// <summary>
     /// Service API for deleting a document.
     /// </summary>
-    [Route("documents/{sourceId:guid}/{chatId:guid}")]
+    [Route("chats/{chatId:guid}/documents/{sourceId:guid}/")]
     [HttpDelete]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public Task<IActionResult> DocumentDeleteAsync(
+    public Task<IActionResult> DocumentDeleteLocalAsync(
         [FromServices] IKernelMemory memoryClient,
         [FromServices] IHubContext<MessageRelayHub> messageRelayHubContext,
-        [FromRoute] Guid sourceId,
-        [FromRoute] Guid chatId
+        [FromRoute] Guid chatId,
+        [FromRoute] Guid sourceId
     )
     {
-        return this.DocumentDeleteAsync(memoryClient, messageRelayHubContext, DocumentScopes.Chat, sourceId, chatId);
+        return this.DocumentDeleteAsync(memoryClient, messageRelayHubContext, chatId, sourceId);
     }
 
     private async Task<IActionResult> DocumentDeleteAsync(
         IKernelMemory memoryClient,
         IHubContext<MessageRelayHub> messageRelayHubContext,
-        DocumentScopes documentScope,
-        Guid sourceId,
-        Guid chatId
+        Guid chatId,
+        Guid sourceId
     )
     {
-        var sourceIdString = sourceId.ToString();
         var chatIdString = chatId.ToString();
+        var sourceIdString = sourceId.ToString();
 
         // Try to find and delete the source
         MemorySource? source = await this._sourceRepository.FindByIdAsync(sourceIdString, chatIdString);

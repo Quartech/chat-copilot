@@ -3,7 +3,7 @@
 import { useMsal } from '@azure/msal-react';
 import { useAppDispatch } from '../../redux/app/hooks';
 import { FeatureKeys } from '../../redux/features/app/AppState';
-import { addAlert, toggleFeatureState } from '../../redux/features/app/appSlice';
+import { addAlert, hideSpinner, showSpinner, toggleFeatureState } from '../../redux/features/app/appSlice';
 import { setImportingDocumentsToConversation } from '../../redux/features/conversations/conversationsSlice';
 import { AuthHelper } from '../auth/AuthHelper';
 import { AlertType } from '../models/AlertType';
@@ -89,6 +89,7 @@ export const useFile = () => {
 
     const deleteFile = async (sourceId: string, chatId: string, deleteFromGlobal: boolean) => {
         try {
+            dispatch(showSpinner());
             await documentImportService.deleteDocumentAsync(
                 sourceId,
                 chatId,
@@ -103,6 +104,8 @@ export const useFile = () => {
                     message,
                 }),
             );
+        } finally {
+            dispatch(hideSpinner());
         }
     };
 

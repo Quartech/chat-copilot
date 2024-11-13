@@ -36,7 +36,7 @@ export class DocumentImportService extends BaseService {
     ) => {
         return await this.getResponseAsync(
             {
-                commandPath: deleteFromGlobal ? `documents/${sourceId}/global` : `documents/${sourceId}/${chatId}`,
+                commandPath: deleteFromGlobal ? `documents/${sourceId}` : `chats/${chatId}/documents/${sourceId}`,
                 method: 'DELETE',
             },
             accessToken,
