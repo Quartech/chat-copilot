@@ -26,6 +26,7 @@ override.tf.json
 # Include override files you do wish to add to version control using negated pattern
 # !example_override.tf
 !dev.auto.tfvars
+!dev.tfvars
 !shared.auto.tfvars
 !k8s.auto.tfvars
 !state.auto.tfvars
