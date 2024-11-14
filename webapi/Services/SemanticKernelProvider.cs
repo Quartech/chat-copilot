@@ -59,7 +59,6 @@ public sealed class SemanticKernelProvider
                     QAzureOpenAIChatOptions.OpenAIDeploymentConnection connection in qAzureOpenAIChatOptions.OpenAIDeploymentConnections
                 )
                 {
-
                     foreach (var deployment in connection.ChatCompletionDeployments)
                     {
 #pragma warning disable CA2000 // No need to dispose of HttpClient instances from IHttpClientFactory
