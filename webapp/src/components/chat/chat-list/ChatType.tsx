@@ -31,6 +31,7 @@ const useClasses = makeStyles({
     innerTabs: {
         marginLeft: '1rem',
         marginRight: '1rem',
+        marginTop: '2rem',
     },
 });
 
@@ -97,16 +98,6 @@ export const ChatType: FC = () => {
                 >
                     Admin
                 </Tab>
-                {/* <Tab
-                    disabled={!hasAdmin}
-                    data-testid="indexTab"
-                    id="index"
-                    value="index"
-                    aria-label="index Tab"
-                    title="Index Tab"
-                >
-                    Indexes
-                </Tab> */}
             </TabList>
             {selectedTab === 'chat' && <ChatList />}
             {selectedTab === 'search' && <SearchList />}
@@ -128,8 +119,6 @@ export const ChatType: FC = () => {
                     </TabList>
                 </div>
             )}
-            {/* {selectedTab === 'admin' && <SpecializationList />}
-            {selectedTab === 'index' && <SpecializationIndexList />} */}
         </div>
     );
 };

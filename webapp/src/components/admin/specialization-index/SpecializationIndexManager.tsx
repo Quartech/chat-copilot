@@ -1,4 +1,4 @@
-import { Button, Input, makeStyles, shorthands, tokens } from '@fluentui/react-components';
+import { Button, Dropdown, Input, Option, makeStyles, shorthands, tokens } from '@fluentui/react-components';
 import React, { useEffect, useState } from 'react';
 import { useSpecializationIndex } from '../../../libs/hooks/useSpecializationIndex';
 import { ISpecializationIndex } from '../../../libs/models/SpecializationIndex';
@@ -91,6 +91,13 @@ export const SpecializationIndexManager: React.FC = () => {
 
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
+    const isValid =
+        !!name &&
+        !!queryType &&
+        !!aiSearchDeploymentConnection &&
+        !!openAIDeploymentConnection &&
+        !!embeddingDeployment;
+
     const onSaveSpecializationIndex = (editMode: boolean): void => {
         const index: ISpecializationIndex = {
             id: '',
@@ -158,7 +165,9 @@ export const SpecializationIndexManager: React.FC = () => {
         <div className={classes.scrollableContainer}>
             <div className={classes.root}>
                 <div className={classes.horizontal}></div>
-                <label htmlFor="name">Name</label>
+                <label htmlFor="name">
+                    Name<span className={classes.required}>*</span>
+                </label>
                 <Input
                     id="name"
                     required
@@ -167,16 +176,29 @@ export const SpecializationIndexManager: React.FC = () => {
                         setName(data.value);
                     }}
                 />
-                <label htmlFor="queryType">Query Type</label>
-                <Input
+                <label htmlFor="queryType">
+                    Query Type<span className={classes.required}>*</span>
+                </label>
+                <Dropdown
+                    clearable
                     id="queryType"
-                    required
-                    value={queryType}
-                    onChange={(_event, data) => {
-                        setQueryType(data.value);
+                    aria-labelledby={queryType}
+                    onOptionSelect={(_control, data) => {
+                        setQueryType(data.optionValue ?? '');
                     }}
-                />
-                <label htmlFor="aiSearchDeploymentConnection">Search Deployment Connection</label>
+                    value={queryType}
+                >
+                    {['simple', 'semantic', 'vector', 'vector_simple_hybrid', 'vector_semantic_hybrid'].map(
+                        (queryType) => (
+                            <Option key={queryType} value={queryType}>
+                                {queryType}
+                            </Option>
+                        ),
+                    )}
+                </Dropdown>
+                <label htmlFor="aiSearchDeploymentConnection">
+                    Search Deployment Connection<span className={classes.required}>*</span>
+                </label>
                 <Input
                     id="aiSearchDeploymentConnection"
                     required
@@ -185,7 +207,9 @@ export const SpecializationIndexManager: React.FC = () => {
                         setAiSearchDeploymentConnection(data.value);
                     }}
                 />
-                <label htmlFor="openAIDeploymentConnection">Open AI Deployment Connection</label>
+                <label htmlFor="openAIDeploymentConnection">
+                    Open AI Deployment Connection<span className={classes.required}>*</span>
+                </label>
                 <Input
                     id="openAIDeploymentConnection"
                     required
@@ -194,7 +218,9 @@ export const SpecializationIndexManager: React.FC = () => {
                         setOpenAIDeploymentConnection(data.value);
                     }}
                 />
-                <label htmlFor="embeddingDeployment">Embedding Deployment</label>
+                <label htmlFor="embeddingDeployment">
+                    Embedding Deployment<span className={classes.required}>*</span>
+                </label>
                 <Input
                     id="embeddingDeployment"
                     required
@@ -215,12 +241,13 @@ export const SpecializationIndexManager: React.FC = () => {
                     }}
                 />
                 <div className={classes.controls}>
-                    <Button appearance="secondary" onClick={onDeleteSpecializationIndex}>
+                    <Button appearance="secondary" disabled={!id} onClick={onDeleteSpecializationIndex}>
                         Delete
                     </Button>
 
                     <Button
                         appearance="primary"
+                        disabled={!isValid}
                         onClick={() => {
                             onSaveSpecializationIndex(editMode);
                         }}

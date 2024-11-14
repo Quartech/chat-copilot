@@ -21,12 +21,15 @@ public class SpecializationIndex : IStorageEntity
 
     public string EmbeddingDeployment { get; set; }
 
+    public int Order { get; set; }
+
     public SpecializationIndex(
         string Name,
         string QueryType,
         string AISearchDeploymentConnection,
         string OpenAIDeploymentConnection,
-        string EmbeddingDeployment
+        string EmbeddingDeployment,
+        int Order
     )
     {
         this.Id = Guid.NewGuid().ToString();
@@ -35,5 +38,6 @@ public class SpecializationIndex : IStorageEntity
         this.AISearchDeploymentConnection = AISearchDeploymentConnection;
         this.OpenAIDeploymentConnection = OpenAIDeploymentConnection;
         this.EmbeddingDeployment = EmbeddingDeployment;
+        this.Order = Order;
     }
 }

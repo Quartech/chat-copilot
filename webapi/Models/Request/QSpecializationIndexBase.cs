@@ -18,4 +18,7 @@ public class QSpecializationIndexBase
 
     [JsonPropertyName("embeddingDeployment")]
     public string? EmbeddingDeployment { get; set; }
+
+    [JsonPropertyName("order")]
+    public int? Order { get; set; }
 }

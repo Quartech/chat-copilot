@@ -48,10 +48,19 @@ public class SpecializationIndexController : ControllerBase
     [ProducesResponseType(StatusCodes.Status504GatewayTimeout)]
     public async Task<IActionResult> SaveIndex([FromForm] QSpecializationIndexBase indexMutate)
     {
-        var index = await this._qSpecializationIndexService.SaveIndex(indexMutate);
-        var specializationResponse = new QSpecializationIndexResponse(index);
+        try
+        {
+            var index = await this._qSpecializationIndexService.SaveIndex(indexMutate);
+            var specializationResponse = new QSpecializationIndexResponse(index);
 
-        return this.Ok(specializationResponse);
+            return this.Ok(specializationResponse);
+        }
+        catch (Azure.RequestFailedException ex)
+        {
+            this._logger.LogError(ex, "Index creation threw an exception");
+
+            return this.StatusCode(500, "Failed to create index.");
+        }
     }
 
     [HttpPatch]
@@ -64,9 +73,21 @@ public class SpecializationIndexController : ControllerBase
         [FromRoute] Guid indexId
     )
     {
-        var indexToEdit = await this._qSpecializationIndexService.UpdateIndex(indexId, qIndexMutate);
+        try
+        {
+            var indexToEdit = await this._qSpecializationIndexService.UpdateIndex(indexId, qIndexMutate);
+            if (indexToEdit != null)
+            {
+                return this.Ok(indexToEdit);
+            }
+            return this.StatusCode(500, $"Failed to update index for id '{indexId}'.");
+        }
+        catch (Azure.RequestFailedException ex)
+        {
+            this._logger.LogError(ex, "Index update threw an exception");
 
-        return this.Ok(indexToEdit);
+            return this.StatusCode(500, $"Failed to update index for id '{indexId}'.");
+        }
     }
 
     [HttpDelete]
@@ -77,7 +98,40 @@ public class SpecializationIndexController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> DeleteIndex(Guid indexId)
     {
-        var indexToDelete = await this._qSpecializationIndexService.DeleteIndex(indexId);
-        return this.Ok(true);
+        try
+        {
+            var indexToDelete = await this._qSpecializationIndexService.DeleteIndex(indexId);
+            if (indexToDelete != null)
+            {
+                return this.Ok(true);
+            }
+            return this.StatusCode(500, $"Failed to delete index for id '{indexId}'.");
+        }
+        catch (Azure.RequestFailedException ex)
+        {
+            this._logger.LogError(ex, "Index delete threw an exception");
+
+            return this.StatusCode(500, $"Failed to delete index for id '{indexId}'.");
+        }
+    }
+
+    [HttpPost]
+    [Route("indexes/order")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> OrderSpecializationsAsync([FromBody] OrderMapGuidToInt qSpecializationOrder)
+    {
+        try
+        {
+            await this._qSpecializationIndexService.OrderSpecializations(qSpecializationOrder);
+            return this.NoContent();
+        }
+        catch (Azure.RequestFailedException ex)
+        {
+            this._logger.LogError(ex, "Index swap order threw an exception");
+
+            return this.StatusCode(500, $"Failed to order specializations: {ex.Message}.");
+        }
     }
 }

@@ -217,7 +217,7 @@ public class SpecializationController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> OrderSpecializationsAsync([FromBody] QSpecializationOrder qSpecializationOrder)
+    public async Task<IActionResult> OrderSpecializationsAsync([FromBody] OrderMapGuidToInt qSpecializationOrder)
     {
         try
         {

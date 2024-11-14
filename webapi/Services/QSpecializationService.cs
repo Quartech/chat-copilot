@@ -250,7 +250,7 @@ public class QSpecializationService : IQSpecializationService
     /// <param name="specializationOrder">A QSpecializationOrder object containing the new order for specializations, where each key is a specialization ID and each value is the intended order.</param>
     /// <returns>A Task representing the asynchronous operation of updating all relevant specializations.</returns>
     /// <exception cref="ArgumentNullException">Thrown when the <paramref name="specializationOrder"/> is null.</exception>
-    public async Task OrderSpecializations(QSpecializationOrder specializationOrder)
+    public async Task OrderSpecializations(OrderMapGuidToInt specializationOrder)
     {
         if (specializationOrder == null)
         {

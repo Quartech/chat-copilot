@@ -36,7 +36,8 @@ public class QSpecializationIndexService : IQSpecializationIndexService
            index.QueryType,
            index.AISearchDeploymentConnection,
            index.OpenAIDeploymentConnection,
-           index.EmbeddingDeployment
+           index.EmbeddingDeployment,
+           index.Order ?? 0
        );
         await this._indexRepository.CreateAsync(indexInsert);
 
@@ -56,6 +57,7 @@ public class QSpecializationIndexService : IQSpecializationIndexService
         indexToEdit.AISearchDeploymentConnection = qIndexMutate.AISearchDeploymentConnection ?? indexToEdit.AISearchDeploymentConnection;
         indexToEdit.OpenAIDeploymentConnection = qIndexMutate.OpenAIDeploymentConnection ?? indexToEdit.OpenAIDeploymentConnection;
         indexToEdit.EmbeddingDeployment = qIndexMutate.EmbeddingDeployment ?? indexToEdit.EmbeddingDeployment;
+        indexToEdit.Order = qIndexMutate.Order ?? indexToEdit.Order;
 
         await this._indexRepository.UpsertAsync(indexToEdit);
         return indexToEdit;
@@ -76,5 +78,32 @@ public class QSpecializationIndexService : IQSpecializationIndexService
     {
         var indexes = await this._indexRepository.GetAllIndexesAsync();
         return indexes.FirstOrDefault(a => a.Name == name);
+    }
+
+    public async Task OrderSpecializations(OrderMapGuidToInt specializationOrder)
+    {
+        if (specializationOrder == null)
+        {
+            throw new ArgumentNullException(nameof(specializationOrder), "QSpecializationOrder must be provided.");
+        }
+
+        var indexes = (await this.GetAllIndexes()).ToList();
+
+        var upsertTasks = new List<Task>();
+
+        foreach (var order in specializationOrder.Ordering)
+        {
+            string indexId = order.Key;
+            int newOrder = order.Value;
+
+            var specialization = indexes.FirstOrDefault(s => s.Id == indexId);
+            if (specialization != null)
+            {
+                // Update the order
+                specialization.Order = newOrder;
+                upsertTasks.Add(this._indexRepository.UpsertAsync(specialization));
+            }
+        }
+        await Task.WhenAll(upsertTasks);
     }
 }
