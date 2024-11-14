@@ -107,9 +107,12 @@ export const useSpecialization = () => {
         try {
             const accessToken = await AuthHelper.getSKaaSAccessToken(instance, inProgress);
             const existingSpecializations = await specializationService.getAllSpecializationsAsync(accessToken);
-
+            const sanitizedData: ISpecializationRequest = {
+                ...data,
+                isDefault: Boolean(data.isDefault), // Convert to boolean explicitly
+            };
             // If this specialization is set as default, update the current default
-            if (data.isDefault) {
+            if (sanitizedData.isDefault) {
                 const currentDefault = existingSpecializations.find((spec) => spec.isDefault && spec.id !== id);
                 if (currentDefault) {
                     const updatedData: ISpecializationRequest = {
@@ -126,13 +129,13 @@ export const useSpecialization = () => {
                 }
             }
             await specializationService
-                .updateSpecializationAsync(id, data, accessToken)
+                .updateSpecializationAsync(id, sanitizedData, accessToken)
                 .then((result: ISpecialization) => {
                     dispatch(editSpecialization(result));
                 });
             dispatch(
                 addAlert({
-                    message: `Specialization {${data.name}} updated successfully.`,
+                    message: `Specialization {${sanitizedData.name}} updated successfully.`,
                     type: AlertType.Success,
                 }),
             );

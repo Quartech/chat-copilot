@@ -56,3 +56,8 @@ export interface ConversationSuggestionsChange {
     id: string;
     chatSuggestionMessage: IAskResult;
 }
+
+export interface MessageLoadingStatusChange {
+    id: string;
+    isLoading: boolean;
+}

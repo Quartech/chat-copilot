@@ -15,7 +15,7 @@ const useClasses = makeStyles({
             justifyContent: 'center',
         }),
         cursor: 'pointer',
-        ...shorthands.padding(tokens.spacingVerticalS, tokens.spacingHorizontalXL),
+        ...shorthands.padding(tokens.spacingVerticalNone, tokens.spacingHorizontalXL),
         marginLeft: tokens.spacingHorizontalM,
     },
     avatar: {
