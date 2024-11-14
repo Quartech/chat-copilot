@@ -185,6 +185,24 @@ public class QAzureOpenAIChatExtension
     }
 
     /// <summary>
+    /// Retrieve all text to image deployments from the available OpenAI deployment connections.
+    /// </summary>
+    public List<string> GetAllTextToImageDeployments()
+    {
+        var textToImageDeployments = new List<string>();
+        foreach (
+            QAzureOpenAIChatOptions.OpenAIDeploymentConnection connection in this._qAzureOpenAIChatOptions.OpenAIDeploymentConnections
+        )
+        {
+            foreach (var deployment in connection.ImageGenerationDeployments)
+            {
+                textToImageDeployments.Add($"{deployment}");
+            }
+        }
+        return textToImageDeployments;
+    }
+
+    /// <summary>
     /// Get the default chat completion deployment.
     /// </summary>
 #pragma warning disable CA1024

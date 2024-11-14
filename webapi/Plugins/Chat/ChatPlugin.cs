@@ -1161,6 +1161,7 @@ public class ChatPlugin
     /// <param name="cancellationToken">The cancellation token.</param>
     private async Task UpdateMessageOnClient(CopilotChatMessage message, CancellationToken cancellationToken)
     {
+        this._logger.LogInformation("IsImage: {0}", message.IsImage);
         await this
             ._messageRelayHubContext.Clients.Group(message.ChatId)
             .SendAsync("ReceiveMessageUpdate", message, cancellationToken);
