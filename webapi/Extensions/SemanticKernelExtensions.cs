@@ -53,7 +53,7 @@ internal static class SemanticKernelExtensions
         builder.Services.AddScoped<Kernel>(sp =>
         {
             var provider = sp.GetRequiredService<SemanticKernelProvider>();
-            var kernel = provider.GetCompletionKernel();
+            var kernel = provider.GetSemanticKernel();
 
             sp.GetRequiredService<RegisterFunctionsWithKernel>()(sp, kernel);
 
