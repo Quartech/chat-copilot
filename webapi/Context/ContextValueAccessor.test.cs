@@ -1,7 +1,7 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using System;
+using Microsoft.AspNetCore.Http;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using System;
 
 namespace CopilotChat.WebApi.Context;
 
@@ -9,37 +9,36 @@ namespace CopilotChat.WebApi.Context;
 public class ContextValueAccessorTest
 {
     private const string ID_KEY = "id";
-
-    Mock<IHttpContextAccessor>? mockAccessor;
-    DefaultHttpContext? context;
-    ContextValueAccessor? accessor;
-    string? id;
+    private Mock<IHttpContextAccessor>? mockAccessor;
+    private DefaultHttpContext? context;
+    private ContextValueAccessor? accessor;
+    private string? id;
 
     [TestInitialize]
     public void Setup()
     {
-        mockAccessor = new();
-        context = new();
+        this.mockAccessor = new();
+        this.context = new();
 
-        id = Guid.NewGuid().ToString();
-        context.Request.RouteValues.Add(ID_KEY, id);
-        mockAccessor.Setup(m => m.HttpContext).Returns(context);
+        this.id = Guid.NewGuid().ToString();
+        this.context.Request.RouteValues.Add(ID_KEY, this.id);
+        this.mockAccessor.Setup(m => m.HttpContext).Returns(this.context);
 
-        accessor = new(mockAccessor.Object);
+        this.accessor = new(this.mockAccessor.Object);
     }
 
     [TestMethod]
     public void GetRouteValue_ShouldRetrieveValue()
     {
-        var value = accessor!.GetRouteValue(ID_KEY);
+        var value = this.accessor!.GetRouteValue(ID_KEY);
 
-        Assert.AreEqual(id, value);
+        Assert.AreEqual(this.id, value);
     }
 
     [TestMethod]
     public void GetRouteValue_ShouldRetrieveNull()
     {
-        var value = accessor!.GetRouteValue("BardicInspiration");
+        var value = this.accessor!.GetRouteValue("BardicInspiration");
 
         Assert.AreEqual(value, null);
     }
@@ -47,10 +46,10 @@ public class ContextValueAccessorTest
     [TestMethod]
     public void GetRouteValue_ShouldRetrieveNull_WhenContextNull()
     {
-        context = null;
-        mockAccessor!.Setup(m => m.HttpContext).Returns(context);
+        this.context = null;
+        this.mockAccessor!.Setup(m => m.HttpContext).Returns(this.context);
 
-        var value = accessor!.GetRouteValue(ID_KEY);
+        var value = this.accessor!.GetRouteValue(ID_KEY);
 
         Assert.AreEqual(value, null);
     }
