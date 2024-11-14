@@ -63,6 +63,12 @@ export const adminSlice = createSlice({
             );
             state.specializations = updatedSpecializations;
         },
+        removeSpecializationIndex: (state: AdminState, action: PayloadAction<string>) => {
+            const indexes = state.specializationIndexes;
+            const selectedKey = action.payload;
+            const updatedSpecializations = indexes.filter((index: ISpecializationIndex) => index.id !== selectedKey);
+            state.specializationIndexes = updatedSpecializations;
+        },
     },
 });
 
@@ -80,6 +86,7 @@ export const {
     editSpecialization,
     editSpecializationIndex,
     removeSpecialization,
+    removeSpecializationIndex,
 } = adminSlice.actions;
 
 export default adminSlice.reducer;

@@ -4,6 +4,7 @@ import { useSpecializationIndex } from '../../../libs/hooks/useSpecializationInd
 import { ISpecializationIndex } from '../../../libs/models/SpecializationIndex';
 import { useAppSelector } from '../../../redux/app/hooks';
 import { RootState } from '../../../redux/app/store';
+import { ConfirmationDialog } from '../../shared/ConfirmationDialog';
 
 const useClasses = makeStyles({
     root: {
@@ -80,12 +81,15 @@ export const SpecializationIndexManager: React.FC = () => {
     const classes = useClasses();
     const indexes = useSpecializationIndex();
     const { selectedIndexId, specializationIndexes } = useAppSelector((state: RootState) => state.admin);
+    const [id, setId] = useState('');
     const [name, setName] = useState('');
     const [queryType, setQueryType] = useState('');
     const [aiSearchDeploymentConnection, setAiSearchDeploymentConnection] = useState('');
     const [openAIDeploymentConnection, setOpenAIDeploymentConnection] = useState('');
     const [embeddingDeployment, setEmbeddingDeployment] = useState('');
     const [editMode, setEditMode] = useState(false);
+
+    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
     const onSaveSpecializationIndex = (editMode: boolean): void => {
         const index: ISpecializationIndex = {
@@ -104,7 +108,25 @@ export const SpecializationIndexManager: React.FC = () => {
         }
     };
 
+    const confirmDelete = () => {
+        void indexes.deleteSpecializationIndex(id);
+        fillState({
+            name: '',
+            id: '',
+            queryType: '',
+            aiSearchDeploymentConnection: '',
+            openAIDeploymentConnection: '',
+            embeddingDeployment: '',
+        });
+        setIsDeleteDialogOpen(false);
+    };
+
+    const onDeleteSpecializationIndex = (): void => {
+        setIsDeleteDialogOpen(true);
+    };
+
     const fillState = (index: ISpecializationIndex) => {
+        setId(index.id);
         setName(index.name);
         setQueryType(index.queryType);
         setAiSearchDeploymentConnection(index.aiSearchDeploymentConnection);
@@ -181,8 +203,21 @@ export const SpecializationIndexManager: React.FC = () => {
                         setEmbeddingDeployment(data.value);
                     }}
                 />
+                <ConfirmationDialog
+                    open={isDeleteDialogOpen}
+                    title="Delete Index"
+                    content={`Are you sure you want to delete the ${name} index?`}
+                    confirmLabel="Delete"
+                    cancelLabel="Cancel"
+                    onConfirm={confirmDelete}
+                    onCancel={() => {
+                        setIsDeleteDialogOpen(false);
+                    }}
+                />
                 <div className={classes.controls}>
-                    <Button appearance="secondary">Delete</Button>
+                    <Button appearance="secondary" onClick={onDeleteSpecializationIndex}>
+                        Delete
+                    </Button>
 
                     <Button
                         appearance="primary"

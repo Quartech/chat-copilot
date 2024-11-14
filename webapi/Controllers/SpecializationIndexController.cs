@@ -6,6 +6,7 @@ using CopilotChat.WebApi.Models.Storage;
 using CopilotChat.WebApi.Storage;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Azure.Cosmos.Linq;
 using Microsoft.Extensions.Logging;
 
 namespace CopilotChat.WebApi.Controllers;
@@ -65,7 +66,7 @@ public class SpecializationIndexController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> EditSpecializationAsync(
+    public async Task<IActionResult> EditIndex(
         [FromForm] QSpecializationIndexMutate qIndexMutate,
         [FromRoute] Guid indexId
     )
@@ -85,5 +86,23 @@ public class SpecializationIndexController : ControllerBase
         await this._indexRepository.UpsertAsync(indexToEdit);
 
         return this.Ok(indexToEdit);
+    }
+
+    [HttpDelete]
+    [Route("indexes/{indexId:guid}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> DeleteIndex(Guid indexId)
+    {
+        var indexToDelete = await this._indexRepository.FindByIdAsync(indexId.ToString());
+        if (indexToDelete == null)
+        {
+            return this.NotFound();
+        }
+
+        await this._indexRepository.DeleteAsync(indexToDelete);
+        return this.Ok(true);
     }
 }

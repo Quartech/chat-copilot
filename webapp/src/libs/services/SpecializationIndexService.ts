@@ -47,4 +47,15 @@ export class SpecializationIndexService extends BaseService {
         );
         return result;
     };
+
+    public deleteSpecializationIndex = async (id: string, accessToken: string) => {
+        const result = await this.getResponseAsync<boolean>(
+            {
+                commandPath: `indexes/${id}`,
+                method: 'DELETE',
+            },
+            accessToken,
+        );
+        return result;
+    };
 }

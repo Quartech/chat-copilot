@@ -3,6 +3,7 @@ import { useAppDispatch } from '../../redux/app/hooks';
 import {
     addSpecializationIndex,
     editSpecializationIndex,
+    removeSpecializationIndex,
     setSpecializationIndexes,
 } from '../../redux/features/admin/adminSlice';
 import { addAlert } from '../../redux/features/app/appSlice';
@@ -54,9 +55,22 @@ export const useSpecializationIndex = () => {
         }
     };
 
+    const deleteSpecializationIndex = async (id: string): Promise<boolean> => {
+        try {
+            const accessToken = await AuthHelper.getSKaaSAccessToken(instance, inProgress);
+            const index = await specializationIndexService.deleteSpecializationIndex(id, accessToken);
+            dispatch(removeSpecializationIndex(id));
+            dispatch(addAlert({ message: `Index was deleted successfully.`, type: AlertType.Success }));
+            return index;
+        } catch (e: any) {
+            return false;
+        }
+    };
+
     return {
         loadSpecializationIndexes,
         saveSpecializationIndex,
         updateSpecializationIndex,
+        deleteSpecializationIndex,
     };
 };
