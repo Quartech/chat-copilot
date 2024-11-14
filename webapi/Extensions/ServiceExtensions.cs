@@ -318,7 +318,7 @@ public static class CopilotChatServiceExtensions
                 specializationIndexStorageContext = new CosmosDbContext<SpecializationIndex>(
                     chatStoreConfig.Cosmos.ConnectionString,
                     chatStoreConfig.Cosmos.Database,
-                    ""
+                    chatStoreConfig.Cosmos.SpecializationIndexContainer
                 );
 #pragma warning restore CA2000 // Dispose objects before losing scope
                 break;
