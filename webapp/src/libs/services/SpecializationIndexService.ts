@@ -58,4 +58,22 @@ export class SpecializationIndexService extends BaseService {
         );
         return result;
     };
+
+    async setSpecializationIndexOrder(body: ISpecializationIndex[], accessToken: string): Promise<void> {
+        const indexesOrder = {
+            ordering: body.reduce<Record<string, number>>((acc, index) => {
+                acc[index.id] = index.order;
+                return acc;
+            }, {}),
+        };
+
+        await this.getResponseAsync(
+            {
+                commandPath: `indexes/order`,
+                method: 'POST',
+                body: indexesOrder,
+            },
+            accessToken,
+        );
+    }
 }

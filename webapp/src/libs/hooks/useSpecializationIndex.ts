@@ -1,4 +1,5 @@
 import { useMsal } from '@azure/msal-react';
+import { getErrorDetails } from '../../components/utils/TextUtils';
 import { useAppDispatch } from '../../redux/app/hooks';
 import {
     addSpecializationIndex,
@@ -67,10 +68,24 @@ export const useSpecializationIndex = () => {
         }
     };
 
+    const setSpecializationIndexOrder = async (specializations: ISpecializationIndex[]) => {
+        dispatch(setSpecializationIndexes(specializations));
+        try {
+            await specializationIndexService.setSpecializationIndexOrder(
+                specializations,
+                await AuthHelper.getSKaaSAccessToken(instance, inProgress),
+            );
+        } catch (e: any) {
+            const errorMessage = `Failed to swap specialization order. Details: ${getErrorDetails(e)}`;
+            dispatch(addAlert({ message: errorMessage, type: AlertType.Error }));
+        }
+    };
+
     return {
         loadSpecializationIndexes,
         saveSpecializationIndex,
         updateSpecializationIndex,
         deleteSpecializationIndex,
+        setSpecializationIndexOrder,
     };
 };

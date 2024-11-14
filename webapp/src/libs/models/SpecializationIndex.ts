@@ -5,4 +5,5 @@ export interface ISpecializationIndex {
     aiSearchDeploymentConnection: string;
     openAIDeploymentConnection: string;
     embeddingDeployment: string;
+    order: number;
 }

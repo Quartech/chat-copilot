@@ -88,6 +88,7 @@ export const SpecializationIndexManager: React.FC = () => {
     const [openAIDeploymentConnection, setOpenAIDeploymentConnection] = useState('');
     const [embeddingDeployment, setEmbeddingDeployment] = useState('');
     const [editMode, setEditMode] = useState(false);
+    const [order, setOrder] = useState(0);
 
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
@@ -106,6 +107,7 @@ export const SpecializationIndexManager: React.FC = () => {
             aiSearchDeploymentConnection,
             openAIDeploymentConnection,
             embeddingDeployment,
+            order: editMode ? order : specializationIndexes.length,
         };
 
         if (editMode) {
@@ -124,6 +126,7 @@ export const SpecializationIndexManager: React.FC = () => {
             aiSearchDeploymentConnection: '',
             openAIDeploymentConnection: '',
             embeddingDeployment: '',
+            order: 0,
         });
         setIsDeleteDialogOpen(false);
     };
@@ -139,6 +142,7 @@ export const SpecializationIndexManager: React.FC = () => {
         setAiSearchDeploymentConnection(index.aiSearchDeploymentConnection);
         setOpenAIDeploymentConnection(index.openAIDeploymentConnection);
         setEmbeddingDeployment(index.embeddingDeployment);
+        setOrder(index.order);
     };
 
     useEffect(() => {
@@ -157,6 +161,7 @@ export const SpecializationIndexManager: React.FC = () => {
                 aiSearchDeploymentConnection: '',
                 openAIDeploymentConnection: '',
                 embeddingDeployment: '',
+                order: 0,
             });
         }
     }, [editMode, selectedIndexId, specializationIndexes]);
