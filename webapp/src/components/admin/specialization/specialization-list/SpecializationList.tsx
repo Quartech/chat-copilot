@@ -15,6 +15,7 @@ const useClasses = makeStyles({
         width: '320px',
         backgroundColor: tokens.colorNeutralBackground4,
         flexDirection: 'column',
+        boxShadow: 'rgba(0, 0, 0, 0.25) 0px 0.2rem 0.4rem -0.075rem',
         ...shorthands.overflow('hidden'),
         ...Breakpoints.small({
             width: '64px',
@@ -64,11 +65,13 @@ export const SpecializationList: FC = () => {
                         <Button
                             data-testid="createNewSpecializationButton"
                             icon={<Add20 />}
-                            appearance="transparent"
+                            appearance="primary"
                             onClick={() => {
                                 onAddSpecializationClick();
                             }}
-                        />{' '}
+                        >
+                            New Specialization
+                        </Button>
                     </div>
                     <div aria-label={'specialization list'} className={classes.list}>
                         <SpecializationListSection header="All" />

@@ -14,6 +14,7 @@ const useClasses = makeStyles({
         flexShrink: 0,
         width: '320px',
         backgroundColor: tokens.colorNeutralBackground4,
+        boxShadow: 'rgba(0, 0, 0, 0.25) 0px 0.2rem 0.4rem -0.075rem',
         flexDirection: 'column',
         ...shorthands.overflow('hidden'),
         ...Breakpoints.small({
@@ -64,11 +65,13 @@ export const SpecializationIndexList: FC = () => {
                         <Button
                             data-testid="createNewSpecializationButton"
                             icon={<Add20 />}
-                            appearance="transparent"
+                            appearance="primary"
                             onClick={() => {
                                 onAddSpecializationClick();
                             }}
-                        />{' '}
+                        >
+                            New Index
+                        </Button>
                     </div>
                     <div aria-label={'specialization list'} className={classes.list}>
                         <SpecializationIndexListSection header="All" />
