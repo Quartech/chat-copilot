@@ -2,11 +2,10 @@ using System;
 using System.Threading.Tasks;
 using CopilotChat.WebApi.Models.Request;
 using CopilotChat.WebApi.Models.Response;
-using CopilotChat.WebApi.Models.Storage;
+using CopilotChat.WebApi.Services;
 using CopilotChat.WebApi.Storage;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.Cosmos.Linq;
 using Microsoft.Extensions.Logging;
 
 namespace CopilotChat.WebApi.Controllers;
@@ -17,6 +16,7 @@ public class SpecializationIndexController : ControllerBase
     private readonly ILogger<SpecializationIndexController> _logger;
 
     private readonly SpecializationIndexRepository _indexRepository;
+    private readonly QSpecializationIndexService _qSpecializationIndexService;
 
     public SpecializationIndexController(
         ILogger<SpecializationIndexController> logger,
@@ -25,6 +25,7 @@ public class SpecializationIndexController : ControllerBase
     {
         this._logger = logger;
         this._indexRepository = indexRepository;
+        this._qSpecializationIndexService = new QSpecializationIndexService(indexRepository);
     }
 
     [HttpGet]
@@ -34,7 +35,7 @@ public class SpecializationIndexController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetIndexesAsync()
     {
-        var indexes = await _indexRepository.GetAllIndexesAsync();
+        var indexes = await this._qSpecializationIndexService.GetAllIndexes();
         return this.Ok(indexes);
     }
 
@@ -47,15 +48,7 @@ public class SpecializationIndexController : ControllerBase
     [ProducesResponseType(StatusCodes.Status504GatewayTimeout)]
     public async Task<IActionResult> SaveIndex([FromForm] QSpecializationIndexBase indexMutate)
     {
-        var index = new SpecializationIndex(
-            indexMutate.Name,
-            indexMutate.QueryType,
-            indexMutate.AISearchDeploymentConnection,
-            indexMutate.OpenAIDeploymentConnection,
-            indexMutate.EmbeddingDeployment
-        );
-        await this._indexRepository.CreateAsync(index);
-
+        var index = await this._qSpecializationIndexService.SaveIndex(indexMutate);
         var specializationResponse = new QSpecializationIndexResponse(index);
 
         return this.Ok(specializationResponse);
@@ -71,19 +64,7 @@ public class SpecializationIndexController : ControllerBase
         [FromRoute] Guid indexId
     )
     {
-        var indexToEdit = await this._indexRepository.FindByIdAsync(indexId.ToString());
-        if (indexToEdit == null)
-        {
-            return this.NotFound();
-        }
-
-        indexToEdit.Name = qIndexMutate.Name ?? indexToEdit.Name;
-        indexToEdit.QueryType = qIndexMutate.QueryType ?? indexToEdit.QueryType;
-        indexToEdit.AISearchDeploymentConnection = qIndexMutate.AISearchDeploymentConnection ?? indexToEdit.AISearchDeploymentConnection;
-        indexToEdit.OpenAIDeploymentConnection = qIndexMutate.OpenAIDeploymentConnection ?? indexToEdit.OpenAIDeploymentConnection;
-        indexToEdit.EmbeddingDeployment = qIndexMutate.EmbeddingDeployment ?? indexToEdit.EmbeddingDeployment;
-
-        await this._indexRepository.UpsertAsync(indexToEdit);
+        var indexToEdit = await this._qSpecializationIndexService.UpdateIndex(indexId, qIndexMutate);
 
         return this.Ok(indexToEdit);
     }
@@ -96,13 +77,7 @@ public class SpecializationIndexController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> DeleteIndex(Guid indexId)
     {
-        var indexToDelete = await this._indexRepository.FindByIdAsync(indexId.ToString());
-        if (indexToDelete == null)
-        {
-            return this.NotFound();
-        }
-
-        await this._indexRepository.DeleteAsync(indexToDelete);
+        var indexToDelete = await this._qSpecializationIndexService.DeleteIndex(indexId);
         return this.Ok(true);
     }
 }

@@ -25,11 +25,12 @@ public class SearchController : ControllerBase
     public SearchController(
         ILogger<SearchController> logger,
         SpecializationRepository specializationSourceRepository,
+        SpecializationIndexRepository specializationIndexRepository,
         IOptions<QAzureOpenAIChatOptions> specializationOptions
     )
     {
         this._logger = logger;
-        this._qSearchService = new QSearchService(specializationOptions.Value, specializationSourceRepository);
+        this._qSearchService = new QSearchService(specializationOptions.Value, specializationSourceRepository, specializationIndexRepository);
     }
 
     /// <summary>

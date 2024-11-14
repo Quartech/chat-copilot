@@ -25,12 +25,14 @@ public class QSearchService : IQSearchService
 
     public QSearchService(
         QAzureOpenAIChatOptions qAzureOpenAIChatOptions,
-        SpecializationRepository specializationSourceRepository
+        SpecializationRepository specializationSourceRepository,
+        SpecializationIndexRepository indexRepository
     )
     {
         this._qAzureOpenAIChatExtension = new QAzureOpenAIChatExtension(
             qAzureOpenAIChatOptions,
-            specializationSourceRepository
+            specializationSourceRepository,
+            indexRepository
         );
         this._httpClientHandler = new() { CheckCertificateRevocationList = true };
         this._httpClient = new(this._httpClientHandler);
@@ -49,7 +51,7 @@ public class QSearchService : IQSearchService
         {
             return null;
         }
-        var (apiKey, endpoint) = this._qAzureOpenAIChatExtension.GetAISearchDeploymentConnectionDetails(indexName);
+        var (apiKey, endpoint) = await this._qAzureOpenAIChatExtension.GetAISearchDeploymentConnectionDetails(indexName);
         if (apiKey == null || endpoint == null)
         {
             return null;

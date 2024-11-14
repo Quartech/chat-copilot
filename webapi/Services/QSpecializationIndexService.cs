@@ -1,10 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
-using Azure.Storage.Blobs;
 using CopilotChat.WebApi.Models.Request;
 using CopilotChat.WebApi.Models.Storage;
-using CopilotChat.WebApi.Plugins.Chat.Ext;
 using CopilotChat.WebApi.Storage;
 
 namespace CopilotChat.WebApi.Services;
@@ -13,37 +12,69 @@ public class QSpecializationIndexService : IQSpecializationIndexService
 {
     private SpecializationIndexRepository _indexRepository;
 
-    private QBlobStorage _qBlobStorage;
-
-    private QAzureOpenAIChatOptions _qAzureOpenAIChatOptions;
-
     public QSpecializationIndexService(
-        SpecializationIndexRepository indexRepository,
-        QAzureOpenAIChatOptions qAzureOpenAIChatOptions
+        SpecializationIndexRepository indexRepository
     )
     {
         this._indexRepository = indexRepository;
-        this._qAzureOpenAIChatOptions = qAzureOpenAIChatOptions;
-        BlobServiceClient blobServiceClient = new(qAzureOpenAIChatOptions.BlobStorage.ConnectionString);
     }
 
     public Task<IEnumerable<SpecializationIndex>> GetAllIndexes()
     {
-        throw new NotImplementedException();
+        return this._indexRepository.GetAllIndexesAsync();
     }
 
     public Task<SpecializationIndex> GetIndexAsync(string id)
     {
-        throw new NotImplementedException();
+        return this._indexRepository.FindByIdAsync(id);
     }
 
-    public Task<SpecializationIndex> SaveIndex(QSpecializationIndexBase index)
+    public async Task<SpecializationIndex> SaveIndex(QSpecializationIndexBase index)
     {
-        throw new NotImplementedException();
+        var indexInsert = new SpecializationIndex(
+           index.Name,
+           index.QueryType,
+           index.AISearchDeploymentConnection,
+           index.OpenAIDeploymentConnection,
+           index.EmbeddingDeployment
+       );
+        await this._indexRepository.CreateAsync(indexInsert);
+
+        return indexInsert;
     }
 
-    public Task<SpecializationIndex> UpdateIndex(Guid indexId, QSpecializationIndexBase index)
+    public async Task<SpecializationIndex?> UpdateIndex(Guid indexId, QSpecializationIndexBase qIndexMutate)
     {
-        throw new NotImplementedException();
+        var indexToEdit = await this._indexRepository.FindByIdAsync(indexId.ToString());
+        if (indexToEdit == null)
+        {
+            return null;
+        }
+
+        indexToEdit.Name = qIndexMutate.Name ?? indexToEdit.Name;
+        indexToEdit.QueryType = qIndexMutate.QueryType ?? indexToEdit.QueryType;
+        indexToEdit.AISearchDeploymentConnection = qIndexMutate.AISearchDeploymentConnection ?? indexToEdit.AISearchDeploymentConnection;
+        indexToEdit.OpenAIDeploymentConnection = qIndexMutate.OpenAIDeploymentConnection ?? indexToEdit.OpenAIDeploymentConnection;
+        indexToEdit.EmbeddingDeployment = qIndexMutate.EmbeddingDeployment ?? indexToEdit.EmbeddingDeployment;
+
+        await this._indexRepository.UpsertAsync(indexToEdit);
+        return indexToEdit;
+    }
+
+    public async Task<SpecializationIndex?> DeleteIndex(Guid indexId)
+    {
+        var indexToDelete = await this._indexRepository.FindByIdAsync(indexId.ToString());
+        if (indexToDelete == null)
+        {
+            return null;
+        }
+        await this._indexRepository.DeleteAsync(indexToDelete);
+        return indexToDelete;
+    }
+
+    public async Task<SpecializationIndex?> GetSpecializationIndexByName(string name)
+    {
+        var indexes = await this._indexRepository.GetAllIndexesAsync();
+        return indexes.FirstOrDefault(a => a.Name == name);
     }
 }

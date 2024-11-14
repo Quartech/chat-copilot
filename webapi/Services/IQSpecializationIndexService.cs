@@ -14,5 +14,5 @@ public interface IQSpecializationIndexService
 
     Task<SpecializationIndex> SaveIndex(QSpecializationIndexBase index);
 
-    Task<SpecializationIndex> UpdateIndex(Guid indexId, QSpecializationIndexBase index);
+    Task<SpecializationIndex?> UpdateIndex(Guid indexId, QSpecializationIndexBase qIndexMutate);
 }
