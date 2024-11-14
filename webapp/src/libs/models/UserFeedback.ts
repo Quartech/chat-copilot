@@ -4,15 +4,16 @@ export interface IUserFeedbackFilterRequest {
     startDate?: Date;
     endDate?: Date;
     isPositive?: boolean;
+    specializationId?: string;
     chatId?: string;
-    userId?: string;
     sortBy?: UserFeedbackSortOptions;
 }
 
 export enum UserFeedbackSortOptions {
     dateAsc,
     dateDesc,
-    feedbackPosNeg,
+    feedbackPos,
+    feedbackNeg,
 }
 
 export interface IUserFeedbackResult {

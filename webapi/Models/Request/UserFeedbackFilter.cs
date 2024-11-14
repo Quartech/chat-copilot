@@ -8,7 +8,7 @@ public class UserFeedbackFilter
     public DateTime? EndDate { get; set; }
     public bool? IsPositive { get; set; }
     public string? ChatId { get; set; }
-    public string? UserId { get; set; }
+    public string? SpecializationId { get; set; }
     public UserFeedbackSortOptions SortBy { get; set; }
 }
 

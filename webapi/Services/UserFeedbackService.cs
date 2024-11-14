@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text.Json;
 using System.Threading.Tasks;
 using CopilotChat.WebApi.Models.Request;
 using CopilotChat.WebApi.Models.Response;
+using CopilotChat.WebApi.Models.Storage;
 using CopilotChat.WebApi.Storage;
+using CopilotChat.WebApi.Utilities;
 
 namespace CopilotChat.WebApi.Services;
 
@@ -21,7 +24,27 @@ public class UserFeedbackService : IUserFeedbackService
 
     public async Task<UserFeedbackResult> Search(UserFeedbackFilter filter)
     {
-        var chatMessages = await this._messageRepository.QueryEntitiesAsync(m => m.UserFeedback != null);
+        // base predicate
+        Expression<Func<CopilotChatMessage, bool>> predicate = m => m.UserFeedback != null;
+
+        if (filter.StartDate.HasValue)
+        {
+            predicate = predicate.And(m => m.Timestamp >= filter.StartDate.Value);
+        }
+
+        if (filter.EndDate.HasValue)
+        {
+            predicate = predicate.And(m => m.Timestamp <= filter.EndDate.Value.AddDays(1).AddSeconds(-1));
+        }
+
+        if (filter.IsPositive.HasValue)
+        {
+            predicate = predicate.And(m =>
+                m.UserFeedback == (filter.IsPositive.Value ? UserFeedback.Positive : UserFeedback.Negative)
+            );
+        }
+
+        var chatMessages = await this._messageRepository.QueryEntitiesAsync(predicate);
         var chatSessions = await this._sessionRepository.FindByIdsAsync(chatMessages.Select(c => c.ChatId));
 
         var userFeedbackResult = new UserFeedbackResult();
