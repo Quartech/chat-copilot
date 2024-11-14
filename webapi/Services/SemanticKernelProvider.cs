@@ -59,7 +59,6 @@ public sealed class SemanticKernelProvider
                     QAzureOpenAIChatOptions.OpenAIDeploymentConnection connection in qAzureOpenAIChatOptions.OpenAIDeploymentConnections
                 )
                 {
-
                     foreach (var deployment in connection.ChatCompletionDeployments)
                     {
 #pragma warning disable CA2000 // No need to dispose of HttpClient instances from IHttpClientFactory
@@ -73,7 +72,7 @@ public sealed class SemanticKernelProvider
                     }
                     foreach (var deployment in connection.ImageGenerationDeployments)
                     {
-#pragma warning disable SKEXP0010 // Experimental method AddAzureOpenAITextToImage, surpressed instability warning
+#pragma warning disable SKEXP0010 // Experimental method AddAzureOpenAITextToImage, suppressed instability warning
                         builder.AddAzureOpenAITextToImage(
                             deployment,
                             connection.Endpoint?.ToString(),

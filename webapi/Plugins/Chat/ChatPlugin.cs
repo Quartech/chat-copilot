@@ -909,7 +909,18 @@ public class ChatPlugin
 
     private bool IsImageRequest(string prompt)
     {
-        var imageKeywords = new[] { "draw", "illustrate", "generate image", "create a visual", "picture of", "sketch", "painting of", "image of" };
+        var imageKeywords = new[]
+        {
+            "draw",
+            "illustrate",
+            "generate image",
+            "create a visual",
+            "picture of",
+            "sketch",
+            "painting of",
+            "image of",
+        };
+
         return imageKeywords.Any(keyword => prompt.Contains(keyword, StringComparison.OrdinalIgnoreCase));
     }
 
@@ -990,23 +1001,28 @@ public class ChatPlugin
         var messageArray = new ChatMessageContent[chatHistory.Count()];
         chatHistory.CopyTo(messageArray, 0);
         var lastUserMessage = messageArray.Where(m => m.Role == AuthorRole.User).LastOrDefault()?.Content;
-        int startIndex = lastUserMessage.IndexOf("said:") + "said:".Length;
+        int startIndex = lastUserMessage.IndexOf("said:", StringComparison.Ordinal) + "said:".Length;
         lastUserMessage = lastUserMessage.Substring(startIndex).Trim();
 
         // Stream the message to the client
         try
         {
             var accumulatedContent = new StringBuilder();
-            this._logger.LogInformation("Streaming response to client {0}", lastUserMessage);
-            if(IsImageRequest(lastUserMessage))
+            if (this.IsImageRequest(lastUserMessage))
             {
                 this._logger.LogInformation("Generating image response");
-                if(imageGen == null)
+                if (imageGen == null)
                 {
                     throw new InvalidOperationException("Image generation service not found.");
                 }
 #pragma warning disable SKEXP0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-                var imageStream = await imageGen.GenerateImageAsync(lastUserMessage, 1024, 1024, this._kernel, cancellationToken);
+                var imageStream = await imageGen.GenerateImageAsync(
+                    lastUserMessage,
+                    1024,
+                    1024,
+                    this._kernel,
+                    cancellationToken
+                );
                 chatMessage.IsImage = true;
                 chatMessage.Content = imageStream;
                 await this.UpdateMessageOnClient(chatMessage, cancellationToken);
@@ -1145,7 +1161,6 @@ public class ChatPlugin
     /// <param name="cancellationToken">The cancellation token.</param>
     private async Task UpdateMessageOnClient(CopilotChatMessage message, CancellationToken cancellationToken)
     {
-        this._logger.LogInformation("IsImage: {0}", message.IsImage);
         await this
             ._messageRelayHubContext.Clients.Group(message.ChatId)
             .SendAsync("ReceiveMessageUpdate", message, cancellationToken);
