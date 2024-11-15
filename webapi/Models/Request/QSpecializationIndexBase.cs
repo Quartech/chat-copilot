@@ -13,7 +13,7 @@ public class QSpecializationIndexBase
     [JsonPropertyName("aiSearchDeploymentConnection")]
     public string? AISearchDeploymentConnection { get; set; }
 
-    [JsonPropertyName("openAIDeploymentConnetion")]
+    [JsonPropertyName("openAIDeploymentConnection")]
     public string? OpenAIDeploymentConnection { get; set; }
 
     [JsonPropertyName("embeddingDeployment")]
