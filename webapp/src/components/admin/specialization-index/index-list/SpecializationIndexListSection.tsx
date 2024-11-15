@@ -42,7 +42,7 @@ interface IChatListSectionProps {
  */
 export const SpecializationIndexListSection: React.FC<IChatListSectionProps> = ({ header }) => {
     const classes = useClasses();
-    const specalizationIndexes = useSpecializationIndex();
+    const indexes = useSpecializationIndex();
     const { specializationIndexes, selectedIndexId } = useAppSelector((state: RootState) => state.admin);
 
     const dropRef = React.useRef<HTMLDivElement | null>(null);
@@ -70,7 +70,7 @@ export const SpecializationIndexListSection: React.FC<IChatListSectionProps> = (
                 specializationIndexes.findIndex((spec) => spec.id === toId),
             );
 
-            void specalizationIndexes.setSpecializationIndexOrder(updatedSpecializations);
+            void indexes.setSpecializationIndexOrder(updatedSpecializations);
         },
     });
 
