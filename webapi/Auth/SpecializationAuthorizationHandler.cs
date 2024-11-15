@@ -1,9 +1,9 @@
-﻿using CopilotChat.WebApi.Context;
-using CopilotChat.WebApi.Storage;
-using Microsoft.AspNetCore.Authorization;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using CopilotChat.WebApi.Context;
+using CopilotChat.WebApi.Storage;
+using Microsoft.AspNetCore.Authorization;
 
 namespace CopilotChat.WebApi.Auth;
 
@@ -25,12 +25,16 @@ public class SpecializationAuthorizationHandler(
         var chatId = resource.GetRouteValue("chatId")?.ToString();
 
         if (string.IsNullOrEmpty(chatId))
+        {
             return;
+        }
 
         var chatSession = await chatSessionRepository.FindByIdAsync(chatId);
 
         if (chatSession == null)
+        {
             return;
+        }
 
         var specializationId = chatSession.specializationId;
 
