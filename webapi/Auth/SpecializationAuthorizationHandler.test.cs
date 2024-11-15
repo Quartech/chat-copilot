@@ -27,10 +27,7 @@ public class SpecializationAuthorizationHandlerTest
     {
         var requirements = new[] { new SpecializationRequirement() };
 
-        var user = new ClaimsPrincipal(
-                new ClaimsIdentity(
-                    claims,
-                    "auth"));
+        var user = new ClaimsPrincipal(new ClaimsIdentity(claims, "auth"));
 
         this.resource = new();
         this.resource.Setup(r => r.GetRouteValue("chatId")).Returns(CHAT_ID);
@@ -41,22 +38,20 @@ public class SpecializationAuthorizationHandlerTest
     [TestInitialize]
     public void Setup()
     {
-        this.chatSession = new ChatSession(
-                "title",
-                "description",
-                SPECIALIZATION_ID,
-                CHAT_ID);
+        this.chatSession = new ChatSession("title", "description", SPECIALIZATION_ID, CHAT_ID);
         var specialization = new Specialization() { GroupMemberships = new[] { GROUP_ID } };
 
         this.specializationContext = new();
-        this.specializationContext.Setup(s => s.ReadAsync(SPECIALIZATION_ID, SPECIALIZATION_ID)).Returns(Task.FromResult(specialization));
+        this.specializationContext.Setup(s => s.ReadAsync(SPECIALIZATION_ID, SPECIALIZATION_ID))
+            .Returns(Task.FromResult(specialization));
 
         this.chatSessionContext = new();
         this.chatSessionContext.Setup(c => c.ReadAsync(CHAT_ID, CHAT_ID)).Returns(Task.FromResult(this.chatSession));
 
         this.handler = new(
-                new Mock<SpecializationRepository>(this.specializationContext.Object).Object,
-                new Mock<ChatSessionRepository>(this.chatSessionContext.Object).Object);
+            new Mock<SpecializationRepository>(this.specializationContext.Object).Object,
+            new Mock<ChatSessionRepository>(this.chatSessionContext.Object).Object
+        );
 
         this.context = this.BuildAuthorizationContext(new[] { new Claim("groups", GROUP_ID) });
     }
@@ -112,7 +107,8 @@ public class SpecializationAuthorizationHandlerTest
     [TestMethod]
     public async Task NullSpecialization_Should_NotSucceed()
     {
-        this.specializationContext!.Setup(c => c.ReadAsync(SPECIALIZATION_ID, SPECIALIZATION_ID)).Returns(Task.FromResult<Specialization>(null));
+        this.specializationContext!.Setup(c => c.ReadAsync(SPECIALIZATION_ID, SPECIALIZATION_ID))
+            .Returns(Task.FromResult<Specialization>(null));
 
         await this.handler!.HandleAsync(this.context!);
 
