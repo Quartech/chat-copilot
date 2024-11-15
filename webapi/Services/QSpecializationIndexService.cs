@@ -12,9 +12,7 @@ public class QSpecializationIndexService : IQSpecializationIndexService
 {
     private SpecializationIndexRepository _indexRepository;
 
-    public QSpecializationIndexService(
-        SpecializationIndexRepository indexRepository
-    )
+    public QSpecializationIndexService(SpecializationIndexRepository indexRepository)
     {
         this._indexRepository = indexRepository;
     }
@@ -32,13 +30,13 @@ public class QSpecializationIndexService : IQSpecializationIndexService
     public async Task<SpecializationIndex> SaveIndex(QSpecializationIndexBase index)
     {
         var indexInsert = new SpecializationIndex(
-           index.Name,
-           index.QueryType,
-           index.AISearchDeploymentConnection,
-           index.OpenAIDeploymentConnection,
-           index.EmbeddingDeployment,
-           index.Order ?? 0
-       );
+            index.Name,
+            index.QueryType,
+            index.AISearchDeploymentConnection,
+            index.OpenAIDeploymentConnection,
+            index.EmbeddingDeployment,
+            index.Order ?? 0
+        );
         await this._indexRepository.CreateAsync(indexInsert);
 
         return indexInsert;
@@ -54,8 +52,10 @@ public class QSpecializationIndexService : IQSpecializationIndexService
 
         indexToEdit.Name = qIndexMutate.Name ?? indexToEdit.Name;
         indexToEdit.QueryType = qIndexMutate.QueryType ?? indexToEdit.QueryType;
-        indexToEdit.AISearchDeploymentConnection = qIndexMutate.AISearchDeploymentConnection ?? indexToEdit.AISearchDeploymentConnection;
-        indexToEdit.OpenAIDeploymentConnection = qIndexMutate.OpenAIDeploymentConnection ?? indexToEdit.OpenAIDeploymentConnection;
+        indexToEdit.AISearchDeploymentConnection =
+            qIndexMutate.AISearchDeploymentConnection ?? indexToEdit.AISearchDeploymentConnection;
+        indexToEdit.OpenAIDeploymentConnection =
+            qIndexMutate.OpenAIDeploymentConnection ?? indexToEdit.OpenAIDeploymentConnection;
         indexToEdit.EmbeddingDeployment = qIndexMutate.EmbeddingDeployment ?? indexToEdit.EmbeddingDeployment;
         indexToEdit.Order = qIndexMutate.Order ?? indexToEdit.Order;
 

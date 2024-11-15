@@ -69,7 +69,9 @@ public class QAzureOpenAIChatExtension
             return null;
         }
 
-        var qSpecializationIndex = await this._qSpecializationIndexService.GetSpecializationIndexByName(specialization.IndexName);
+        var qSpecializationIndex = await this._qSpecializationIndexService.GetSpecializationIndexByName(
+            specialization.IndexName
+        );
         if (qSpecializationIndex == null)
         {
             return null;
@@ -114,7 +116,9 @@ public class QAzureOpenAIChatExtension
                     {
                         UrlFieldName = null, //qSpecializationIndex.FieldMapping?.UrlFieldName,
                         TitleFieldName = null, //qSpecializationIndex.FieldMapping?.TitleFieldName,
-                        FilepathFieldName = null //qSpecializationIndex.FieldMapping?.FilepathFieldName,
+                        FilepathFieldName =
+                            null //qSpecializationIndex.FieldMapping?.FilepathFieldName,
+                        ,
                     },
                     SemanticConfiguration = "default", //qSpecializationIndex.SemanticConfiguration,
                     QueryType = new AzureSearchQueryType(qSpecializationIndex.QueryType),
@@ -163,10 +167,7 @@ public class QAzureOpenAIChatExtension
     //     return null;
     // }
 
-    public Uri? GenerateEmbeddingEndpoint(
-        Uri connectionEndpoint,
-        SpecializationIndex qSpecializationIndex
-    )
+    public Uri? GenerateEmbeddingEndpoint(Uri connectionEndpoint, SpecializationIndex qSpecializationIndex)
     {
         return new Uri(
             connectionEndpoint,

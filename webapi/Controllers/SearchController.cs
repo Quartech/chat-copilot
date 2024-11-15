@@ -30,7 +30,11 @@ public class SearchController : ControllerBase
     )
     {
         this._logger = logger;
-        this._qSearchService = new QSearchService(specializationOptions.Value, specializationSourceRepository, specializationIndexRepository);
+        this._qSearchService = new QSearchService(
+            specializationOptions.Value,
+            specializationSourceRepository,
+            specializationIndexRepository
+        );
     }
 
     /// <summary>
