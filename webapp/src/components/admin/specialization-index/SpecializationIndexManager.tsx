@@ -69,14 +69,6 @@ const useClasses = makeStyles({
     },
 });
 
-/**
- * "IndexName": "david-probate-files",
-  "QueryType": "vector_simple_hybrid", //Supported Options: simple, semantic, vector, vector_simple_hybrid, vector_semantic_hybrid
-  "AISearchDeploymentConnection": "searchs-ncus-qsl-openai-001",
-  "OpenAIDeploymentConnection": "ncus-qsl-openai-poc",
-  "EmbeddingDeployment": "text-embedding-ada-002"
- */
-
 export const SpecializationIndexManager: React.FC = () => {
     const classes = useClasses();
     const indexes = useSpecializationIndex();
