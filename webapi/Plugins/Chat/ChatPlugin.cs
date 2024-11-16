@@ -636,7 +636,7 @@ public class ChatPlugin
     )
     {
         int count = this._qSpecialization?.PastMessagesIncludedCount ?? 100;
-        var sortedMessages = await this._chatMessageRepository.FindByChatIdAsync(chatId, 0, count);
+        var sortedMessages = await this._chatMessageRepository.FindByChatIdAsync(chatId, null, 0, count);
 
         ChatHistory allottedChatHistory = new();
         var remainingToken = tokenLimit;

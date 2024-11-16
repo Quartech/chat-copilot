@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+using CopilotChat.WebApi.Models.Request;
 using CopilotChat.WebApi.Models.Storage;
 
 namespace CopilotChat.WebApi.Storage;
@@ -61,6 +62,7 @@ public interface ICopilotChatMessageStorageContext : IStorageContext<CopilotChat
     /// <returns>A list of ChatMessages matching the given chatId sorted from most recent to oldest.</returns>
     Task<IEnumerable<CopilotChatMessage>> QueryEntitiesAsync(
         Expression<Func<CopilotChatMessage, bool>> predicate,
+        IEnumerable<CopilotChatMessageSortOption>? sortOptions,
         int skip = 0,
         int count = -1
     );

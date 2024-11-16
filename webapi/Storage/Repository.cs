@@ -2,8 +2,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+using CopilotChat.WebApi.Models.Request;
 using CopilotChat.WebApi.Models.Storage;
 
 namespace CopilotChat.WebApi.Storage;
@@ -96,12 +98,13 @@ public class CopilotChatMessageRepository : Repository<CopilotChatMessage>
     /// <returns>A list of ChatMessages matching the given chatId sorted from most recent to oldest.</returns>
     public async Task<IEnumerable<CopilotChatMessage>> QueryEntitiesAsync(
         Expression<Func<CopilotChatMessage, bool>> predicate,
+        IEnumerable<CopilotChatMessageSortOption>? sortOptions = null,
         int skip = 0,
         int count = -1
     )
     {
         return await Task.Run<IEnumerable<CopilotChatMessage>>(
-            () => this._messageStorageContext.QueryEntitiesAsync(predicate, skip, count)
+            () => this._messageStorageContext.QueryEntitiesAsync(predicate, sortOptions, skip, count)
         );
     }
 }

@@ -1,4 +1,4 @@
-import { UserFeedback } from './ChatMessage';
+import { CopilotChatMessageSortOption, UserFeedback } from './ChatMessage';
 
 export interface IUserFeedbackFilterRequest {
     startDate?: Date;
@@ -6,14 +6,7 @@ export interface IUserFeedbackFilterRequest {
     isPositive?: boolean;
     specializationId?: string;
     chatId?: string;
-    sortBy?: UserFeedbackSortOptions;
-}
-
-export enum UserFeedbackSortOptions {
-    dateAsc,
-    dateDesc,
-    feedbackPos,
-    feedbackNeg,
+    sortBy?: CopilotChatMessageSortOption[];
 }
 
 export interface IUserFeedbackResult {

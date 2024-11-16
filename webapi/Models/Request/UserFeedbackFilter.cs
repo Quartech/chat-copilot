@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace CopilotChat.WebApi.Models.Request;
 
@@ -9,12 +10,5 @@ public class UserFeedbackFilter
     public bool? IsPositive { get; set; }
     public string? ChatId { get; set; }
     public string? SpecializationId { get; set; }
-    public UserFeedbackSortOptions SortBy { get; set; }
-}
-
-public enum UserFeedbackSortOptions
-{
-    DateAsc,
-    DateDesc,
-    FeedbackPosNeg,
+    public List<CopilotChatMessageSortOption> SortBy { get; set; } = new List<CopilotChatMessageSortOption>();
 }

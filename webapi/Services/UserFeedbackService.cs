@@ -44,7 +44,7 @@ public class UserFeedbackService : IUserFeedbackService
             );
         }
 
-        var chatMessages = await this._messageRepository.QueryEntitiesAsync(predicate);
+        var chatMessages = await this._messageRepository.QueryEntitiesAsync(predicate, filter.SortBy);
         var chatSessions = await this._sessionRepository.FindByIdsAsync(chatMessages.Select(c => c.ChatId));
 
         var userFeedbackResult = new UserFeedbackResult();

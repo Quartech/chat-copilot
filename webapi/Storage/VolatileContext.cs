@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+using CopilotChat.WebApi.Models.Request;
 using CopilotChat.WebApi.Models.Storage;
 
 namespace CopilotChat.WebApi.Storage;
@@ -104,26 +105,66 @@ public class VolatileContext<T> : IStorageContext<T>
 /// <summary>
 /// Specialization of VolatileContext<T> for CopilotChatMessage.
 /// </summary>
-public class VolatileCopilotChatMessageContext : VolatileContext<CopilotChatMessage>, ICopilotChatMessageStorageContext
+public class VolatileCopilotChatMessageContext
+    : VolatileContext<CopilotChatMessage>,
+        ICopilotChatMessageStorageContext,
+        ICopilotChatMessageSortable
 {
     /// <inheritdoc/>
-    public Task<IEnumerable<CopilotChatMessage>> QueryEntitiesAsync(
+    public async Task<IEnumerable<CopilotChatMessage>> QueryEntitiesAsync(
         Expression<Func<CopilotChatMessage, bool>> predicate,
+        IEnumerable<CopilotChatMessageSortOption>? sortOptions,
         int skip,
         int count
     )
     {
         var compiledPredicate = predicate.Compile();
 
-        // Apply the compiled predicate, ordering, and pagination
-        var result = this._entities.Values.Where(compiledPredicate).OrderByDescending(m => m.Timestamp).Skip(skip);
+        // Apply the compiled predicate
+        var filteredEntities = this._entities.Values.Where(compiledPredicate);
 
-        // Apply Take only if count is greater than 0; otherwise, return all remaining results
+        // Apply sorting
+        var orderedEntities = this.ApplySort(filteredEntities.AsQueryable(), sortOptions);
+
+        // Apply pagination
+        orderedEntities = orderedEntities.Skip(skip);
         if (count > 0)
         {
-            result = result.Take(count);
+            orderedEntities = orderedEntities.Take(count);
         }
 
-        return Task.FromResult(result);
+        return await Task.FromResult(orderedEntities);
+    }
+
+    public IQueryable<CopilotChatMessage> ApplySort(
+        IQueryable<CopilotChatMessage> queryable,
+        IEnumerable<CopilotChatMessageSortOption>? sortOptions
+    )
+    {
+        var orderedQueryable = queryable.OrderBy(m => 1);
+        var sortOptionsList = sortOptions?.Reverse().ToList();
+
+        if (sortOptionsList == null || sortOptionsList.Count == 0)
+        {
+            return orderedQueryable.OrderByDescending(m => m.Timestamp);
+        }
+
+        foreach (var sortOption in sortOptionsList)
+        {
+            orderedQueryable = sortOption switch
+            {
+                CopilotChatMessageSortOption.DateDesc => orderedQueryable.ThenByDescending(m => m.Timestamp),
+                CopilotChatMessageSortOption.DateAsc => orderedQueryable.ThenBy(m => m.Timestamp),
+                CopilotChatMessageSortOption.FeedbackPos => orderedQueryable.ThenByDescending(m =>
+                    m.UserFeedback == UserFeedback.Positive
+                ),
+                CopilotChatMessageSortOption.FeedbackNeg => orderedQueryable.ThenByDescending(m =>
+                    m.UserFeedback == UserFeedback.Negative
+                ),
+                _ => orderedQueryable,
+            };
+        }
+
+        return orderedQueryable;
     }
 }

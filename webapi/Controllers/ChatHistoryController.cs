@@ -205,7 +205,7 @@ public class ChatHistoryController : ControllerBase
         [FromQuery] int count = -1
     )
     {
-        var chatMessages = await this._messageRepository.FindByChatIdAsync(chatId.ToString(), skip, count);
+        var chatMessages = await this._messageRepository.FindByChatIdAsync(chatId.ToString(), null, skip, count);
         if (!chatMessages.Any())
         {
             return this.NotFound($"No messages found for chat id '{chatId}'.");

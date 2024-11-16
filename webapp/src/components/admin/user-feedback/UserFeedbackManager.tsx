@@ -19,11 +19,8 @@ import {
 import { DatePicker } from '@fluentui/react-datepicker-compat';
 import React, { useEffect, useRef, useState } from 'react';
 import { AuthHelper } from '../../../libs/auth/AuthHelper';
-import {
-    IUserFeedbackFilterRequest,
-    IUserFeedbackResult,
-    UserFeedbackSortOptions,
-} from '../../../libs/models/UserFeedback';
+import { CopilotChatMessageSortOption } from '../../../libs/models/ChatMessage';
+import { IUserFeedbackFilterRequest, IUserFeedbackResult } from '../../../libs/models/UserFeedback';
 import { UserFeedbackService } from '../../../libs/services/UserFeedbackService';
 
 const useClasses = makeStyles({
@@ -55,7 +52,7 @@ export const UserFeedbackManager: React.FC = () => {
         startDate: thirtyDaysAgoDate,
         endDate: todayDate,
         isPositive: undefined,
-        sortBy: UserFeedbackSortOptions.dateDesc,
+        sortBy: [CopilotChatMessageSortOption.dateDesc],
     });
 
     const initalFetch = useRef(false);
@@ -82,6 +79,14 @@ export const UserFeedbackManager: React.FC = () => {
         setFilter((prev) => ({ ...prev, [field]: value }));
     };
 
+    const handleSortChange = (group: string, value: CopilotChatMessageSortOption) => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        setFilter((prevFilter) => ({
+            ...prevFilter,
+            sortBy: [...(prevFilter.sortBy ?? []).filter((item) => !item.startsWith(group)), value],
+        }));
+    };
+
     const columns = [
         { columnKey: 'feedback', label: 'Feedback' },
         { columnKey: 'specialization', label: 'Specialization' },
@@ -97,10 +102,14 @@ export const UserFeedbackManager: React.FC = () => {
         { value: 'negative', text: 'Negative' },
     ];
 
-    const sortDropdownId = useId('sort');
-    const sortOptions = [
+    const sortDateDropdownId = useId('sortDate');
+    const sortDateOptions = [
         { value: 'dateDesc', text: 'Date (Newest first)' },
         { value: 'dateAsc', text: 'Date (Oldest first)' },
+    ];
+
+    const sortFeedbackDropdownId = useId('sortFeedback');
+    const sortFeedbackOptions = [
         { value: 'feedbackPos', text: 'Feedback (Positive first)' },
         { value: 'feedbackNeg', text: 'Feedback (Negative first)' },
     ];
@@ -144,21 +153,37 @@ export const UserFeedbackManager: React.FC = () => {
                         }}
                     />
                 </Field>
-                <Field label="Sort By:">
+                <Field label="Sort By Date:">
                     <Dropdown
-                        aria-labelledby={sortDropdownId}
-                        defaultSelectedOptions={[sortOptions[0].value]}
-                        defaultValue={sortOptions[0].text}
+                        aria-labelledby={sortDateDropdownId}
+                        defaultSelectedOptions={[sortDateOptions[0].value]}
+                        defaultValue={sortDateOptions[0].text}
                         onOptionSelect={(_ev, option) => {
-                            handleFilterChange('sortBy', option.optionValue as any as UserFeedbackSortOptions);
+                            handleSortChange('date', option.optionValue as CopilotChatMessageSortOption);
                         }}
                     >
-                        {sortOptions.map((option, index) => (
+                        {sortDateOptions.map((option, index) => (
                             <Option key={index} value={option.value}>
                                 {option.text}
                             </Option>
                         ))}
                     </Dropdown>
+                    <Field label="Sort By Feedback:">
+                        <Dropdown
+                            aria-labelledby={sortFeedbackDropdownId}
+                            defaultSelectedOptions={[sortFeedbackOptions[0].value]}
+                            defaultValue={sortFeedbackOptions[0].text}
+                            onOptionSelect={(_ev, option) => {
+                                handleSortChange('feedback', option.optionValue as CopilotChatMessageSortOption);
+                            }}
+                        >
+                            {sortFeedbackOptions.map((option, index) => (
+                                <Option key={index} value={option.value}>
+                                    {option.text}
+                                </Option>
+                            ))}
+                        </Dropdown>
+                    </Field>
                 </Field>
                 <div style={{ marginTop: '20px' }}>
                     <Button
