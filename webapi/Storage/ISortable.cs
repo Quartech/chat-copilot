@@ -7,12 +7,12 @@ namespace CopilotChat.WebApi.Storage;
 
 public interface ISortable<T, TSortOption>
 {
-    IQueryable<T> ApplySort(IQueryable<T> queryable, IEnumerable<TSortOption> sortOptions);
+    IQueryable<T> Sort(IQueryable<T> queryable, IEnumerable<TSortOption> sortOptions);
 }
 
 public interface ICopilotChatMessageSortable : ISortable<CopilotChatMessage, CopilotChatMessageSortOption>
 {
-    new IQueryable<CopilotChatMessage> ApplySort(
+    new IQueryable<CopilotChatMessage> Sort(
         IQueryable<CopilotChatMessage> queryable,
         IEnumerable<CopilotChatMessageSortOption>? sortOptions
     );

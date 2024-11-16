@@ -157,10 +157,13 @@ public class CosmosDbCopilotChatMessageContext
         int count
     )
     {
+        // Apply predicate
         var queryable = this._container.GetItemLinqQueryable<CopilotChatMessage>(true).Where(predicate);
 
-        queryable = this.ApplySort(queryable, sortOptions);
+        // Apply sorting
+        queryable = this.Sort(queryable, sortOptions);
 
+        // Apply pagination
         queryable = queryable.Skip(skip);
         if (count > 0)
         {
@@ -178,7 +181,7 @@ public class CosmosDbCopilotChatMessageContext
         return results;
     }
 
-    public IQueryable<CopilotChatMessage> ApplySort(
+    public IQueryable<CopilotChatMessage> Sort(
         IQueryable<CopilotChatMessage> queryable,
         IEnumerable<CopilotChatMessageSortOption>? sortOptions
     )

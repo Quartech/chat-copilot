@@ -124,7 +124,7 @@ public class VolatileCopilotChatMessageContext
         var filteredEntities = this._entities.Values.Where(compiledPredicate);
 
         // Apply sorting
-        var orderedEntities = this.ApplySort(filteredEntities.AsQueryable(), sortOptions);
+        var orderedEntities = this.Sort(filteredEntities.AsQueryable(), sortOptions);
 
         // Apply pagination
         orderedEntities = orderedEntities.Skip(skip);
@@ -136,7 +136,7 @@ public class VolatileCopilotChatMessageContext
         return await Task.FromResult(orderedEntities);
     }
 
-    public IQueryable<CopilotChatMessage> ApplySort(
+    public IQueryable<CopilotChatMessage> Sort(
         IQueryable<CopilotChatMessage> queryable,
         IEnumerable<CopilotChatMessageSortOption>? sortOptions
     )
