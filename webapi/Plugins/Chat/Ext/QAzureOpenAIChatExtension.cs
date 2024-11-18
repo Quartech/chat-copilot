@@ -1,16 +1,14 @@
 ﻿// Copyright (c) Quartech. All rights reserved.
 
+using System;
 using System.Collections.Generic;
-using Azure.AI.OpenAI;
+using System.Linq;
+using Azure.AI.OpenAI.Chat;
 using CopilotChat.WebApi.Models.Storage;
 using CopilotChat.WebApi.Services;
 using CopilotChat.WebApi.Storage;
 
 namespace CopilotChat.WebApi.Plugins.Chat.Ext;
-
-using System;
-using System.Linq;
-using Azure.AI.OpenAI.Chat;
 
 /// <summary>
 /// Chat extension class to support Azure search indexes for bot response.
