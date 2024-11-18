@@ -10,6 +10,7 @@ namespace CopilotChat.WebApi.Plugins.Chat.Ext;
 
 using System;
 using System.Linq;
+using Azure.AI.OpenAI.Chat;
 
 /// <summary>
 /// Chat extension class to support Azure search indexes for bot response.
@@ -53,7 +54,8 @@ public class QAzureOpenAIChatExtension
         return this._qAzureOpenAIChatOptions.Enabled && specializationId != this.DefaultSpecialization;
     }
 
-    public AzureChatExtensionsOptions? GetAzureChatExtensionsOptions(Specialization? specialization)
+#pragma warning disable AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+    public AzureSearchChatDataSource? GetAzureSearchChatDataSource(Specialization? specialization)
     {
         if (
             specialization == null
@@ -94,37 +96,26 @@ public class QAzureOpenAIChatExtension
             openAIDeploymentConnection.Endpoint,
             qSpecializationIndex
         );
-
-        return new AzureChatExtensionsOptions()
+        return new AzureSearchChatDataSource
         {
-            Extensions =
+            IndexName = specialization.IndexName,
+            Endpoint = aiSearchDeploymentConnection.Endpoint,
+            Strictness = specialization.Strictness,
+            FieldMappings = new DataSourceFieldMappings
             {
-                new AzureSearchChatExtensionConfiguration()
-                {
-                    Filter = null,
-                    IndexName = specialization.IndexName,
-                    SearchEndpoint = aiSearchDeploymentConnection.Endpoint,
-                    Strictness = specialization.Strictness,
-                    FieldMappingOptions = new AzureSearchIndexFieldMappingOptions
-                    {
-                        UrlFieldName = qSpecializationIndex.FieldMapping?.UrlFieldName,
-                        TitleFieldName = qSpecializationIndex.FieldMapping?.TitleFieldName,
-                        FilepathFieldName = qSpecializationIndex.FieldMapping?.FilepathFieldName,
-                    },
-                    SemanticConfiguration = qSpecializationIndex.SemanticConfiguration,
-                    QueryType = new AzureSearchQueryType(qSpecializationIndex.QueryType),
-                    ShouldRestrictResultScope = specialization.RestrictResultScope,
-                    RoleInformation = specialization.RoleInformation,
-                    DocumentCount = specialization.DocumentCount,
-                    Authentication = new OnYourDataApiKeyAuthenticationOptions(aiSearchDeploymentConnection.APIKey),
-                    VectorizationSource = new OnYourDataEndpointVectorizationSource(
-                        embeddingEndpoint,
-                        new OnYourDataApiKeyAuthenticationOptions(openAIDeploymentConnection.APIKey)
-                    ),
-                },
+                UrlFieldName = qSpecializationIndex.FieldMapping?.UrlFieldName,
+                TitleFieldName = qSpecializationIndex.FieldMapping?.TitleFieldName,
+                FilePathFieldName = qSpecializationIndex.FieldMapping?.FilepathFieldName
             },
+            SemanticConfiguration = qSpecializationIndex.SemanticConfiguration,
+            QueryType = new DataSourceQueryType(qSpecializationIndex.QueryType),
+            InScope = specialization.RestrictResultScope,
+            TopNDocuments = specialization.DocumentCount,
+            Authentication = DataSourceAuthentication.FromApiKey(aiSearchDeploymentConnection.APIKey),
+            VectorizationSource = DataSourceVectorizer.FromEndpoint(embeddingEndpoint, DataSourceAuthentication.FromApiKey(openAIDeploymentConnection.APIKey))
         };
     }
+#pragma warning restore AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
     /// <summary>
     /// Retrieve all configured specialization indexess.

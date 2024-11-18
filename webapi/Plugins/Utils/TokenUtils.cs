@@ -79,16 +79,13 @@ public static class TokenUtils
         }
 
         var tokenUsage = 0;
-        try
+        if(usageObject is OpenAI.Chat.ChatTokenUsage)
         {
-            var jsonObject = JsonSerializer.Deserialize<JsonElement>(JsonSerializer.Serialize(usageObject));
-            tokenUsage = jsonObject.GetProperty("TotalTokens").GetInt32();
+            tokenUsage = ((OpenAI.Chat.ChatTokenUsage)usageObject).TotalTokenCount;
         }
-        catch (KeyNotFoundException)
+        else
         {
-            logger.LogError("Usage details not found in model result.");
-
-            return null;
+            logger.LogError("Usage metadata was not expected type.");
         }
 
         return tokenUsage.ToString(CultureInfo.InvariantCulture);
