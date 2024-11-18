@@ -79,7 +79,7 @@ public static class TokenUtils
         }
 
         var tokenUsage = 0;
-        if(usageObject is OpenAI.Chat.ChatTokenUsage)
+        if (usageObject is OpenAI.Chat.ChatTokenUsage)
         {
             tokenUsage = ((OpenAI.Chat.ChatTokenUsage)usageObject).TotalTokenCount;
         }

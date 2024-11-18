@@ -809,7 +809,7 @@ public class ChatPlugin
             FrequencyPenalty = this._promptOptions.ResponseFrequencyPenalty,
             PresencePenalty = this._promptOptions.ResponsePresencePenalty,
             ToolCallBehavior = Microsoft.SemanticKernel.Connectors.OpenAI.ToolCallBehavior.AutoInvokeKernelFunctions,
-            AzureChatDataSource = this._qAzureOpenAIChatExtension.GetAzureSearchChatDataSource(this._qSpecialization)
+            AzureChatDataSource = this._qAzureOpenAIChatExtension.GetAzureSearchChatDataSource(this._qSpecialization),
         };
 #pragma warning restore SKEXP0010 //Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
     }
@@ -828,7 +828,7 @@ public class ChatPlugin
             FrequencyPenalty = this._promptOptions.IntentFrequencyPenalty,
             PresencePenalty = this._promptOptions.IntentPresencePenalty,
             StopSequences = new string[] { "] bot:" },
-            AzureChatDataSource = this._qAzureOpenAIChatExtension.GetAzureSearchChatDataSource(this._qSpecialization)
+            AzureChatDataSource = this._qAzureOpenAIChatExtension.GetAzureSearchChatDataSource(this._qSpecialization),
         };
 #pragma warning restore SKEXP0010 //Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
     }
@@ -1009,11 +1009,7 @@ public class ChatPlugin
                             {
                                 sourceName = $"{sourceName} - Part {partNumber}";
                             }
-                            else if (
-                                messageContext.Citations.Count(c =>
-                                    c.FilePath == citation.Citation.FilePath
-                                ) > 1
-                            )
+                            else if (messageContext.Citations.Count(c => c.FilePath == citation.Citation.FilePath) > 1)
                             {
                                 sourceName = $"{sourceName} - Part 1";
                             }

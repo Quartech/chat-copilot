@@ -105,14 +105,17 @@ public class QAzureOpenAIChatExtension
             {
                 UrlFieldName = qSpecializationIndex.FieldMapping?.UrlFieldName,
                 TitleFieldName = qSpecializationIndex.FieldMapping?.TitleFieldName,
-                FilePathFieldName = qSpecializationIndex.FieldMapping?.FilepathFieldName
+                FilePathFieldName = qSpecializationIndex.FieldMapping?.FilepathFieldName,
             },
             SemanticConfiguration = qSpecializationIndex.SemanticConfiguration,
             QueryType = new DataSourceQueryType(qSpecializationIndex.QueryType),
             InScope = specialization.RestrictResultScope,
             TopNDocuments = specialization.DocumentCount,
             Authentication = DataSourceAuthentication.FromApiKey(aiSearchDeploymentConnection.APIKey),
-            VectorizationSource = DataSourceVectorizer.FromEndpoint(embeddingEndpoint, DataSourceAuthentication.FromApiKey(openAIDeploymentConnection.APIKey))
+            VectorizationSource = DataSourceVectorizer.FromEndpoint(
+                embeddingEndpoint,
+                DataSourceAuthentication.FromApiKey(openAIDeploymentConnection.APIKey)
+            ),
         };
     }
 #pragma warning restore AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.

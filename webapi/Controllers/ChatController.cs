@@ -351,10 +351,7 @@ public class ChatController : ControllerBase, IDisposable
 
                     // TODO: [Issue #44] Support other forms of auth. Currently, we only support user PAT or no auth.
                     var requiresAuth = !plugin.AuthType.Equals("none", StringComparison.OrdinalIgnoreCase);
-                    Task authCallback(
-                        HttpRequestMessage request,
-                        CancellationToken ___ = default
-                    )
+                    Task authCallback(HttpRequestMessage request, CancellationToken ___ = default)
                     {
                         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", PluginAuthValue);
 
@@ -413,10 +410,7 @@ public class ChatController : ControllerBase, IDisposable
             {
                 this._logger.LogDebug("Enabling hosted plugin {0}.", plugin.Name);
 
-                Task authCallback(
-                    HttpRequestMessage request,
-                    CancellationToken ___ = default
-                )
+                Task authCallback(HttpRequestMessage request, CancellationToken ___ = default)
                 {
                     request.Headers.Add("X-Functions-Key", plugin.Key);
 
