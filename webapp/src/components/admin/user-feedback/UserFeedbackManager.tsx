@@ -2,7 +2,6 @@ import { useMsal } from '@azure/msal-react';
 import {
     Button,
     Dropdown,
-    Field,
     makeStyles,
     Option,
     shorthands,
@@ -13,7 +12,6 @@ import {
     TableHeader,
     TableHeaderCell,
     TableRow,
-    tokens,
     useId,
 } from '@fluentui/react-components';
 import { DatePicker } from '@fluentui/react-datepicker-compat';
@@ -27,10 +25,34 @@ const useClasses = makeStyles({
     root: {
         display: 'flex',
         flexDirection: 'column',
-        height: '400px',
-        ...shorthands.gap(tokens.spacingVerticalSNudge),
-        ...shorthands.padding('80px'),
-        ...shorthands.overflow('auto'),
+        height: '100vh', // Takes up the full viewport height
+        width: '100%', // Start with 100% width, will adjust with maxWidth below
+        margin: '0 auto', // Centers the div if it's not as wide as the screen
+        padding: '80px',
+        boxSizing: 'border-box', // Ensures padding doesn't affect the overall width
+        overflowY: 'auto', // Allows vertical scrolling if content exceeds viewport height
+    },
+    filterContainer: {
+        display: 'flex',
+        flexDirection: 'row',
+        marginBottom: '20px',
+    },
+    filter: {
+        display: 'flex', // Make sure filter can flex its content
+        flexDirection: 'column', // or 'row' depending on your layout
+        flexGrow: 1, // Allows the filter to grow
+        flexShrink: 1, // Allows the filter to shrink
+        minWidth: 'auto', // Will automatically respect child's minWidth
+        ...shorthands.padding('5px'),
+    },
+    dropdown: {
+        minWidth: '100px',
+    },
+    apply: {
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'flex-end',
+        padding: '5px',
     },
 });
 
@@ -117,9 +139,11 @@ export const UserFeedbackManager: React.FC = () => {
     return (
         <div className={classes.root}>
             {/* Filter UI */}
-            <div style={{ marginBottom: '20px' }}>
-                <Field label="Feedback:">
+            <div className={classes.filterContainer}>
+                <div className={classes.filter}>
+                    <label id={feedbackDropdownId}>Feedback: </label>
                     <Dropdown
+                        className={classes.dropdown}
                         aria-labelledby={feedbackDropdownId}
                         defaultSelectedOptions={[feedbackOptions[0].value]}
                         defaultValue={feedbackOptions[0].text}
@@ -136,25 +160,33 @@ export const UserFeedbackManager: React.FC = () => {
                             </Option>
                         ))}
                     </Dropdown>
-                </Field>
-                <Field label="Start Date:">
+                </div>
+                <div className={classes.filter}>
+                    <label id="startDatePicker">Start Date:</label>
                     <DatePicker
+                        className={classes.dropdown}
+                        aria-labelledby="startDatePicker"
                         value={filter.startDate}
                         onSelectDate={(date) => {
                             handleFilterChange('startDate', date);
                         }}
                     />
-                </Field>
-                <Field label="End Date:">
+                </div>
+                <div className={classes.filter}>
+                    <label id="endDatePicker">End Date:</label>
                     <DatePicker
+                        className={classes.dropdown}
+                        aria-labelledby="endDatePicker"
                         value={filter.endDate}
                         onSelectDate={(date) => {
                             handleFilterChange('endDate', date);
                         }}
                     />
-                </Field>
-                <Field label="Sort By Date:">
+                </div>
+                <div className={classes.filter}>
+                    <label id={sortDateDropdownId}>Sort By:</label>
                     <Dropdown
+                        className={classes.dropdown}
                         aria-labelledby={sortDateDropdownId}
                         defaultSelectedOptions={[sortDateOptions[0].value]}
                         defaultValue={sortDateOptions[0].text}
@@ -168,24 +200,26 @@ export const UserFeedbackManager: React.FC = () => {
                             </Option>
                         ))}
                     </Dropdown>
-                    <Field label="Sort By Feedback:">
-                        <Dropdown
-                            aria-labelledby={sortFeedbackDropdownId}
-                            defaultSelectedOptions={[sortFeedbackOptions[0].value]}
-                            defaultValue={sortFeedbackOptions[0].text}
-                            onOptionSelect={(_ev, option) => {
-                                handleSortChange('feedback', option.optionValue as CopilotChatMessageSortOption);
-                            }}
-                        >
-                            {sortFeedbackOptions.map((option, index) => (
-                                <Option key={index} value={option.value}>
-                                    {option.text}
-                                </Option>
-                            ))}
-                        </Dropdown>
-                    </Field>
-                </Field>
-                <div style={{ marginTop: '20px' }}>
+                </div>
+                <div className={classes.filter}>
+                    <label id={sortFeedbackDropdownId}>Sort By:</label>
+                    <Dropdown
+                        className={classes.dropdown}
+                        aria-labelledby={sortFeedbackDropdownId}
+                        defaultSelectedOptions={[sortFeedbackOptions[0].value]}
+                        defaultValue={sortFeedbackOptions[0].text}
+                        onOptionSelect={(_ev, option) => {
+                            handleSortChange('feedback', option.optionValue as CopilotChatMessageSortOption);
+                        }}
+                    >
+                        {sortFeedbackOptions.map((option, index) => (
+                            <Option key={index} value={option.value}>
+                                {option.text}
+                            </Option>
+                        ))}
+                    </Dropdown>
+                </div>
+                <div className={classes.apply}>
                     <Button
                         onClick={() => {
                             void fetchData();
