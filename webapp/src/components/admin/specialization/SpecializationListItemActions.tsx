@@ -15,11 +15,13 @@ const useClasses = makeStyles({
 interface ISpecializationListItemActionsProps {
     specializationId: string;
     specializationMode: boolean;
+    specializationIndexName: string;
 }
 
 export const SpecializationListItemActions: React.FC<ISpecializationListItemActionsProps> = ({
     specializationId,
     specializationMode,
+    specializationIndexName,
 }) => {
     const specialization = useSpecialization();
     const classes = useClasses();
@@ -35,11 +37,16 @@ export const SpecializationListItemActions: React.FC<ISpecializationListItemActi
                 height={20}
                 checked={on}
                 onChange={(_event, { checked }) => {
-                    void specialization.toggleSpecialization(specializationId, checked).then((success) => {
-                        if (success) {
-                            turnOn(checked);
-                        }
-                    });
+                    void specialization
+                        .toggleSpecialization(specializationId, {
+                            indexName: specializationIndexName,
+                            isActive: checked,
+                        })
+                        .then((success) => {
+                            if (success) {
+                                turnOn(checked);
+                            }
+                        });
                 }}
                 className="react-switch"
             />

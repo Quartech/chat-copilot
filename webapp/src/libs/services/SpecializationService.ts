@@ -1,4 +1,4 @@
-import { ISpecialization, ISpecializationRequest } from '../models/Specialization';
+import { ISpecialization, ISpecializationRequest, ISpecializationToggleRequest } from '../models/Specialization';
 import { BaseService } from './BaseService';
 
 export class SpecializationService extends BaseService {
@@ -179,12 +179,13 @@ export class SpecializationService extends BaseService {
      */
     public onOffSpecializationAsync = async (
         specializationId: string,
-        isActive: boolean,
+        request: ISpecializationToggleRequest,
         accessToken: string,
     ): Promise<ISpecialization> => {
         const formData = new FormData();
 
-        formData.append('isActive', isActive.toString());
+        formData.append('isActive', request.isActive.toString());
+        formData.append('indexName', request.indexName);
 
         const result = await this.getResponseAsync<ISpecialization>(
             {
