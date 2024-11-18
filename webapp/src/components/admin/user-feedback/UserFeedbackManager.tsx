@@ -1,49 +1,50 @@
 import { useMsal } from '@azure/msal-react';
 import {
     Button,
+    createTableColumn,
+    DataGrid,
+    DataGridBody,
+    DataGridCell,
+    DataGridHeader,
+    DataGridHeaderCell,
+    DataGridRow,
     Dropdown,
     makeStyles,
     Option,
     shorthands,
-    Table,
-    TableBody,
-    TableCell,
     TableCellLayout,
-    TableHeader,
-    TableHeaderCell,
-    TableRow,
+    TableColumnDefinition,
     useId,
 } from '@fluentui/react-components';
 import { DatePicker } from '@fluentui/react-datepicker-compat';
 import React, { useEffect, useRef, useState } from 'react';
+import { useDispatch } from 'react-redux';
 import { AuthHelper } from '../../../libs/auth/AuthHelper';
+import { AlertType } from '../../../libs/models/AlertType';
 import { CopilotChatMessageSortOption } from '../../../libs/models/ChatMessage';
-import { IUserFeedbackFilterRequest, IUserFeedbackResult } from '../../../libs/models/UserFeedback';
+import { IUserFeedbackFilterRequest, IUserFeedbackItem, IUserFeedbackResult } from '../../../libs/models/UserFeedback';
 import { UserFeedbackService } from '../../../libs/services/UserFeedbackService';
+import { addAlert, hideSpinner, showSpinner } from '../../../redux/features/app/appSlice';
 
 const useClasses = makeStyles({
     root: {
         display: 'flex',
         flexDirection: 'column',
-        height: '100vh', // Takes up the full viewport height
-        width: '100%', // Start with 100% width, will adjust with maxWidth below
-        margin: '0 auto', // Centers the div if it's not as wide as the screen
+        height: '100vh',
         padding: '80px',
-        boxSizing: 'border-box', // Ensures padding doesn't affect the overall width
-        overflowY: 'auto', // Allows vertical scrolling if content exceeds viewport height
+        overflowY: 'auto',
     },
     filterContainer: {
         display: 'flex',
-        flexDirection: 'row',
         marginBottom: '20px',
     },
     filter: {
-        display: 'flex', // Make sure filter can flex its content
-        flexDirection: 'column', // or 'row' depending on your layout
-        flexGrow: 1, // Allows the filter to grow
-        flexShrink: 1, // Allows the filter to shrink
-        minWidth: 'auto', // Will automatically respect child's minWidth
+        display: 'flex',
+        flexDirection: 'column',
         ...shorthands.padding('5px'),
+    },
+    label: {
+        margin: '0 0 2px 2px',
     },
     dropdown: {
         minWidth: '100px',
@@ -54,6 +55,12 @@ const useClasses = makeStyles({
         justifyContent: 'flex-end',
         padding: '5px',
     },
+    tableContainer: {
+        display: 'flex',
+        flexDirection: 'column',
+        width: '100%',
+        boxSizing: 'border-box',
+    },
 });
 
 /**
@@ -62,6 +69,7 @@ const useClasses = makeStyles({
  * @returns {*}
  */
 export const UserFeedbackManager: React.FC = () => {
+    const dispatch = useDispatch();
     const classes = useClasses();
     const { instance, inProgress } = useMsal();
     const userFeedbackService = new UserFeedbackService();
@@ -80,13 +88,23 @@ export const UserFeedbackManager: React.FC = () => {
     const initalFetch = useRef(false);
 
     const fetchData = async () => {
+        dispatch(showSpinner());
         try {
             const data = await userFeedbackService.fetchFeedback(
                 filter,
                 await AuthHelper.getSKaaSAccessToken(instance, inProgress),
             );
             setUserFeedbackData(data);
-        } catch (err) {}
+        } catch (err) {
+            dispatch(
+                addAlert({
+                    message: `Error retrieving user feedback data. ${err}`,
+                    type: AlertType.Error,
+                }),
+            );
+        } finally {
+            dispatch(hideSpinner());
+        }
     };
 
     useEffect(() => {
@@ -109,14 +127,6 @@ export const UserFeedbackManager: React.FC = () => {
         }));
     };
 
-    const columns = [
-        { columnKey: 'feedback', label: 'Feedback' },
-        { columnKey: 'specialization', label: 'Specialization' },
-        { columnKey: 'prompt', label: 'User Prompt' },
-        { columnKey: 'content', label: 'Bot Response' },
-        { columnKey: 'date', label: 'Date' },
-    ];
-
     const feedbackDropdownId = useId('feedback');
     const feedbackOptions = [
         { value: 'all', text: 'All' },
@@ -136,12 +146,83 @@ export const UserFeedbackManager: React.FC = () => {
         { value: 'feedbackNeg', text: 'Feedback (Negative first)' },
     ];
 
+    const columns: Array<TableColumnDefinition<IUserFeedbackItem>> = [
+        createTableColumn<IUserFeedbackItem>({
+            columnId: 'userFeedback',
+            renderHeaderCell: () => {
+                return 'Feedback';
+            },
+            renderCell: (item) => {
+                return <TableCellLayout truncate>{item.userFeedback}</TableCellLayout>;
+            },
+        }),
+        createTableColumn<IUserFeedbackItem>({
+            columnId: 'specialization',
+            renderHeaderCell: () => {
+                return 'Specialization';
+            },
+            renderCell: (item) => {
+                return <TableCellLayout truncate>{item.specializationId}</TableCellLayout>;
+            },
+        }),
+        createTableColumn<IUserFeedbackItem>({
+            columnId: 'prompt',
+            renderHeaderCell: () => {
+                return 'User Prompt';
+            },
+
+            renderCell: (item) => {
+                return <TableCellLayout truncate>{item.prompt}</TableCellLayout>;
+            },
+        }),
+        createTableColumn<IUserFeedbackItem>({
+            columnId: 'content',
+            renderHeaderCell: () => {
+                return 'Bot Response';
+            },
+            renderCell: (item) => {
+                return <TableCellLayout truncate>{item.content}</TableCellLayout>;
+            },
+        }),
+        createTableColumn<IUserFeedbackItem>({
+            columnId: 'timestamp',
+            renderHeaderCell: () => {
+                return 'Date';
+            },
+            renderCell: (item) => {
+                return <TableCellLayout truncate>{item.timestamp}</TableCellLayout>;
+            },
+        }),
+    ];
+
+    const columnSizingOptions = {
+        userFeedback: {
+            defaultWidth: 80,
+        },
+        specialization: {
+            defaultWidth: 200,
+        },
+        prompt: {
+            defaultWidth: 420,
+        },
+        content: {
+            defaultWidth: 420,
+        },
+        timestamp: {
+            defaultWidth: 100,
+        },
+    };
+
+    //const refMap = React.useRef<Record<string, HTMLElement | null>>({});
+
     return (
         <div className={classes.root}>
             {/* Filter UI */}
             <div className={classes.filterContainer}>
                 <div className={classes.filter}>
-                    <label id={feedbackDropdownId}>Feedback: </label>
+                    <label className={classes.label} id={feedbackDropdownId}>
+                        Feedback:
+                    </label>
                     <Dropdown
                         className={classes.dropdown}
                         aria-labelledby={feedbackDropdownId}
@@ -162,7 +243,9 @@ export const UserFeedbackManager: React.FC = () => {
                     </Dropdown>
                 </div>
                 <div className={classes.filter}>
-                    <label id="startDatePicker">Start Date:</label>
+                    <label className={classes.label} id="startDatePicker">
+                        Start Date:
+                    </label>
                     <DatePicker
                         className={classes.dropdown}
                         aria-labelledby="startDatePicker"
@@ -173,7 +256,9 @@ export const UserFeedbackManager: React.FC = () => {
                     />
                 </div>
                 <div className={classes.filter}>
-                    <label id="endDatePicker">End Date:</label>
+                    <label className={classes.label} id="endDatePicker">
+                        End Date:
+                    </label>
                     <DatePicker
                         className={classes.dropdown}
                         aria-labelledby="endDatePicker"
@@ -184,7 +269,9 @@ export const UserFeedbackManager: React.FC = () => {
                     />
                 </div>
                 <div className={classes.filter}>
-                    <label id={sortDateDropdownId}>Sort By:</label>
+                    <label className={classes.label} id={sortDateDropdownId}>
+                        Sort By:
+                    </label>
                     <Dropdown
                         className={classes.dropdown}
                         aria-labelledby={sortDateDropdownId}
@@ -202,12 +289,14 @@ export const UserFeedbackManager: React.FC = () => {
                     </Dropdown>
                 </div>
                 <div className={classes.filter}>
-                    <label id={sortFeedbackDropdownId}>Sort By:</label>
+                    <label className={classes.label} id={sortFeedbackDropdownId}>
+                        Sort By:
+                    </label>
                     <Dropdown
                         className={classes.dropdown}
                         aria-labelledby={sortFeedbackDropdownId}
-                        defaultSelectedOptions={[sortFeedbackOptions[0].value]}
-                        defaultValue={sortFeedbackOptions[0].text}
+                        defaultSelectedOptions={undefined}
+                        defaultValue={undefined}
                         onOptionSelect={(_ev, option) => {
                             handleSortChange('feedback', option.optionValue as CopilotChatMessageSortOption);
                         }}
@@ -229,47 +318,37 @@ export const UserFeedbackManager: React.FC = () => {
                     </Button>
                 </div>
             </div>
-            <Table>
-                <TableHeader>
-                    <TableRow>
-                        {columns.map((column) => (
-                            <TableHeaderCell key={column.columnKey}>{column.label}</TableHeaderCell>
-                        ))}
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
-                    {userFeedbackData?.items.map((item) => (
-                        <TableRow key={item.messageId}>
-                            <TableCell>
-                                <TableCellLayout>{item.userFeedback}</TableCellLayout>
-                            </TableCell>
-                            <TableCell>
-                                <TableCellLayout>{item.specializationId}</TableCellLayout>
-                            </TableCell>
-                            <TableCell>
-                                <TableCellLayout>{item.prompt}</TableCellLayout>
-                            </TableCell>
-                            <TableCell>
-                                <TableCellLayout>
-                                    <div
-                                        style={{
-                                            whiteSpace: 'nowrap',
-                                            overflow: 'hidden',
-                                            textOverflow: 'ellipsis',
-                                            maxWidth: '200px',
-                                        }}
-                                    >
-                                        {item.content}
-                                    </div>
-                                </TableCellLayout>
-                            </TableCell>
-                            <TableCell>
-                                <TableCellLayout>{item.timestamp}</TableCellLayout>
-                            </TableCell>
-                        </TableRow>
-                    ))}
-                </TableBody>
-            </Table>
+            {/* Table UI */}
+            <div className={classes.tableContainer}>
+                <DataGrid
+                    items={userFeedbackData?.items ?? []}
+                    columns={columns}
+                    columnSizingOptions={columnSizingOptions}
+                    resizableColumns
+                    style={{
+                        width: '100%',
+                        flexGrow: 1,
+                        minWidth: '500px',
+                    }}
+                >
+                    <DataGridHeader>
+                        <DataGridRow>
+                            {({ renderHeaderCell }) => (
+                                <DataGridHeaderCell>
+                                    <strong>{renderHeaderCell()}</strong>
+                                </DataGridHeaderCell>
+                            )}
+                        </DataGridRow>
+                    </DataGridHeader>
+                    <DataGridBody<IUserFeedbackItem>>
+                        {({ item, rowId }) => (
+                            <DataGridRow<IUserFeedbackItem> key={rowId}>
+                                {({ renderCell }) => <DataGridCell>{renderCell(item)}</DataGridCell>}
+                            </DataGridRow>
+                        )}
+                    </DataGridBody>
+                </DataGrid>
+            </div>
         </div>
     );
 };
