@@ -35,8 +35,8 @@ Use GEO Codes for Region Codes: https://learn.microsoft.com/en-us/azure/backup/s
 1. `$env:ARM_ACCESS_KEY=$ACCOUNT_KEY`
 1. `terraform init`
 1. `terraform workspace select -or-create test` # default/test/prod
-1. `terraform plan -var-file="test.tfvars"` # dev.auto.tfvars/test.tfvars/prod.tfvars
-1. `terraform apply -var-file="test.tfvars"` # dev.auto.tfvars/test.tfvars/prod.tfvars
+1. `terraform plan -var-file="test.tfvars"` # dev.tfvars/test.tfvars/prod.tfvars
+1. `terraform apply -var-file="test.tfvars"` # dev.tfvars/test.tfvars/prod.tfvars
 
 Azure Cloud Names:
 

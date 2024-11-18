@@ -282,7 +282,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({ disabled, isDraggingOver, 
                     ref={textAreaRef}
                     id="chat-input"
                     resize="vertical"
-                    disabled={chatState.disabled || inputDisabled}
+                    disabled={chatState.disabled || chatState.loadingMessages || inputDisabled}
                     textarea={{
                         className: isDraggingOver
                             ? mergeClasses(classes.dragAndDrop, classes.textarea)
@@ -356,7 +356,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({ disabled, isDraggingOver, 
                                 onClick={() => {
                                     handleSubmit(input);
                                 }}
-                                disabled={chatState.disabled || inputDisabled}
+                                disabled={chatState.disabled || chatState.loadingMessages || inputDisabled}
                             />
                         )}
                     </div>

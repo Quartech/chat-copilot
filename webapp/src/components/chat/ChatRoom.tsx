@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-import { makeStyles, shorthands, tokens } from '@fluentui/react-components';
+import { makeStyles, shorthands, Spinner, Text, tokens } from '@fluentui/react-components';
 import React, { useMemo, useState } from 'react';
 import { SpecializationCardList } from '../../components/specialization/SpecializationCardList';
 import { getFriendlyChatName, GetResponseOptions, useChat } from '../../libs/hooks/useChat';
@@ -31,6 +31,17 @@ const useClasses = makeStyles({
         paddingRight: tokens.spacingHorizontalM,
         display: 'flex',
         justifyContent: 'center',
+    },
+    spinner: {
+        ...shorthands.padding(tokens.spacingVerticalM),
+        paddingLeft: tokens.spacingHorizontalM,
+        paddingRight: tokens.spacingHorizontalM,
+        display: 'flex',
+        flexDirection: 'row',
+        height: '24px',
+        justifyContent: 'center',
+        alignItems: 'center',
+        gap: '1rem',
     },
     input: {
         display: 'flex',
@@ -189,6 +200,12 @@ export const ChatRoom: React.FC = () => {
                     <div className={classes.history}>
                         <ChatHistory messages={messages} />
                     </div>
+                </div>
+            )}
+            {conversations[selectedId].loadingMessages && (
+                <div className={classes.spinner}>
+                    <Spinner />
+                    <Text>Retrieving messages...</Text>
                 </div>
             )}
             {showSuggestions && (
