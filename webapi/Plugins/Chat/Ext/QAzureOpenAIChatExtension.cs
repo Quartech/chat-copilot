@@ -69,9 +69,7 @@ public class QAzureOpenAIChatExtension
             return null;
         }
 
-        var qSpecializationIndex = await this._qSpecializationIndexService.GetIndexAsync(
-            specialization.IndexId
-        );
+        var qSpecializationIndex = await this._qSpecializationIndexService.GetIndexAsync(specialization.IndexId);
         if (qSpecializationIndex == null)
         {
             return null;
