@@ -43,16 +43,14 @@ export const UserFeedbackActions: React.FC<IUserFeedbackProps> = ({
 
             // Send feedback and update Redux state
             try {
-                const isPositive = feedback === UserFeedback.Positive ? true : 
-                feedback === UserFeedback.Negative ? false : 
-                null;
+                const isPositive =
+                    feedback === UserFeedback.Positive
+                        ? true
+                        : feedback === UserFeedback.Negative
+                        ? false
+                        : null;
 
-                await chatService.rateMessageAync(
-                    selectedId,
-                    messageId,
-                    isPositive,
-                    token
-                );
+                await chatService.rateMessageAync(selectedId, messageId, isPositive, token);
 
                 dispatch(
                     updateMessageProperty({
@@ -61,13 +59,13 @@ export const UserFeedbackActions: React.FC<IUserFeedbackProps> = ({
                         property: 'userFeedback',
                         value: feedback,
                         frontLoad: true,
-                    })
+                    }),
                 );
             } catch (e) {
                 console.error(e);
             }
         },
-        [instance, inProgress, selectedId, messageId, dispatch]
+        [instance, inProgress, selectedId, messageId, dispatch],
     );
 
     // Handlers for Like and Dislike buttons
