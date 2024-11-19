@@ -67,7 +67,7 @@ public sealed class SemanticKernelProvider
                             connection.Endpoint?.ToString(),
                             connection.APIKey,
                             httpClient: httpClientFactory.CreateClient(),
-                            serviceId: deployment.Name
+                            serviceId: $"{deployment.Name} ({connection.Name})"
                         );
                     }
                 }
