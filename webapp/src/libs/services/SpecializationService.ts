@@ -62,6 +62,7 @@ export class SpecializationService extends BaseService {
         formData.append('groupMemberships', body.groupMemberships.join(','));
         formData.append('order', body.order.toString());
         formData.append('isDefault', body.isDefault.toString());
+        formData.append('suggestions', JSON.stringify(body.suggestions));
         if (body.restrictResultScope) {
             formData.append('restrictResultScope', body.restrictResultScope.toString());
         }
@@ -124,6 +125,7 @@ export class SpecializationService extends BaseService {
         formData.append('groupMemberships', body.groupMemberships.join(','));
         formData.append('order', body.order.toString());
         formData.append('isDefault', body.isDefault.toString());
+        formData.append('suggestions', JSON.stringify(body.suggestions));
         if (body.restrictResultScope) {
             formData.append('restrictResultScope', body.restrictResultScope.toString());
         }

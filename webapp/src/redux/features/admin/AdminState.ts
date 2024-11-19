@@ -32,6 +32,7 @@ export const Specializations = [
         maxResponseTokenLimit: 1024,
         initialChatMessage: '',
         order: 0,
+        suggestions: [],
     },
 ];
 export const initialState: AdminState = {

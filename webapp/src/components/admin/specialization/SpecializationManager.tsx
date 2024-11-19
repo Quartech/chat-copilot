@@ -168,6 +168,7 @@ export const SpecializationManager: React.FC = () => {
                 pastMessagesIncludedCount,
                 maxResponseTokenLimit,
                 order,
+                suggestions,
             });
         } else {
             void specialization.createSpecialization({
@@ -188,6 +189,7 @@ export const SpecializationManager: React.FC = () => {
                 pastMessagesIncludedCount,
                 maxResponseTokenLimit,
                 order: specializations.length,
+                suggestions,
             });
         }
     };
@@ -641,6 +643,7 @@ export const SpecializationManager: React.FC = () => {
                 </label>
                 <FieldArray
                     values={suggestions}
+                    maxItems={4}
                     onFieldChanged={(index, newValue) => {
                         const values = suggestions.slice(0);
                         values[index] = newValue;

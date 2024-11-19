@@ -3,6 +3,7 @@ import { Add20, Dismiss20 } from './BundledIcons';
 
 interface IFieldArray<T> {
     values: T[];
+    maxItems: number;
     onFieldChanged: (index: number, newValue: string) => void;
     onFieldAdded: () => void;
     onFieldRemoved: (index: number) => void;
@@ -29,8 +30,8 @@ const useClasses = makeStyles({
 
 const FieldArray = <T,>(props: IFieldArray<T>) => {
     const classes = useClasses();
-    const { values, onFieldChanged, onFieldAdded, onFieldRemoved } = props;
-    const disableAddButton = values.some((value) => String(value).length < 1);
+    const { values, maxItems, onFieldChanged, onFieldAdded, onFieldRemoved } = props;
+    const disableAddButton = values.some((value) => String(value).length < 1) || values.length >= maxItems;
     return (
         <div className={classes.root}>
             {values.map((value, idx) => (

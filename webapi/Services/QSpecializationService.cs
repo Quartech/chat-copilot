@@ -12,6 +12,7 @@ using CopilotChat.WebApi.Plugins.Chat.Ext;
 using CopilotChat.WebApi.Storage;
 using CopilotChat.WebApi.Utilities;
 using Microsoft.AspNetCore.Http;
+using Newtonsoft.Json;
 
 namespace CopilotChat.WebApi.Services;
 
@@ -81,6 +82,8 @@ public class QSpecializationService : IQSpecializationService
                 ? ResourceUtils.GetImageAsDataUri(this._qAzureOpenAIChatOptions.DefaultSpecializationIcon)
                 : await this._qBlobStorage.AddBlobAsync(qSpecializationMutate.IconFile);
 
+        var deserializedSuggestions = JsonConvert.DeserializeObject<List<string>>(qSpecializationMutate.Suggestions);
+
         Specialization specializationSource =
             new(
                 Label: qSpecializationMutate.Label,
@@ -106,7 +109,7 @@ public class QSpecializationService : IQSpecializationService
                 IconFilePath: iconFilePath,
                 GroupMemberships: qSpecializationMutate.GroupMemberships.Split(','),
                 Order: qSpecializationMutate.Order,
-                Suggestions: qSpecializationMutate.Suggestions != null ? qSpecializationMutate.Suggestions : new List<string>()
+                Suggestions: deserializedSuggestions != null ? deserializedSuggestions : new List<string>()
             );
 
         await this._specializationSourceRepository.CreateAsync(specializationSource);
@@ -158,6 +161,8 @@ public class QSpecializationService : IQSpecializationService
             CultureInfo.InvariantCulture
         );
 
+        var deserializedSuggestions = JsonConvert.DeserializeObject<List<string>>(qSpecializationMutate.Suggestions);
+
         specializationToUpdate.Name = qSpecializationMutate.Name ?? specializationToUpdate.Name;
 
         specializationToUpdate.Label = qSpecializationMutate.Label ?? specializationToUpdate.Label;
@@ -204,6 +209,8 @@ public class QSpecializationService : IQSpecializationService
         specializationToUpdate.GroupMemberships = !string.IsNullOrEmpty(qSpecializationMutate.GroupMemberships)
             ? qSpecializationMutate.GroupMemberships.Split(',')
             : specializationToUpdate.GroupMemberships;
+
+        specializationToUpdate.Suggestions = deserializedSuggestions != null ? deserializedSuggestions : specializationToUpdate.Suggestions;
 
         await this._specializationSourceRepository.UpsertAsync(specializationToUpdate);
 

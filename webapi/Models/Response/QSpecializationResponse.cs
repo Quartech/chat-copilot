@@ -125,6 +125,12 @@ public class QSpecializationResponse
     public IList<string> GroupMemberships { get; set; } = new List<string>();
 
     /// <summary>
+    /// List of group memberships for the user.
+    /// </summary>
+    [JsonPropertyName("suggestions")]
+    public IList<string> Suggestions { get; set; } = new List<string>();
+
+    /// <summary>
     /// Creates new instance from SpecializationSource.
     /// </summary>
     public QSpecializationResponse(Specialization specializationSource)
@@ -146,6 +152,7 @@ public class QSpecializationResponse
         this.GroupMemberships = specializationSource.GroupMemberships;
         this.InitialChatMessage = specializationSource.InitialChatMessage;
         this.Order = specializationSource.Order;
+        this.Suggestions = specializationSource.Suggestions;
         if (specializationSource.IndexName != null)
         {
             this.IndexName = specializationSource.IndexName;

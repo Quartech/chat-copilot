@@ -43,4 +43,10 @@ public class QSpecializationMutate : QSpecializationBase
     /// </summary>
     [JsonPropertyName("groupMemberships")]
     public new string GroupMemberships { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Override suggestions property for similar reasons as above.
+    /// </summary>
+    [JsonPropertyName("suggestions")]
+    public new string Suggestions { get; set; } = string.Empty;
 }
