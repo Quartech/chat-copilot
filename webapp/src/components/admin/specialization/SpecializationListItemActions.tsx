@@ -21,7 +21,6 @@ interface ISpecializationListItemActionsProps {
 export const SpecializationListItemActions: React.FC<ISpecializationListItemActionsProps> = ({
     specializationId,
     specializationMode,
-    specializationIndexName,
 }) => {
     const specialization = useSpecialization();
     const classes = useClasses();
@@ -39,7 +38,6 @@ export const SpecializationListItemActions: React.FC<ISpecializationListItemActi
                 onChange={(_event, { checked }) => {
                     void specialization
                         .toggleSpecialization(specializationId, {
-                            indexName: specializationIndexName,
                             isActive: checked,
                         })
                         .then((success) => {

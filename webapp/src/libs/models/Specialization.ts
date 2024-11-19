@@ -47,6 +47,5 @@ export interface ISpecializationRequest {
 }
 
 export interface ISpecializationToggleRequest {
-    indexName: string;
     isActive: boolean;
 }

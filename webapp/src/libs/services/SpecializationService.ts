@@ -185,7 +185,6 @@ export class SpecializationService extends BaseService {
         const formData = new FormData();
 
         formData.append('isActive', request.isActive.toString());
-        formData.append('indexName', request.indexName);
 
         const result = await this.getResponseAsync<ISpecialization>(
             {
