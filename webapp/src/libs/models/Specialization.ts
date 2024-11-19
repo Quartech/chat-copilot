@@ -4,7 +4,7 @@ export interface ISpecialization {
     name: string;
     description: string;
     roleInformation: string;
-    indexName: string;
+    indexId: string;
     deployment: string;
     imageFilePath: string;
     iconFilePath: string;
@@ -29,7 +29,7 @@ export interface ISpecializationRequest {
     name: string;
     description: string;
     roleInformation: string;
-    indexName: string;
+    indexId: string;
     deployment: string;
     imageFile: File | null;
     iconFile: File | null;

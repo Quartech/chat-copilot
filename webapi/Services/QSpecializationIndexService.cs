@@ -27,7 +27,7 @@ public class QSpecializationIndexService : IQSpecializationIndexService
         return this._indexRepository.FindByIdAsync(id);
     }
 
-    public async Task<SpecializationIndex> SaveIndex(QSpecializationIndexBase index)
+    public async Task<SpecializationIndex> SaveIndex(QSpecializationIndexCreate index)
     {
         var indexInsert = new SpecializationIndex(
             index.Name,
@@ -72,12 +72,6 @@ public class QSpecializationIndexService : IQSpecializationIndexService
         }
         await this._indexRepository.DeleteAsync(indexToDelete);
         return indexToDelete;
-    }
-
-    public async Task<SpecializationIndex?> GetSpecializationIndexByName(string name)
-    {
-        var indexes = await this._indexRepository.GetAllIndexesAsync();
-        return indexes.FirstOrDefault(a => a.Name == name);
     }
 
     public async Task OrderSpecializations(OrderMapGuidToInt specializationOrder)

@@ -46,11 +46,11 @@ public class SpecializationIndexController : ControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status504GatewayTimeout)]
-    public async Task<IActionResult> SaveIndex([FromForm] QSpecializationIndexBase indexMutate)
+    public async Task<IActionResult> SaveIndex([FromForm] QSpecializationIndexCreate indexCreate)
     {
         try
         {
-            var index = await this._qSpecializationIndexService.SaveIndex(indexMutate);
+            var index = await this._qSpecializationIndexService.SaveIndex(indexCreate);
             var specializationResponse = new QSpecializationIndexResponse(index);
 
             return this.Ok(specializationResponse);

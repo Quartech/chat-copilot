@@ -21,7 +21,7 @@ export const Specializations = [
         name: 'General',
         description: 'General',
         roleInformation: '',
-        indexName: '',
+        indexId: '',
         deployment: '',
         imageFilePath: '',
         iconFilePath: '',

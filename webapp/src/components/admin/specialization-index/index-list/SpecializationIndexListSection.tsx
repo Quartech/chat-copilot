@@ -114,6 +114,7 @@ export const SpecializationIndexListSection: React.FC<IChatListSectionProps> = (
                         const isSelected = specialization.id === selectedIndexId;
                         return (
                             <SpecializationIndexListItem
+                                key={specialization.id}
                                 editMode={false}
                                 item={specialization}
                                 isSelected={isSelected}

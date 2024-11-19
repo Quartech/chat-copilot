@@ -12,7 +12,7 @@ public interface IQSpecializationIndexService
 
     Task<SpecializationIndex> GetIndexAsync(string id);
 
-    Task<SpecializationIndex> SaveIndex(QSpecializationIndexBase index);
+    Task<SpecializationIndex> SaveIndex(QSpecializationIndexCreate index);
 
     Task<SpecializationIndex?> UpdateIndex(Guid indexId, QSpecializationIndexBase qIndexMutate);
 }

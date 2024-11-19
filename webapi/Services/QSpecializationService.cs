@@ -89,17 +89,17 @@ public class QSpecializationService : IQSpecializationService
                 RoleInformation: qSpecializationMutate.RoleInformation,
                 InitialChatMessage: qSpecializationMutate.InitialChatMessage,
                 Deployment: qSpecializationMutate.Deployment,
-                IndexName: qSpecializationMutate.IndexName,
+                IndexId: qSpecializationMutate.IndexId,
                 IsDefault: qSpecializationMutate.IsDefault,
-                RestrictResultScope: qSpecializationMutate.IndexName != null
+                RestrictResultScope: qSpecializationMutate.IndexId != null
                     ? qSpecializationMutate.RestrictResultScope
                     : null,
-                Strictness: qSpecializationMutate.IndexName != null ? qSpecializationMutate.Strictness : null,
-                DocumentCount: qSpecializationMutate.IndexName != null ? qSpecializationMutate.DocumentCount : null,
-                PastMessagesIncludedCount: qSpecializationMutate.IndexName != null
+                Strictness: qSpecializationMutate.IndexId != null ? qSpecializationMutate.Strictness : null,
+                DocumentCount: qSpecializationMutate.IndexId != null ? qSpecializationMutate.DocumentCount : null,
+                PastMessagesIncludedCount: qSpecializationMutate.IndexId != null
                     ? qSpecializationMutate.PastMessagesIncludedCount
                     : null,
-                MaxResponseTokenLimit: qSpecializationMutate.IndexName != null
+                MaxResponseTokenLimit: qSpecializationMutate.IndexId != null
                     ? qSpecializationMutate.MaxResponseTokenLimit
                     : null,
                 ImageFilePath: imageFilePath,
@@ -171,31 +171,31 @@ public class QSpecializationService : IQSpecializationService
 
         specializationToUpdate.Deployment = qSpecializationMutate.Deployment ?? specializationToUpdate.Deployment;
 
-        specializationToUpdate.IndexName = qSpecializationMutate.IndexName ?? specializationToUpdate.IndexName;
+        specializationToUpdate.IndexId = qSpecializationMutate.IndexId ?? specializationToUpdate.IndexId;
         specializationToUpdate.IsDefault = qSpecializationMutate.IsDefault ?? specializationToUpdate.IsDefault;
 
         specializationToUpdate.RestrictResultScope =
-            qSpecializationMutate.IndexName == null
+            qSpecializationMutate.IndexId == null
                 ? null
                 : qSpecializationMutate.RestrictResultScope ?? specializationToUpdate.RestrictResultScope;
 
         specializationToUpdate.Strictness =
-            qSpecializationMutate.IndexName == null
+            qSpecializationMutate.IndexId == null
                 ? null
                 : qSpecializationMutate.Strictness ?? specializationToUpdate.Strictness;
 
         specializationToUpdate.DocumentCount =
-            qSpecializationMutate.IndexName == null
+            qSpecializationMutate.IndexId == null
                 ? null
                 : qSpecializationMutate.DocumentCount ?? specializationToUpdate.DocumentCount;
 
         specializationToUpdate.PastMessagesIncludedCount =
-            qSpecializationMutate.IndexName == null
+            qSpecializationMutate.IndexId == null
                 ? null
                 : qSpecializationMutate.PastMessagesIncludedCount ?? specializationToUpdate.PastMessagesIncludedCount;
 
         specializationToUpdate.MaxResponseTokenLimit =
-            qSpecializationMutate.IndexName == null
+            qSpecializationMutate.IndexId == null
                 ? null
                 : qSpecializationMutate.MaxResponseTokenLimit ?? specializationToUpdate.MaxResponseTokenLimit;
 

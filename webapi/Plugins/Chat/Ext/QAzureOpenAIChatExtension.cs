@@ -62,15 +62,15 @@ public class QAzureOpenAIChatExtension
     {
         if (
             specialization == null
-            || string.IsNullOrEmpty(specialization.IndexName)
+            || string.IsNullOrEmpty(specialization.IndexId)
             || !this.isEnabled(specialization.Id)
         )
         {
             return null;
         }
 
-        var qSpecializationIndex = await this._qSpecializationIndexService.GetSpecializationIndexByName(
-            specialization.IndexName
+        var qSpecializationIndex = await this._qSpecializationIndexService.GetIndexAsync(
+            specialization.IndexId
         );
         if (qSpecializationIndex == null)
         {
@@ -109,7 +109,7 @@ public class QAzureOpenAIChatExtension
                 new AzureSearchChatExtensionConfiguration()
                 {
                     Filter = null,
-                    IndexName = specialization.IndexName,
+                    IndexName = qSpecializationIndex.Name,
                     SearchEndpoint = aiSearchDeploymentConnection.Endpoint,
                     Strictness = specialization.Strictness,
                     FieldMappingOptions = new AzureSearchIndexFieldMappingOptions
@@ -135,38 +135,6 @@ public class QAzureOpenAIChatExtension
         };
     }
 
-    /// <summary>
-    /// Retrieve all configured specialization indexess.
-    /// </summary>
-    // public List<string> GetAllSpecializationIndexNames()
-    // {
-    //     var indexNames = new List<string>();
-    //     foreach (
-    //         QAzureOpenAIChatOptions.QSpecializationIndex _qSpecializationIndex in this._qAzureOpenAIChatOptions.SpecializationIndexes
-    //     )
-    //     {
-    //         indexNames.Add(_qSpecializationIndex.IndexName);
-    //     }
-    //     return indexNames;
-    // }
-
-    /// <summary>
-    /// Retrieve the specialization Index based on Index name.
-    /// </summary>
-    // public QAzureOpenAIChatOptions.QSpecializationIndex? GetSpecializationIndexByName(string indexName)
-    // {
-    //     foreach (
-    //         QAzureOpenAIChatOptions.QSpecializationIndex _qSpecializationIndex in this._qAzureOpenAIChatOptions.SpecializationIndexes
-    //     )
-    //     {
-    //         if (_qSpecializationIndex.IndexName == indexName)
-    //         {
-    //             return _qSpecializationIndex;
-    //         }
-    //     }
-    //     return null;
-    // }
-
     public Uri? GenerateEmbeddingEndpoint(Uri connectionEndpoint, SpecializationIndex qSpecializationIndex)
     {
         return new Uri(
@@ -182,9 +150,9 @@ public class QAzureOpenAIChatExtension
         );
     }
 
-    public async Task<(string? ApiKey, string? Endpoint)> GetAISearchDeploymentConnectionDetails(string indexName)
+    public async Task<(string? ApiKey, string? Endpoint)> GetAISearchDeploymentConnectionDetails(string indexId)
     {
-        var specializationIndex = await this._qSpecializationIndexService.GetSpecializationIndexByName(indexName);
+        var specializationIndex = await this._qSpecializationIndexService.GetIndexAsync(indexId);
         if (specializationIndex == null)
         {
             return (null, null);
