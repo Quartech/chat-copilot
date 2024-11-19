@@ -246,7 +246,7 @@ public class ChatHistoryController : ControllerBase
         {
             true => Models.Storage.UserFeedback.Positive,
             false => Models.Storage.UserFeedback.Negative,
-            null => null
+            null => null,
         };
         await this._messageRepository.UpsertAsync(chatMessage);
 
