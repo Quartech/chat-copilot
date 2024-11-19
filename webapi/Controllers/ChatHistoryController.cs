@@ -215,7 +215,7 @@ public class ChatHistoryController : ControllerBase
 
     public class RateChatMessageBody
     {
-        public bool? positive { get; set; } 
+        public bool? positive { get; set; }
     }
 
     /// <summary>
