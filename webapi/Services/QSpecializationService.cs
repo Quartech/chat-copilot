@@ -188,11 +188,16 @@ public class QSpecializationService : IQSpecializationService
             else
             {
                 // If IndexName is not null, update related properties
-                specializationToUpdate.RestrictResultScope = qSpecializationMutate.RestrictResultScope ?? specializationToUpdate.RestrictResultScope;
-                specializationToUpdate.Strictness = qSpecializationMutate.Strictness ?? specializationToUpdate.Strictness;
-                specializationToUpdate.DocumentCount = qSpecializationMutate.DocumentCount ?? specializationToUpdate.DocumentCount;
-                specializationToUpdate.PastMessagesIncludedCount = qSpecializationMutate.PastMessagesIncludedCount ?? specializationToUpdate.PastMessagesIncludedCount;
-                specializationToUpdate.MaxResponseTokenLimit = qSpecializationMutate.MaxResponseTokenLimit ?? specializationToUpdate.MaxResponseTokenLimit;
+                specializationToUpdate.RestrictResultScope =
+                    qSpecializationMutate.RestrictResultScope ?? specializationToUpdate.RestrictResultScope;
+                specializationToUpdate.Strictness =
+                    qSpecializationMutate.Strictness ?? specializationToUpdate.Strictness;
+                specializationToUpdate.DocumentCount =
+                    qSpecializationMutate.DocumentCount ?? specializationToUpdate.DocumentCount;
+                specializationToUpdate.PastMessagesIncludedCount =
+                    qSpecializationMutate.PastMessagesIncludedCount ?? specializationToUpdate.PastMessagesIncludedCount;
+                specializationToUpdate.MaxResponseTokenLimit =
+                    qSpecializationMutate.MaxResponseTokenLimit ?? specializationToUpdate.MaxResponseTokenLimit;
             }
         }
         else
