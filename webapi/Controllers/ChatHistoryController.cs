@@ -210,15 +210,13 @@ public class ChatHistoryController : ControllerBase
         {
             return this.NotFound($"No messages found for chat id '{chatId}'.");
         }
-
         return this.Ok(chatMessages);
     }
 
     public class RateChatMessageBody
     {
-        public bool? positive { get; set; } // Nullable boolean
+        public bool? positive { get; set; } 
     }
-
 
     /// <summary>
     /// Rate a chat message
