@@ -1,4 +1,5 @@
 import { useMsal } from '@azure/msal-react';
+import type { CalendarProps } from '@fluentui/react-calendar-compat';
 import {
     Button,
     createTableColumn,
@@ -8,6 +9,12 @@ import {
     DataGridHeader,
     DataGridHeaderCell,
     DataGridRow,
+    Dialog,
+    DialogActions,
+    DialogBody,
+    DialogContent,
+    DialogSurface,
+    DialogTrigger,
     Dropdown,
     makeStyles,
     Option,
@@ -17,6 +24,7 @@ import {
     useId,
 } from '@fluentui/react-components';
 import { DatePicker } from '@fluentui/react-datepicker-compat';
+import { OpenRegular } from '@fluentui/react-icons';
 import React, { useEffect, useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { AuthHelper } from '../../../libs/auth/AuthHelper';
@@ -51,6 +59,14 @@ const useClasses = makeStyles({
     dropdown: {
         minWidth: '100px',
     },
+    datePicker: {
+        minWidth: '100px',
+    },
+    calendar: {
+        backgroundColor: 'white',
+        fontFamily: 'Segoe UI, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+        fontSize: '14px',
+    },
     apply: {
         display: 'flex',
         flexDirection: 'column',
@@ -80,6 +96,8 @@ export const UserFeedbackManager: React.FC = () => {
     const thirtyDaysAgoDate = new Date(new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).setHours(0, 0, 0, 0));
     const todayDate = new Date(new Date().setHours(0, 0, 0, 0));
 
+    const [isDialogOpen, setIsDialogOpen] = React.useState(false);
+    const [selectedUserFeedbackItem, setSelectedUserFeedbackItem] = React.useState<IUserFeedbackItem | null>(null);
     const [userFeedbackData, setUserFeedbackData] = useState<IUserFeedbackResult | null>(null);
     const [filter, setFilter] = useState<IUserFeedbackFilterRequest>({
         startDate: thirtyDaysAgoDate,
@@ -129,6 +147,11 @@ export const UserFeedbackManager: React.FC = () => {
         }));
     };
 
+    const handleOpenFeedback = (feedbackItem: IUserFeedbackItem) => {
+        setSelectedUserFeedbackItem(feedbackItem);
+        setIsDialogOpen(true);
+    };
+
     const feedbackDropdownId = useId('feedback');
     const feedbackOptions = [
         { value: 'all', text: 'All' },
@@ -157,7 +180,20 @@ export const UserFeedbackManager: React.FC = () => {
         { value: 'feedbackNeg', text: 'Feedback (Negative first)' },
     ];
 
+    const calendarProps: Partial<CalendarProps> = {
+        className: classes.calendar,
+    };
+
     const columns: Array<TableColumnDefinition<IUserFeedbackItem>> = [
+        createTableColumn<IUserFeedbackItem>({
+            columnId: 'timestamp',
+            renderHeaderCell: () => {
+                return 'Date';
+            },
+            renderCell: (item) => {
+                return <TableCellLayout truncate>{new Date(item.timestamp).toLocaleString()}</TableCellLayout>;
+            },
+        }),
         createTableColumn<IUserFeedbackItem>({
             columnId: 'userFeedback',
             renderHeaderCell: () => {
@@ -200,17 +236,29 @@ export const UserFeedbackManager: React.FC = () => {
             },
         }),
         createTableColumn<IUserFeedbackItem>({
-            columnId: 'timestamp',
+            columnId: 'action',
             renderHeaderCell: () => {
-                return 'Date';
+                return '';
             },
             renderCell: (item) => {
-                return <TableCellLayout truncate>{new Date(item.timestamp).toLocaleString()}</TableCellLayout>;
+                return (
+                    <Button
+                        onClick={() => {
+                            handleOpenFeedback(item);
+                        }}
+                        icon={<OpenRegular />}
+                    >
+                        Open
+                    </Button>
+                );
             },
         }),
     ];
 
     const columnSizingOptions = {
+        timestamp: {
+            defaultWidth: 160,
+        },
         userFeedback: {
             defaultWidth: 80,
         },
@@ -222,9 +270,6 @@ export const UserFeedbackManager: React.FC = () => {
         },
         content: {
             defaultWidth: 400,
-        },
-        timestamp: {
-            defaultWidth: 100,
         },
     };
 
@@ -283,7 +328,8 @@ export const UserFeedbackManager: React.FC = () => {
                         Start Date:
                     </label>
                     <DatePicker
-                        className={classes.dropdown}
+                        calendar={calendarProps}
+                        className={classes.datePicker}
                         aria-labelledby="startDatePicker"
                         value={filter.startDate}
                         onSelectDate={(date) => {
@@ -296,7 +342,8 @@ export const UserFeedbackManager: React.FC = () => {
                         End Date:
                     </label>
                     <DatePicker
-                        className={classes.dropdown}
+                        calendar={calendarProps}
+                        className={classes.datePicker}
                         aria-labelledby="endDatePicker"
                         value={filter.endDate}
                         onSelectDate={(date) => {
@@ -385,6 +432,54 @@ export const UserFeedbackManager: React.FC = () => {
                     </DataGridBody>
                 </DataGrid>
             </div>
+            {/* Dialog UI */}
+            <Dialog
+                open={isDialogOpen}
+                onOpenChange={(_ev, data) => {
+                    setIsDialogOpen(data.open);
+                }}
+            >
+                <DialogSurface>
+                    <DialogBody>
+                        <DialogContent>
+                            <div style={{ maxHeight: '500px', overflowY: 'auto' }}>
+                                <p>
+                                    <strong>Date:</strong>
+                                    <br />
+                                    {new Date(selectedUserFeedbackItem?.timestamp ?? 0).toLocaleString()}
+                                </p>
+                                <p>
+                                    <strong>Feedback:</strong>
+                                    <br />
+                                    {selectedUserFeedbackItem?.userFeedback}
+                                </p>
+                                <p>
+                                    <strong>Specialization:</strong>
+                                    <br />
+                                    {specializationOptions.find(
+                                        (option) => option.value === selectedUserFeedbackItem?.specializationId,
+                                    )?.text ?? ''}
+                                </p>
+                                <p>
+                                    <strong>User Prompt:</strong>
+                                    <br />
+                                    {selectedUserFeedbackItem?.prompt}
+                                </p>
+                                <p>
+                                    <strong>Bot Response:</strong>
+                                    <br />
+                                    {selectedUserFeedbackItem?.content}
+                                </p>
+                            </div>
+                        </DialogContent>
+                        <DialogActions>
+                            <DialogTrigger disableButtonEnhancement>
+                                <Button appearance="secondary">Close</Button>
+                            </DialogTrigger>
+                        </DialogActions>
+                    </DialogBody>
+                </DialogSurface>
+            </Dialog>
         </div>
     );
 };
