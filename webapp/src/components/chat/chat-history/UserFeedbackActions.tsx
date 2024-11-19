@@ -26,7 +26,10 @@ interface IUserFeedbackProps {
     wasHelpful?: string;
 }
 
-export const UserFeedbackActions: React.FC<IUserFeedbackProps> = ({ messageId, wasHelpful }: IUserFeedbackProps) => {
+export const UserFeedbackActions: React.FC<IUserFeedbackProps> = ({
+    messageId,
+    wasHelpful,
+}: IUserFeedbackProps) => {
     const classes = useClasses();
 
     const { instance, inProgress } = useMsal();
@@ -34,33 +37,67 @@ export const UserFeedbackActions: React.FC<IUserFeedbackProps> = ({ messageId, w
     const { selectedId } = useAppSelector((state: RootState) => state.conversations);
 
     const onUserFeedbackProvided = useCallback(
-        async (positive: boolean) => {
+        async (feedback: UserFeedback) => {
             const chatService = new ChatService();
-            const currentFeedback = positive ? UserFeedback.Positive : UserFeedback.Negative;
-
-            // Determine if we're toggling the current selection off
-            const newFeedback = wasHelpful === currentFeedback ? undefined : currentFeedback;
             const token = await AuthHelper.getSKaaSAccessToken(instance, inProgress);
 
-            chatService
-                .rateMessageAync(selectedId, messageId, newFeedback === UserFeedback.Positive, token)
-                .then(() => {
-                    dispatch(
-                        updateMessageProperty({
-                            chatId: selectedId,
-                            messageIdOrIndex: messageId,
-                            property: 'userFeedback',
-                            value: newFeedback,
-                            frontLoad: true,
-                        })
-                    );
-                })
-                .catch((e) => {
-                    console.error(e);
-                });
+            // Send feedback and update Redux state
+            try {
+                const isPositive = feedback === UserFeedback.Positive ? true : 
+                feedback === UserFeedback.Negative ? false : 
+                null;
+
+                await chatService.rateMessageAync(
+                    selectedId,
+                    messageId,
+                    isPositive,
+                    token
+                );
+
+                dispatch(
+                    updateMessageProperty({
+                        chatId: selectedId,
+                        messageIdOrIndex: messageId,
+                        property: 'userFeedback',
+                        value: feedback,
+                        frontLoad: true,
+                    })
+                );
+            } catch (e) {
+                console.error(e);
+            }
         },
-        [instance, inProgress, selectedId, messageId, wasHelpful, dispatch]
+        [instance, inProgress, selectedId, messageId, dispatch]
     );
+
+    // Handlers for Like and Dislike buttons
+    const handleLikeClick = () => {
+        let newFeedback: UserFeedback;
+
+        if (wasHelpful === UserFeedback.Positive) {
+            // If already 'like', deselect it (set to neutral or null)
+            newFeedback = UserFeedback.Neutral;
+        } else {
+            // Otherwise, set 'like' (positive feedback)
+            newFeedback = UserFeedback.Positive;
+        }
+
+        void onUserFeedbackProvided(newFeedback);
+    };
+
+    const handleDislikeClick = () => {
+        let newFeedback: UserFeedback;
+
+        if (wasHelpful === UserFeedback.Negative) {
+            // If already 'dislike', deselect it (set to neutral or null)
+            newFeedback = UserFeedback.Neutral;
+        } else {
+            // Otherwise, set 'dislike' (negative feedback)
+            newFeedback = UserFeedback.Negative;
+        }
+
+        void onUserFeedbackProvided(newFeedback);
+    };
 
     return (
         <div className={classes.root}>
@@ -69,9 +106,7 @@ export const UserFeedbackActions: React.FC<IUserFeedbackProps> = ({ messageId, w
                     icon={wasHelpful === UserFeedback.Positive ? <ThumbLike20Filled /> : <ThumbLike20Regular />}
                     appearance="transparent"
                     aria-label="Like"
-                    onClick={() => {
-                        void onUserFeedbackProvided(true);
-                    }}
+                    onClick={handleLikeClick}
                 />
             </Tooltip>
             <Tooltip content={'Dislike'} relationship="label">
@@ -79,12 +114,9 @@ export const UserFeedbackActions: React.FC<IUserFeedbackProps> = ({ messageId, w
                     icon={wasHelpful === UserFeedback.Negative ? <ThumbDislike20Filled /> : <ThumbDislike20Regular />}
                     appearance="transparent"
                     aria-label="Dislike"
-                    onClick={() => {
-                        void onUserFeedbackProvided(false);
-                    }}
+                    onClick={handleDislikeClick}
                 />
             </Tooltip>
         </div>
     );
 };
-
