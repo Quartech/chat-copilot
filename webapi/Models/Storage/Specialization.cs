@@ -133,6 +133,11 @@ public class Specialization : IStorageEntity
     /// </summary>>
     public int? Order { get; set; }
 
+    /// <summary>
+    /// Suggestions to be displayed to the user when starting a chat under this specialization.
+    /// </summary>
+    public IList<string> Suggestions { get; set; } = new List<string>();
+
     public Specialization() { }
 
     public Specialization(
@@ -152,7 +157,8 @@ public class Specialization : IStorageEntity
         string ImageFilePath,
         string IconFilePath,
         IList<string> GroupMemberships,
-        int? Order
+        int? Order,
+        IList<string> Suggestions
     )
     {
         this.Id = Guid.NewGuid().ToString();
@@ -175,5 +181,6 @@ public class Specialization : IStorageEntity
         this.IsActive = true;
         this.InitialChatMessage = InitialChatMessage;
         this.Order = Order;
+        this.Suggestions = Suggestions;
     }
 }

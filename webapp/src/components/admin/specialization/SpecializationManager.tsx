@@ -19,13 +19,13 @@ import {
 import { Info20Regular } from '@fluentui/react-icons';
 import React, { useEffect, useId, useState } from 'react';
 import { useSpecialization } from '../../../libs/hooks';
-import { useAppSelector } from '../../../redux/app/hooks';
-import { RootState } from '../../../redux/app/store';
-import { ImageUploaderPreview } from '../../files/ImageUploaderPreview';
-import { useAppDispatch } from '../../../redux/app/hooks';
-import { addAlert } from '../../../redux/features/app/appSlice';
 import { AlertType } from '../../../libs/models/AlertType';
+import { useAppDispatch, useAppSelector } from '../../../redux/app/hooks';
+import { RootState } from '../../../redux/app/store';
+import { addAlert } from '../../../redux/features/app/appSlice';
+import { ImageUploaderPreview } from '../../files/ImageUploaderPreview';
 import { ConfirmationDialog } from '../../shared/ConfirmationDialog';
+import FieldArray from '../../shared/FieldArray';
 
 interface ISpecializationFile {
     file: File | null;
@@ -131,6 +131,7 @@ export const SpecializationManager: React.FC = () => {
     const [pastMessagesIncludedCount, setPastMessagesIncludedCount] = useState<number | null>(0);
     const [maxResponseTokenLimit, setMaxResponseTokenLimit] = useState<number | null>(0);
     const [order, setOrder] = useState(0);
+    const [suggestions, setSuggestions] = useState<string[]>([]);
 
     const [isValid, setIsValid] = useState(false);
     const dropdownId = useId();
@@ -633,6 +634,25 @@ export const SpecializationManager: React.FC = () => {
                     rows={2}
                     onChange={(_event, data) => {
                         setInitialChatMessage(data.value);
+                    }}
+                />
+                <label htmlFor="initialMessage">
+                    Initial Chat Suggestions<span className={classes.required}>*</span>
+                </label>
+                <FieldArray
+                    values={suggestions}
+                    onFieldChanged={(index, newValue) => {
+                        const values = suggestions.slice(0);
+                        values[index] = newValue;
+                        setSuggestions(values);
+                    }}
+                    onFieldAdded={() => {
+                        const values = suggestions.slice(0);
+                        values.push('');
+                        setSuggestions(values);
+                    }}
+                    onFieldRemoved={(index) => {
+                        setSuggestions(suggestions.slice(0, index).concat(suggestions.slice(index + 1)));
                     }}
                 />
                 <label htmlFor="membership">

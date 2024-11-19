@@ -105,7 +105,8 @@ public class QSpecializationService : IQSpecializationService
                 ImageFilePath: imageFilePath,
                 IconFilePath: iconFilePath,
                 GroupMemberships: qSpecializationMutate.GroupMemberships.Split(','),
-                Order: qSpecializationMutate.Order
+                Order: qSpecializationMutate.Order,
+                Suggestions: qSpecializationMutate.Suggestions != null ? qSpecializationMutate.Suggestions : new List<string>()
             );
 
         await this._specializationSourceRepository.CreateAsync(specializationSource);
