@@ -24,6 +24,8 @@ import { AlertType } from '../../../libs/models/AlertType';
 import { CopilotChatMessageSortOption } from '../../../libs/models/ChatMessage';
 import { IUserFeedbackFilterRequest, IUserFeedbackItem, IUserFeedbackResult } from '../../../libs/models/UserFeedback';
 import { UserFeedbackService } from '../../../libs/services/UserFeedbackService';
+import { useAppSelector } from '../../../redux/app/hooks';
+import { RootState } from '../../../redux/app/store';
 import { addAlert, hideSpinner, showSpinner } from '../../../redux/features/app/appSlice';
 
 const useClasses = makeStyles({
@@ -73,6 +75,7 @@ export const UserFeedbackManager: React.FC = () => {
     const classes = useClasses();
     const { instance, inProgress } = useMsal();
     const userFeedbackService = new UserFeedbackService();
+    const { specializations } = useAppSelector((state: RootState) => state.admin);
 
     const thirtyDaysAgoDate = new Date(new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).setHours(0, 0, 0, 0));
     const todayDate = new Date(new Date().setHours(0, 0, 0, 0));
@@ -81,7 +84,6 @@ export const UserFeedbackManager: React.FC = () => {
     const [filter, setFilter] = useState<IUserFeedbackFilterRequest>({
         startDate: thirtyDaysAgoDate,
         endDate: todayDate,
-        isPositive: undefined,
         sortBy: [CopilotChatMessageSortOption.dateDesc],
     });
 
@@ -134,6 +136,15 @@ export const UserFeedbackManager: React.FC = () => {
         { value: 'negative', text: 'Negative' },
     ];
 
+    const specializationDropdownId = useId('specialization');
+    const specializationOptions = [
+        { value: 'all', text: 'All' },
+        ...specializations.map((specialization) => ({
+            value: specialization.id,
+            text: specialization.name,
+        })),
+    ];
+
     const sortDateDropdownId = useId('sortDate');
     const sortDateOptions = [
         { value: 'dateDesc', text: 'Date (Newest first)' },
@@ -162,7 +173,11 @@ export const UserFeedbackManager: React.FC = () => {
                 return 'Specialization';
             },
             renderCell: (item) => {
-                return <TableCellLayout truncate>{item.specializationId}</TableCellLayout>;
+                return (
+                    <TableCellLayout truncate>
+                        {specializationOptions.find((option) => option.value === item.specializationId)?.text ?? ''}
+                    </TableCellLayout>
+                );
             },
         }),
         createTableColumn<IUserFeedbackItem>({
@@ -190,7 +205,7 @@ export const UserFeedbackManager: React.FC = () => {
                 return 'Date';
             },
             renderCell: (item) => {
-                return <TableCellLayout truncate>{item.timestamp}</TableCellLayout>;
+                return <TableCellLayout truncate>{new Date(item.timestamp).toLocaleString()}</TableCellLayout>;
             },
         }),
     ];
@@ -200,20 +215,18 @@ export const UserFeedbackManager: React.FC = () => {
             defaultWidth: 80,
         },
         specialization: {
-            defaultWidth: 200,
+            defaultWidth: 120,
         },
         prompt: {
-            defaultWidth: 420,
+            defaultWidth: 400,
         },
         content: {
-            defaultWidth: 420,
+            defaultWidth: 400,
         },
         timestamp: {
             defaultWidth: 100,
         },
     };
-
-    //const refMap = React.useRef<Record<string, HTMLElement | null>>({});
 
     return (
         <div className={classes.root}>
@@ -236,6 +249,29 @@ export const UserFeedbackManager: React.FC = () => {
                         }}
                     >
                         {feedbackOptions.map((option, index) => (
+                            <Option key={index} value={option.value}>
+                                {option.text}
+                            </Option>
+                        ))}
+                    </Dropdown>
+                </div>
+                <div className={classes.filter}>
+                    <label className={classes.label} id={specializationDropdownId}>
+                        Specialization:
+                    </label>
+                    <Dropdown
+                        className={classes.dropdown}
+                        aria-labelledby={specializationDropdownId}
+                        defaultSelectedOptions={[specializationOptions[0].value]}
+                        defaultValue={specializationOptions[0].text}
+                        onOptionSelect={(_ev, option) => {
+                            handleFilterChange(
+                                'specializationId',
+                                option.optionValue === 'all' ? null : option.optionValue,
+                            );
+                        }}
+                    >
+                        {specializationOptions.map((option, index) => (
                             <Option key={index} value={option.value}>
                                 {option.text}
                             </Option>
@@ -296,7 +332,7 @@ export const UserFeedbackManager: React.FC = () => {
                         className={classes.dropdown}
                         aria-labelledby={sortFeedbackDropdownId}
                         defaultSelectedOptions={undefined}
-                        defaultValue={undefined}
+                        defaultValue={'Feedback (None)'}
                         onOptionSelect={(_ev, option) => {
                             handleSortChange('feedback', option.optionValue as CopilotChatMessageSortOption);
                         }}
