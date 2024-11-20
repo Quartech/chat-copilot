@@ -171,12 +171,12 @@ public class QSpecializationService : IQSpecializationService
 
         specializationToUpdate.Deployment = qSpecializationMutate.Deployment ?? specializationToUpdate.Deployment;
 
-        if (qSpecializationMutate.IsIndexNameSet)
+        if (qSpecializationMutate.IsIndexIdSet)
         {
             // IndexName was explicitly set
-            specializationToUpdate.IndexName = qSpecializationMutate.IndexName;
+            specializationToUpdate.IndexId = qSpecializationMutate.IndexId;
 
-            if (specializationToUpdate.IndexName == null)
+            if (specializationToUpdate.IndexId == null)
             {
                 // If IndexName is explicitly set to null, set related properties to null
                 specializationToUpdate.RestrictResultScope = null;

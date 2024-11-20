@@ -15,7 +15,6 @@ const useClasses = makeStyles({
 interface ISpecializationListItemActionsProps {
     specializationId: string;
     specializationMode: boolean;
-    specializationIndexName: string;
 }
 
 export const SpecializationListItemActions: React.FC<ISpecializationListItemActionsProps> = ({
