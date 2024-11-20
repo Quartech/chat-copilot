@@ -21,15 +21,16 @@ import {
     shorthands,
     TableCellLayout,
     TableColumnDefinition,
+    tokens,
     useId,
 } from '@fluentui/react-components';
 import { DatePicker } from '@fluentui/react-datepicker-compat';
-import { OpenRegular } from '@fluentui/react-icons';
+import { OpenRegular, ThumbDislike20Regular, ThumbLike20Regular } from '@fluentui/react-icons';
 import React, { useEffect, useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { AuthHelper } from '../../../libs/auth/AuthHelper';
 import { AlertType } from '../../../libs/models/AlertType';
-import { CopilotChatMessageSortOption } from '../../../libs/models/ChatMessage';
+import { CopilotChatMessageSortOption, UserFeedback } from '../../../libs/models/ChatMessage';
 import { IUserFeedbackFilterRequest, IUserFeedbackItem, IUserFeedbackResult } from '../../../libs/models/UserFeedback';
 import { UserFeedbackService } from '../../../libs/services/UserFeedbackService';
 import { useAppSelector } from '../../../redux/app/hooks';
@@ -80,6 +81,19 @@ const useClasses = makeStyles({
         flexDirection: 'column',
         width: '100%',
         boxSizing: 'border-box',
+    },
+    dialog: {
+        overflowY: 'auto',
+        maxHeight: '500px',
+        '&:hover': {
+            '&::-webkit-scrollbar-thumb': {
+                backgroundColor: tokens.colorScrollbarOverlay,
+                visibility: 'visible',
+            },
+        },
+        '&::-webkit-scrollbar-track': {
+            backgroundColor: tokens.colorSubtleBackground,
+        },
     },
 });
 
@@ -202,7 +216,15 @@ export const UserFeedbackManager: React.FC = () => {
                 return 'Feedback';
             },
             renderCell: (item) => {
-                return <TableCellLayout truncate>{item.userFeedback}</TableCellLayout>;
+                return (
+                    <TableCellLayout truncate style={{ marginLeft: '20px' }}>
+                        {item.userFeedback === UserFeedback.Positive ? (
+                            <ThumbLike20Regular />
+                        ) : (
+                            <ThumbDislike20Regular />
+                        )}
+                    </TableCellLayout>
+                );
             },
         }),
         createTableColumn<IUserFeedbackItem>({
@@ -444,7 +466,7 @@ export const UserFeedbackManager: React.FC = () => {
                 <DialogSurface>
                     <DialogBody>
                         <DialogContent>
-                            <div style={{ maxHeight: '500px', overflowY: 'auto' }}>
+                            <div className={classes.dialog}>
                                 <p>
                                     <strong>Date:</strong>
                                     <br />
@@ -453,7 +475,11 @@ export const UserFeedbackManager: React.FC = () => {
                                 <p>
                                     <strong>Feedback:</strong>
                                     <br />
-                                    {selectedUserFeedbackItem?.userFeedback}
+                                    {selectedUserFeedbackItem?.userFeedback == UserFeedback.Positive ? (
+                                        <ThumbLike20Regular />
+                                    ) : (
+                                        <ThumbDislike20Regular />
+                                    )}
                                 </p>
                                 <p>
                                     <strong>Specialization:</strong>
