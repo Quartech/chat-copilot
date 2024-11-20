@@ -74,11 +74,11 @@ public sealed class SemanticKernelProvider
                     {
 #pragma warning disable SKEXP0010 // Experimental method AddAzureOpenAITextToImage, suppressed instability warning
                         builder.AddAzureOpenAITextToImage(
-                            deployment,
+                            deployment.Name,
                             connection.Endpoint?.ToString(),
                             connection.APIKey,
                             httpClient: httpClientFactory.CreateClient(),
-                            serviceId: deployment
+                            serviceId: deployment.Name
                         );
                     }
                 }
