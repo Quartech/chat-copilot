@@ -7,6 +7,7 @@ using System.Net.Http;
 using System.Reflection;
 using CopilotChat.Shared;
 using CopilotChat.WebApi.Auth;
+using CopilotChat.WebApi.Context;
 using CopilotChat.WebApi.Models.Storage;
 using CopilotChat.WebApi.Options;
 using CopilotChat.WebApi.Plugins.Chat.Ext;
@@ -15,6 +16,7 @@ using CopilotChat.WebApi.Storage;
 using CopilotChat.WebApi.Utilities;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -177,6 +179,16 @@ public static class CopilotChatServiceExtensions
     }
 
     /// <summary>
+    /// Add Http context accessors
+    /// </summary>
+    public static IServiceCollection AddContextAccessors(this IServiceCollection services)
+    {
+        services.AddTransient<IContextValueAccessor, ContextValueAccessor>();
+
+        return services;
+    }
+
+    /// <summary>
     /// Add persistent chat store services.
     /// </summary>
     public static IServiceCollection AddPersistentChatStore(this IServiceCollection services)
@@ -334,6 +346,7 @@ public static class CopilotChatServiceExtensions
     {
         return services
             .AddScoped<IAuthorizationHandler, ChatParticipantAuthorizationHandler>()
+            .AddScoped<IAuthorizationHandler, SpecializationAuthorizationHandler>()
             .AddAuthorizationCore(options =>
             {
                 options.DefaultPolicy = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build();
@@ -342,6 +355,13 @@ public static class CopilotChatServiceExtensions
                     builder =>
                     {
                         builder.RequireAuthenticatedUser().AddRequirements(new ChatParticipantRequirement());
+                    }
+                );
+                options.AddPolicy(
+                    AuthPolicyName.RequireSpecialization,
+                    builder =>
+                    {
+                        builder.RequireAuthenticatedUser().AddRequirements(new SpecializationRequirement());
                     }
                 );
             });
