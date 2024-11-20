@@ -1,10 +1,8 @@
 import { makeStyles } from '@fluentui/react-components';
-import React, { useMemo } from 'react';
+import React from 'react';
 import Carousel from 'react-multi-carousel';
 import 'react-multi-carousel/lib/styles.css';
 import { ISpecialization } from '../../libs/models/Specialization';
-import { useAppSelector } from '../../redux/app/hooks';
-import { RootState } from '../../redux/app/store';
 import { SpecializationCard } from './SpecializationCard';
 
 const responsive = {
@@ -58,40 +56,21 @@ interface SpecializationProps {
  */
 export const SpecializationCardList: React.FC<SpecializationProps> = ({ specializations }) => {
     const classes = useClasses();
-    const { activeUserInfo } = useAppSelector((state: RootState) => state.app);
-
-    // Memoize the filtered specializations based on the user's group memberships
-    const filteredSpecializations = useMemo(() => {
-        const filtered = specializations.filter((_specialization) => {
-            const hasMembership =
-                activeUserInfo?.groups.some((val) => _specialization.groupMemberships.includes(val)) ?? false;
-
-            // Check if the user has membership to the specialization group and the specialization is active
-            const canViewSpecialization =
-                ((hasMembership || _specialization.groupMemberships.length === 0) && _specialization.isActive) ||
-                _specialization.id == 'general';
-
-            return canViewSpecialization ? _specialization : undefined;
-        });
-        return [...filtered].sort((a, b) => a.order - b.order);
-    }, [activeUserInfo?.groups, specializations]);
 
     return (
         <>
-            {filteredSpecializations.length > 0 ? (
+            {specializations.length > 0 ? (
                 <>
                     <h1 className={classes.innertitle}>Choose Specialization</h1>
                     <Carousel
-                        className={
-                            filteredSpecializations.length === 1 ? classes.carouselrootSingleItem : classes.carouselroot
-                        }
+                        className={specializations.length === 1 ? classes.carouselrootSingleItem : classes.carouselroot}
                         responsive={responsive}
                         showDots={true}
                         swipeable={true}
                         arrows={true}
                         dotListClass="custom-dot-list-style"
                     >
-                        {filteredSpecializations.map((_specialization, index) => (
+                        {specializations.map((_specialization, index) => (
                             <div key={index} className={classes.innercontainerclass}>
                                 <SpecializationCard key={_specialization.id} specialization={_specialization} />
                             </div>

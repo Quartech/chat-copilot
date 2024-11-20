@@ -3,13 +3,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Azure.AI.OpenAI.Chat;
 using CopilotChat.WebApi.Models.Storage;
 using CopilotChat.WebApi.Services;
 using CopilotChat.WebApi.Storage;
 
 namespace CopilotChat.WebApi.Plugins.Chat.Ext;
-
 /// <summary>
 /// Chat extension class to support Azure search indexes for bot response.
 /// </summary>
@@ -35,9 +35,12 @@ public class QAzureOpenAIChatExtension
     /// </summary>
     private readonly QSpecializationService _qSpecializationService;
 
+    private readonly QSpecializationIndexService _qSpecializationIndexService;
+
     public QAzureOpenAIChatExtension(
         QAzureOpenAIChatOptions qAzureOpenAIChatOptions,
-        SpecializationRepository specializationSourceRepository
+        SpecializationRepository specializationSourceRepository,
+        SpecializationIndexRepository indexRepository
     )
     {
         this._qAzureOpenAIChatOptions = qAzureOpenAIChatOptions;
@@ -45,6 +48,7 @@ public class QAzureOpenAIChatExtension
             specializationSourceRepository,
             qAzureOpenAIChatOptions
         );
+        this._qSpecializationIndexService = new QSpecializationIndexService(indexRepository);
     }
 
     public bool isEnabled(string? specializationId)
@@ -53,18 +57,18 @@ public class QAzureOpenAIChatExtension
     }
 
 #pragma warning disable AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-    public AzureSearchChatDataSource? GetAzureSearchChatDataSource(Specialization? specialization)
+    public async Task<AzureSearchChatDataSource?> GetAzureSearchChatDataSource(Specialization? specialization)
     {
         if (
             specialization == null
-            || string.IsNullOrEmpty(specialization.IndexName)
+            || string.IsNullOrEmpty(specialization.IndexId)
             || !this.isEnabled(specialization.Id)
         )
         {
             return null;
         }
 
-        var qSpecializationIndex = this.GetSpecializationIndexByName(specialization.IndexName);
+        var qSpecializationIndex = await this._qSpecializationIndexService.GetIndexAsync(specialization.IndexId);
         if (qSpecializationIndex == null)
         {
             return null;
@@ -96,16 +100,16 @@ public class QAzureOpenAIChatExtension
         );
         return new AzureSearchChatDataSource
         {
-            IndexName = specialization.IndexName,
+            IndexName = qSpecializationIndex.Name,
             Endpoint = aiSearchDeploymentConnection.Endpoint,
             Strictness = specialization.Strictness,
             FieldMappings = new DataSourceFieldMappings
             {
-                UrlFieldName = qSpecializationIndex.FieldMapping?.UrlFieldName,
-                TitleFieldName = qSpecializationIndex.FieldMapping?.TitleFieldName,
-                FilePathFieldName = qSpecializationIndex.FieldMapping?.FilepathFieldName,
+                UrlFieldName = null, //qSpecializationIndex.FieldMapping?.UrlFieldName,
+                TitleFieldName = null, //qSpecializationIndex.FieldMapping?.TitleFieldName,
+                FilePathFieldName = null, //qSpecializationIndex.FieldMapping?.FilepathFieldName,
             },
-            SemanticConfiguration = qSpecializationIndex.SemanticConfiguration,
+            SemanticConfiguration = "default", //qSpecializationIndex.SemanticConfiguration,
             QueryType = new DataSourceQueryType(qSpecializationIndex.QueryType),
             InScope = specialization.RestrictResultScope,
             TopNDocuments = specialization.DocumentCount,
@@ -118,42 +122,7 @@ public class QAzureOpenAIChatExtension
     }
 #pragma warning restore AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
-    /// <summary>
-    /// Retrieve all configured specialization indexess.
-    /// </summary>
-    public List<string> GetAllSpecializationIndexNames()
-    {
-        var indexNames = new List<string>();
-        foreach (
-            QAzureOpenAIChatOptions.QSpecializationIndex _qSpecializationIndex in this._qAzureOpenAIChatOptions.SpecializationIndexes
-        )
-        {
-            indexNames.Add(_qSpecializationIndex.IndexName);
-        }
-        return indexNames;
-    }
-
-    /// <summary>
-    /// Retrieve the specialization Index based on Index name.
-    /// </summary>
-    public QAzureOpenAIChatOptions.QSpecializationIndex? GetSpecializationIndexByName(string indexName)
-    {
-        foreach (
-            QAzureOpenAIChatOptions.QSpecializationIndex _qSpecializationIndex in this._qAzureOpenAIChatOptions.SpecializationIndexes
-        )
-        {
-            if (_qSpecializationIndex.IndexName == indexName)
-            {
-                return _qSpecializationIndex;
-            }
-        }
-        return null;
-    }
-
-    public Uri? GenerateEmbeddingEndpoint(
-        Uri connectionEndpoint,
-        QAzureOpenAIChatOptions.QSpecializationIndex qSpecializationIndex
-    )
+    public Uri? GenerateEmbeddingEndpoint(Uri connectionEndpoint, SpecializationIndex qSpecializationIndex)
     {
         return new Uri(
             connectionEndpoint,
@@ -168,9 +137,9 @@ public class QAzureOpenAIChatExtension
         );
     }
 
-    public (string? ApiKey, string? Endpoint) GetAISearchDeploymentConnectionDetails(string indexName)
+    public async Task<(string? ApiKey, string? Endpoint)> GetAISearchDeploymentConnectionDetails(string indexId)
     {
-        var specializationIndex = this.GetSpecializationIndexByName(indexName);
+        var specializationIndex = await this._qSpecializationIndexService.GetIndexAsync(indexId);
         if (specializationIndex == null)
         {
             return (null, null);
@@ -178,7 +147,7 @@ public class QAzureOpenAIChatExtension
         var aiSearchDeploymentConnection = this.GetAISearchDeploymentConnection(
             specializationIndex.AISearchDeploymentConnection
         );
-        return (aiSearchDeploymentConnection?.APIKey, aiSearchDeploymentConnection?.Endpoint.ToString());
+        return (aiSearchDeploymentConnection?.APIKey, aiSearchDeploymentConnection?.Endpoint?.ToString());
     }
 
     /// <summary>

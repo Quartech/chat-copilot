@@ -88,6 +88,7 @@ const useClasses = makeStyles({
 });
 
 interface ChatInputProps {
+    disabled?: boolean;
     isDraggingOver?: boolean;
     onDragLeave: React.DragEventHandler<HTMLDivElement | HTMLTextAreaElement>;
     onSubmit: (options: GetResponseOptions) => Promise<void>;
@@ -101,7 +102,8 @@ interface ChatInputProps {
  * @param {(options: GetResponseOptions) => Promise<void>} onSubmit The function to call when the user submits a message
  * @returns {*} The chat input component
  */
-export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeave, onSubmit }) => {
+export const ChatInput: React.FC<ChatInputProps> = ({ disabled, isDraggingOver, onDragLeave, onSubmit }) => {
+    const inputDisabled = !!disabled;
     const classes = useClasses();
     const fileHandler = useFile();
     const dispatch = useAppDispatch();
@@ -259,6 +261,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
                         <Button
                             disabled={
                                 chatState.disabled ||
+                                inputDisabled ||
                                 (chatState.importingDocuments && chatState.importingDocuments.length > 0)
                             }
                             size="large"
@@ -279,7 +282,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
                     ref={textAreaRef}
                     id="chat-input"
                     resize="vertical"
-                    disabled={chatState.disabled || chatState.loadingMessages}
+                    disabled={chatState.disabled || chatState.loadingMessages || inputDisabled}
                     textarea={{
                         className: isDraggingOver
                             ? mergeClasses(classes.dragAndDrop, classes.textarea)
@@ -353,7 +356,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
                                 onClick={() => {
                                     handleSubmit(input);
                                 }}
-                                disabled={chatState.disabled || chatState.loadingMessages}
+                                disabled={chatState.disabled || chatState.loadingMessages || inputDisabled}
                             />
                         )}
                     </div>

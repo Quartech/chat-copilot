@@ -42,10 +42,10 @@ public class QSpecializationResponse
     public string RoleInformation { get; set; } = string.Empty;
 
     /// <summary>
-    /// IndexName of the specialization
+    /// IndexId of the specialization
     /// </summary>
-    [JsonPropertyName("indexName")]
-    public string? IndexName { get; set; } = string.Empty;
+    [JsonPropertyName("indexId")]
+    public string? IndexId { get; set; } = string.Empty;
 
     /// <summary>
     /// Initial chat response of the specialization
@@ -146,9 +146,9 @@ public class QSpecializationResponse
         this.GroupMemberships = specializationSource.GroupMemberships;
         this.InitialChatMessage = specializationSource.InitialChatMessage;
         this.Order = specializationSource.Order;
-        if (specializationSource.IndexName != null)
+        if (specializationSource.IndexId != null)
         {
-            this.IndexName = specializationSource.IndexName;
+            this.IndexId = specializationSource.IndexId;
         }
         if (specializationSource.Deployment != null)
         {

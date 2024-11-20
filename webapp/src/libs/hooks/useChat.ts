@@ -17,6 +17,7 @@ import {
     editConversationSpecialization,
     setChatMessagesLoading,
     setConversations,
+    setSelectedConversation,
     updateBotResponseStatus,
 } from '../../redux/features/conversations/conversationsSlice';
 import { Plugin } from '../../redux/features/plugins/PluginsState';
@@ -108,6 +109,7 @@ export const useChat = () => {
         };
 
         dispatch(addConversation(newChat));
+        dispatch(setSelectedConversation(newChat.id));
         return newChat.id;
     };
 

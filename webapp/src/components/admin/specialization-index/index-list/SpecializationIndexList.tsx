@@ -3,10 +3,10 @@ import { FC } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { useAppDispatch } from '../../../../redux/app/hooks';
-import { setSelectedKey } from '../../../../redux/features/admin/adminSlice';
+import { setSelectedIndexKey } from '../../../../redux/features/admin/adminSlice';
 import { Breakpoints } from '../../../../styles';
 import { Add20 } from '../../../shared/BundledIcons';
-import { SpecializationListSection } from './SpecializationListSection';
+import { SpecializationIndexListSection } from './SpecializationIndexListSection';
 
 const useClasses = makeStyles({
     root: {
@@ -14,8 +14,8 @@ const useClasses = makeStyles({
         flexShrink: 0,
         width: '320px',
         backgroundColor: tokens.colorNeutralBackground4,
-        flexDirection: 'column',
         boxShadow: 'rgba(0, 0, 0, 0.25) 0px 0.2rem 0.4rem -0.075rem',
+        flexDirection: 'column',
         ...shorthands.overflow('hidden'),
         ...Breakpoints.small({
             width: '64px',
@@ -49,12 +49,12 @@ const useClasses = makeStyles({
     },
 });
 
-export const SpecializationList: FC = () => {
+export const SpecializationIndexList: FC = () => {
     const classes = useClasses();
     const dispatch = useAppDispatch();
 
     const onAddSpecializationClick = () => {
-        dispatch(setSelectedKey(''));
+        dispatch(setSelectedIndexKey(''));
     };
 
     return (
@@ -70,11 +70,11 @@ export const SpecializationList: FC = () => {
                                 onAddSpecializationClick();
                             }}
                         >
-                            New Specialization
+                            New Index
                         </Button>
                     </div>
                     <div aria-label={'specialization list'} className={classes.list}>
-                        <SpecializationListSection header="All" />
+                        <SpecializationIndexListSection header="All" />
                     </div>
                 </div>
             </DndProvider>
