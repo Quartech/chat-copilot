@@ -810,7 +810,9 @@ public class ChatPlugin
             FrequencyPenalty = this._promptOptions.ResponseFrequencyPenalty,
             PresencePenalty = this._promptOptions.ResponsePresencePenalty,
             ToolCallBehavior = Microsoft.SemanticKernel.Connectors.OpenAI.ToolCallBehavior.AutoInvokeKernelFunctions,
-            AzureChatDataSource = await this._qAzureOpenAIChatExtension.GetAzureSearchChatDataSource(this._qSpecialization),
+            AzureChatDataSource = await this._qAzureOpenAIChatExtension.GetAzureSearchChatDataSource(
+                this._qSpecialization
+            ),
         };
 #pragma warning restore SKEXP0010 //Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
     }
@@ -829,7 +831,9 @@ public class ChatPlugin
             FrequencyPenalty = this._promptOptions.IntentFrequencyPenalty,
             PresencePenalty = this._promptOptions.IntentPresencePenalty,
             StopSequences = new string[] { "] bot:" },
-            AzureChatDataSource = await this._qAzureOpenAIChatExtension.GetAzureSearchChatDataSource(this._qSpecialization),
+            AzureChatDataSource = await this._qAzureOpenAIChatExtension.GetAzureSearchChatDataSource(
+                this._qSpecialization
+            ),
         };
 #pragma warning restore SKEXP0010 //Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
     }

@@ -10,6 +10,7 @@ using CopilotChat.WebApi.Services;
 using CopilotChat.WebApi.Storage;
 
 namespace CopilotChat.WebApi.Plugins.Chat.Ext;
+
 /// <summary>
 /// Chat extension class to support Azure search indexes for bot response.
 /// </summary>
