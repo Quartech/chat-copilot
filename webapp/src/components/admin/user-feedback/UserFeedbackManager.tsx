@@ -126,7 +126,7 @@ export const UserFeedbackManager: React.FC = () => {
         sortBy: [CopilotChatMessageSortOption.dateDesc],
     });
 
-    const initalFetch = useRef(false);
+    const initialFetch = useRef(false);
 
     const fetchData = async () => {
         dispatch(showSpinner());
@@ -149,8 +149,8 @@ export const UserFeedbackManager: React.FC = () => {
     };
 
     useEffect(() => {
-        if (!initalFetch.current) {
-            initalFetch.current = true;
+        if (!initialFetch.current) {
+            initialFetch.current = true;
             void fetchData();
         }
     });

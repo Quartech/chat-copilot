@@ -83,6 +83,7 @@ export const ChatType: FC = () => {
             dispatch(setSearchSelected({ selected: false, specializationId: '' }));
             dispatch(setAdminSelected(false));
             dispatch(setIndexSelected(false));
+            dispatch(setUserFeedbackSelected(false));
         }
     }, [selectedTab, selectedAdminSubTab, conversations, selectedId, dispatch]);
 
