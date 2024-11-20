@@ -48,7 +48,6 @@ public class QSpecializationBase
     /// <summary>
     /// IndexName of the specialization
     /// </summary>
-
     [JsonProperty("indexId")]
     public string? IndexId
     {
