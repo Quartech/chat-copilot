@@ -27,7 +27,8 @@ cosmosdb_sql_containers = [
   { name = "chatmemorysources", partition_key_path = "/chatId" },
   { name = "chatparticipants", partition_key_path = "/chatId" },
   { name = "specialization", partition_key_path = "/id" },
-  { name = "chatuser", partition_key_path = "/id" }
+  { name = "chatuser", partition_key_path = "/id" },
+  { name = "specializationindex", partition_key_path = "/id" }
 ]
 
 openai_deployments = [
@@ -36,21 +37,21 @@ openai_deployments = [
     model_name = "gpt-4o-mini",
     version = "2024-07-18",
     sku_name = "GlobalStandard",
-    capacity = 10
+    capacity = 24065
   },
   {
     name = "gpt-4o",
     model_name = "gpt-4o",
-    version = "2024-05-13",
+    version = "2024-08-06",
     sku_name = "GlobalStandard",
-    capacity = 24000
+    capacity = 30000
   },
   {
     name = "text-embedding-ada-002",
     model_name = "text-embedding-ada-002",
     version = 2,
     sku_name = "Standard",
-    capacity = 120
+    capacity = 240
   }
 ]
 

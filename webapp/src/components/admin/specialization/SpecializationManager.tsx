@@ -19,12 +19,11 @@ import {
 import { Info20Regular } from '@fluentui/react-icons';
 import React, { useEffect, useId, useState } from 'react';
 import { useSpecialization } from '../../../libs/hooks';
-import { useAppSelector } from '../../../redux/app/hooks';
-import { RootState } from '../../../redux/app/store';
-import { ImageUploaderPreview } from '../../files/ImageUploaderPreview';
-import { useAppDispatch } from '../../../redux/app/hooks';
-import { addAlert } from '../../../redux/features/app/appSlice';
 import { AlertType } from '../../../libs/models/AlertType';
+import { useAppDispatch, useAppSelector } from '../../../redux/app/hooks';
+import { RootState } from '../../../redux/app/store';
+import { addAlert } from '../../../redux/features/app/appSlice';
+import { ImageUploaderPreview } from '../../files/ImageUploaderPreview';
 import { ConfirmationDialog } from '../../shared/ConfirmationDialog';
 
 interface ISpecializationFile {
@@ -118,7 +117,7 @@ export const SpecializationManager: React.FC = () => {
     const [description, setDescription] = useState('');
     const [roleInformation, setRoleInformation] = useState('');
     const [initialChatMessage, setInitialChatMessage] = useState('');
-    const [indexName, setIndexName] = useState('');
+    const [indexId, setIndexId] = useState('');
     const [deployment, setDeployment] = useState('');
     const [membershipId, setMembershipId] = useState<string[]>([]);
     const [imageFile, setImageFile] = useState<ISpecializationFile>({ file: null, src: null });
@@ -135,7 +134,7 @@ export const SpecializationManager: React.FC = () => {
     const [isValid, setIsValid] = useState(false);
     const dropdownId = useId();
 
-    const hasEnrichmentIndex = !!indexName;
+    const hasEnrichmentIndex = !!indexId;
 
     /**
      * Save specialization by creating or updating.
@@ -152,7 +151,7 @@ export const SpecializationManager: React.FC = () => {
                 name,
                 description,
                 roleInformation,
-                indexName,
+                indexId,
                 imageFile: imageFile.file,
                 iconFile: iconFile.file,
                 deleteImage: !imageFile.src, // Set the delete flag if the src is null
@@ -174,7 +173,7 @@ export const SpecializationManager: React.FC = () => {
                 name,
                 description,
                 roleInformation,
-                indexName,
+                indexId,
                 imageFile: imageFile.file,
                 iconFile: iconFile.file,
                 deployment,
@@ -200,7 +199,7 @@ export const SpecializationManager: React.FC = () => {
         setMembershipId([]);
         setImageFile({ file: null, src: null });
         setIconFile({ file: null, src: null });
-        setIndexName('');
+        setIndexId('');
         setDeployment('');
         setInitialChatMessage('');
         setIsDefault(false);
@@ -224,7 +223,7 @@ export const SpecializationManager: React.FC = () => {
                 setMembershipId(specializationObj.groupMemberships);
                 setDeployment(specializationObj.deployment);
                 setInitialChatMessage(specializationObj.initialChatMessage);
-                setIndexName(specializationObj.indexName);
+                setIndexId(specializationObj.indexId);
                 setIsDefault(specializationObj.isDefault);
                 setRestrictResultScope(specializationObj.restrictResultScope ?? false);
                 setStrictness(specializationObj.strictness ?? 3);
@@ -292,7 +291,8 @@ export const SpecializationManager: React.FC = () => {
      * Callback function for handling changes to the "Enrichment Index" dropdown.
      */
     const onChangeIndexName = (_event?: SelectionEvents, data?: OptionOnSelectData) => {
-        setIndexName(data?.optionValue ?? '');
+        console.log(JSON.stringify(data));
+        setIndexId(data?.optionValue ?? '');
     };
 
     /**
@@ -457,10 +457,21 @@ export const SpecializationManager: React.FC = () => {
                     ))}
                 </Dropdown>
                 <label htmlFor="index-name">Enrichment Index</label>
-                <Dropdown clearable id="index-name" onOptionSelect={onChangeIndexName} value={indexName || 'None'}>
+                <Dropdown
+                    clearable
+                    id="index-name"
+                    onOptionSelect={onChangeIndexName}
+                    value={specializationIndexes.find((index) => index.id === indexId)?.name ?? 'None'}
+                >
                     <Option value="">None</Option>
                     {specializationIndexes.map((specializationIndex) => (
-                        <Option key={specializationIndex}>{specializationIndex}</Option>
+                        <Option
+                            value={specializationIndex.id}
+                            key={specializationIndex.id}
+                            text={specializationIndex.name}
+                        >
+                            {specializationIndex.name}
+                        </Option>
                     ))}
                 </Dropdown>
                 <Checkbox label="Set as Default Specialization" checked={isDefault} onChange={onChangeIsDefault} />

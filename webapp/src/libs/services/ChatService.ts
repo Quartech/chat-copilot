@@ -166,7 +166,7 @@ export class ChatService extends BaseService {
     public rateMessageAync = async (
         chatId: string,
         messageId: string,
-        positive: boolean,
+        positive: boolean | null,
         accessToken: string,
     ): Promise<object> => {
         const result = await this.getResponseAsync<object>(

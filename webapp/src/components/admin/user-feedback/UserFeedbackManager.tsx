@@ -82,6 +82,11 @@ const useClasses = makeStyles({
         width: '100%',
         boxSizing: 'border-box',
     },
+    table: {
+        width: '100%',
+        flexGrow: 1,
+        minWidth: '500px',
+    },
     dialog: {
         overflowY: 'auto',
         maxHeight: '500px',
@@ -217,7 +222,7 @@ export const UserFeedbackManager: React.FC = () => {
             },
             renderCell: (item) => {
                 return (
-                    <TableCellLayout truncate style={{ marginLeft: '20px' }}>
+                    <TableCellLayout truncate style={{ marginLeft: '18px' }}>
                         {item.userFeedback === UserFeedback.Positive ? (
                             <ThumbLike20Regular />
                         ) : (
@@ -290,10 +295,10 @@ export const UserFeedbackManager: React.FC = () => {
             defaultWidth: 120,
         },
         prompt: {
-            defaultWidth: 400,
+            defaultWidth: 380,
         },
         content: {
-            defaultWidth: 400,
+            defaultWidth: 380,
         },
     };
 
@@ -428,15 +433,11 @@ export const UserFeedbackManager: React.FC = () => {
             {/* Table UI */}
             <div className={classes.tableContainer}>
                 <DataGrid
+                    className={classes.table}
                     items={userFeedbackData?.items ?? []}
                     columns={columns}
                     columnSizingOptions={columnSizingOptions}
                     resizableColumns
-                    style={{
-                        width: '100%',
-                        flexGrow: 1,
-                        minWidth: '500px',
-                    }}
                 >
                     <DataGridHeader>
                         <DataGridRow>

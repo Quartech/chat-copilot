@@ -126,26 +126,60 @@ public class DocumentController : ControllerBase
     }
 
     /// <summary>
-    /// Service API for deleting a document.
+    /// Service API for deleting a global document.
     /// </summary>
     [Route("documents/{sourceId:guid}")]
     [HttpDelete]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> DocumentDeleteAsync(
+    public Task<IActionResult> DocumentDeleteGlobalAsync(
         [FromServices] IKernelMemory memoryClient,
         [FromServices] IHubContext<MessageRelayHub> messageRelayHubContext,
         [FromRoute] Guid sourceId
     )
     {
+        return this.DocumentDeleteAsync(
+            memoryClient,
+            messageRelayHubContext,
+            DocumentMemoryOptions.GlobalDocumentChatId,
+            sourceId
+        );
+    }
+
+    /// <summary>
+    /// Service API for deleting a document.
+    /// </summary>
+    [Route("chats/{chatId:guid}/documents/{sourceId:guid}/")]
+    [HttpDelete]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public Task<IActionResult> DocumentDeleteLocalAsync(
+        [FromServices] IKernelMemory memoryClient,
+        [FromServices] IHubContext<MessageRelayHub> messageRelayHubContext,
+        [FromRoute] Guid chatId,
+        [FromRoute] Guid sourceId
+    )
+    {
+        return this.DocumentDeleteAsync(memoryClient, messageRelayHubContext, chatId, sourceId);
+    }
+
+    private async Task<IActionResult> DocumentDeleteAsync(
+        IKernelMemory memoryClient,
+        IHubContext<MessageRelayHub> messageRelayHubContext,
+        Guid chatId,
+        Guid sourceId
+    )
+    {
+        var chatIdString = chatId.ToString();
         var sourceIdString = sourceId.ToString();
 
         // Try to find and delete the source
-        MemorySource? source = await this._sourceRepository.FindByIdAsync(sourceIdString);
+        MemorySource? source = await this._sourceRepository.FindByIdAsync(sourceIdString, chatIdString);
         if (source == null)
         {
-            return this.NotFound($"No document memory source found for source id '{sourceId}'.");
+            return this.NotFound($"No document memory source found for id '{sourceId}' and partition '{chatId}'");
         }
 
         // Attempt deletion operations

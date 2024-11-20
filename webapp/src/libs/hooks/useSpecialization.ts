@@ -1,16 +1,15 @@
 import { useMsal } from '@azure/msal-react';
-import { useAppDispatch } from '../../redux/app/hooks';
-import { addAlert, hideSpinner, showSpinner } from '../../redux/features/app/appSlice';
-import { store } from '../../redux/app/store';
 import { getErrorDetails } from '../../components/utils/TextUtils';
+import { useAppDispatch } from '../../redux/app/hooks';
+import { store } from '../../redux/app/store';
 import {
     addSpecialization,
     editSpecialization,
     removeSpecialization,
     setChatCompletionDeployments,
-    setSpecializationIndexes,
     setSpecializations,
 } from '../../redux/features/admin/adminSlice';
+import { addAlert, hideSpinner, showSpinner } from '../../redux/features/app/appSlice';
 import { AuthHelper } from '../auth/AuthHelper';
 import { AlertType } from '../models/AlertType';
 import { ISpecialization, ISpecializationRequest } from '../models/Specialization';
@@ -34,18 +33,18 @@ export const useSpecialization = () => {
         }
     };
 
-    const loadSpecializationIndexes = async () => {
-        try {
-            const accessToken = await AuthHelper.getSKaaSAccessToken(instance, inProgress);
-            await specializationService.getAllSpecializationIndexesAsync(accessToken).then((result: string[]) => {
-                dispatch(setSpecializationIndexes(result));
-            });
-        } catch (e: any) {
-            const errorMessage = `Unable to load chats. Details: ${getErrorDetails(e)}`;
-            dispatch(addAlert({ message: errorMessage, type: AlertType.Error }));
-            return undefined;
-        }
-    };
+    // const loadSpecializationIndexes = async () => {
+    //     try {
+    //         const accessToken = await AuthHelper.getSKaaSAccessToken(instance, inProgress);
+    //         await specializationService.getAllSpecializationIndexesAsync(accessToken).then((result: string[]) => {
+    //             dispatch(setSpecializationIndexes(result));
+    //         });
+    //     } catch (e: any) {
+    //         const errorMessage = `Unable to load chats. Details: ${getErrorDetails(e)}`;
+    //         dispatch(addAlert({ message: errorMessage, type: AlertType.Error }));
+    //         return undefined;
+    //     }
+    // };
 
     const loadChatCompletionDeployments = async () => {
         try {
@@ -108,9 +107,12 @@ export const useSpecialization = () => {
         try {
             const accessToken = await AuthHelper.getSKaaSAccessToken(instance, inProgress);
             const existingSpecializations = await specializationService.getAllSpecializationsAsync(accessToken);
-
+            const sanitizedData: ISpecializationRequest = {
+                ...data,
+                isDefault: Boolean(data.isDefault), // Convert to boolean explicitly
+            };
             // If this specialization is set as default, update the current default
-            if (data.isDefault) {
+            if (sanitizedData.isDefault) {
                 const currentDefault = existingSpecializations.find((spec) => spec.isDefault && spec.id !== id);
                 if (currentDefault) {
                     const updatedData: ISpecializationRequest = {
@@ -127,13 +129,13 @@ export const useSpecialization = () => {
                 }
             }
             await specializationService
-                .updateSpecializationAsync(id, data, accessToken)
+                .updateSpecializationAsync(id, sanitizedData, accessToken)
                 .then((result: ISpecialization) => {
                     dispatch(editSpecialization(result));
                 });
             dispatch(
                 addAlert({
-                    message: `Specialization {${data.name}} updated successfully.`,
+                    message: `Specialization {${sanitizedData.name}} updated successfully.`,
                     type: AlertType.Success,
                 }),
             );
@@ -219,7 +221,7 @@ export const useSpecialization = () => {
 
     return {
         loadSpecializations,
-        loadSpecializationIndexes,
+        //loadSpecializationIndexes,
         loadChatCompletionDeployments,
         createSpecialization,
         updateSpecialization,
