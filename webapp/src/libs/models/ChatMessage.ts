@@ -37,6 +37,7 @@ export enum ChatMessageType {
 export enum UserFeedback {
     Positive = 'Positive',
     Negative = 'Negative',
+    Neutral = 'Neutral',
 }
 
 /**
