@@ -89,17 +89,17 @@ public class QSpecializationService : IQSpecializationService
                 RoleInformation: qSpecializationMutate.RoleInformation,
                 InitialChatMessage: qSpecializationMutate.InitialChatMessage,
                 Deployment: qSpecializationMutate.Deployment,
-                IndexName: qSpecializationMutate.IndexName,
+                IndexId: qSpecializationMutate.IndexId,
                 IsDefault: qSpecializationMutate.IsDefault,
-                RestrictResultScope: qSpecializationMutate.IndexName != null
+                RestrictResultScope: qSpecializationMutate.IndexId != null
                     ? qSpecializationMutate.RestrictResultScope
                     : null,
-                Strictness: qSpecializationMutate.IndexName != null ? qSpecializationMutate.Strictness : null,
-                DocumentCount: qSpecializationMutate.IndexName != null ? qSpecializationMutate.DocumentCount : null,
-                PastMessagesIncludedCount: qSpecializationMutate.IndexName != null
+                Strictness: qSpecializationMutate.IndexId != null ? qSpecializationMutate.Strictness : null,
+                DocumentCount: qSpecializationMutate.IndexId != null ? qSpecializationMutate.DocumentCount : null,
+                PastMessagesIncludedCount: qSpecializationMutate.IndexId != null
                     ? qSpecializationMutate.PastMessagesIncludedCount
                     : null,
-                MaxResponseTokenLimit: qSpecializationMutate.IndexName != null
+                MaxResponseTokenLimit: qSpecializationMutate.IndexId != null
                     ? qSpecializationMutate.MaxResponseTokenLimit
                     : null,
                 ImageFilePath: imageFilePath,
@@ -262,7 +262,7 @@ public class QSpecializationService : IQSpecializationService
     /// <param name="specializationOrder">A QSpecializationOrder object containing the new order for specializations, where each key is a specialization ID and each value is the intended order.</param>
     /// <returns>A Task representing the asynchronous operation of updating all relevant specializations.</returns>
     /// <exception cref="ArgumentNullException">Thrown when the <paramref name="specializationOrder"/> is null.</exception>
-    public async Task OrderSpecializations(QSpecializationOrder specializationOrder)
+    public async Task OrderSpecializations(OrderMapGuidToInt specializationOrder)
     {
         if (specializationOrder == null)
         {

@@ -25,12 +25,14 @@ public class QSearchService : IQSearchService
 
     public QSearchService(
         QAzureOpenAIChatOptions qAzureOpenAIChatOptions,
-        SpecializationRepository specializationSourceRepository
+        SpecializationRepository specializationSourceRepository,
+        SpecializationIndexRepository indexRepository
     )
     {
         this._qAzureOpenAIChatExtension = new QAzureOpenAIChatExtension(
             qAzureOpenAIChatOptions,
-            specializationSourceRepository
+            specializationSourceRepository,
+            indexRepository
         );
         this._httpClientHandler = new() { CheckCertificateRevocationList = true };
         this._httpClient = new(this._httpClientHandler);
@@ -44,12 +46,12 @@ public class QSearchService : IQSearchService
     {
         string specializationId = qsearchParameters.SpecializationId;
         QAzureSearchRequest requestBody = new(qsearchParameters.Search);
-        var indexName = await this.GetIndexName(specializationId);
-        if (indexName == null)
+        var indexId = await this.GetIndexId(specializationId);
+        if (indexId == null)
         {
             return null;
         }
-        var (apiKey, endpoint) = this._qAzureOpenAIChatExtension.GetAISearchDeploymentConnectionDetails(indexName);
+        var (apiKey, endpoint) = await this._qAzureOpenAIChatExtension.GetAISearchDeploymentConnectionDetails(indexId);
         if (apiKey == null || endpoint == null)
         {
             return null;
@@ -57,7 +59,7 @@ public class QSearchService : IQSearchService
         using var httpRequestMessage = new HttpRequestMessage()
         {
             Method = HttpMethod.Post,
-            RequestUri = new Uri($"{endpoint}indexes/{indexName}/docs/search?api-version=2020-06-30"),
+            RequestUri = new Uri($"{endpoint}indexes/{indexId}/docs/search?api-version=2020-06-30"),
             Content = new StringContent(JsonSerializer.Serialize(requestBody), Encoding.UTF8, "application/json"),
         };
         httpRequestMessage.Headers.Add("api-Key", apiKey);
@@ -114,9 +116,9 @@ public class QSearchService : IQSearchService
         }
     }
 
-    private async Task<string?> GetIndexName(string specializationId)
+    private async Task<string?> GetIndexId(string specializationId)
     {
         var specialiazation = await this._specializationRepository.FindByIdAsync(specializationId);
-        return specialiazation?.IndexName;
+        return specialiazation?.IndexId;
     }
 }

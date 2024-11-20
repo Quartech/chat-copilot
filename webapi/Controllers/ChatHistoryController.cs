@@ -210,13 +210,12 @@ public class ChatHistoryController : ControllerBase
         {
             return this.NotFound($"No messages found for chat id '{chatId}'.");
         }
-
         return this.Ok(chatMessages);
     }
 
     public class RateChatMessageBody
     {
-        public bool positive { get; set; }
+        public bool? positive { get; set; }
     }
 
     /// <summary>
@@ -243,9 +242,12 @@ public class ChatHistoryController : ControllerBase
         {
             return this.NotFound($"No message found for message id '{messageId}'.");
         }
-        chatMessage.UserFeedback = body.positive
-            ? Models.Storage.UserFeedback.Positive
-            : Models.Storage.UserFeedback.Negative;
+        chatMessage.UserFeedback = body.positive switch
+        {
+            true => Models.Storage.UserFeedback.Positive,
+            false => Models.Storage.UserFeedback.Negative,
+            null => null,
+        };
         await this._messageRepository.UpsertAsync(chatMessage);
 
         return this.Ok(chatMessage);

@@ -15,6 +15,7 @@ import { useChat } from './useChat';
 import { useFile } from './useFile';
 import { useSettings } from './useSettings';
 import { useSpecialization } from './useSpecialization';
+import { useSpecializationIndex } from './useSpecializationIndex';
 
 /**
  * Hook to load the application state.
@@ -29,6 +30,7 @@ export const useAppLoader = (): [AppState, Dispatch<SetStateAction<AppState>>] =
     const { instance, inProgress } = useMsal();
     const isAuthenticated = useIsAuthenticated();
     const specialization = useSpecialization();
+    const specializationIndexes = useSpecializationIndex();
     const settings = useSettings();
     const chat = useChat();
     const file = useFile();
@@ -128,7 +130,7 @@ export const useAppLoader = (): [AppState, Dispatch<SetStateAction<AppState>>] =
             const [loadedSpecializations, serviceInfo] = await Promise.all([
                 specialization.loadSpecializations(),
                 chat.getServiceInfo(),
-                specialization.loadSpecializationIndexes(),
+                specializationIndexes.loadSpecializationIndexes(),
                 specialization.loadChatCompletionDeployments(),
                 file.getContentSafetyStatus(),
             ]);
