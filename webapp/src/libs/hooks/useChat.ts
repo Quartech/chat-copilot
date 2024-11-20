@@ -102,7 +102,7 @@ export const useChat = () => {
             disabled: false,
             hidden: false,
             specializationId,
-            suggestions: [],
+            generatedSuggestions: [],
             createdOnServer: false,
             lastUpdatedTimestamp: new Date().getTime(),
             loadingMessages: false,
@@ -145,7 +145,7 @@ export const useChat = () => {
                     disabled: false,
                     hidden: false,
                     specializationId,
-                    suggestions: [],
+                    generatedSuggestions: [],
                     createdOnServer: true,
                     lastUpdatedTimestamp: new Date().getTime(),
                     loadingMessages: false,
@@ -309,7 +309,7 @@ export const useChat = () => {
                         hidden: false, //!features[FeatureKeys.MultiUserChat].enabled && chatUsers.length > 1,
                         specializationId: chatSession.specializationId,
                         createdOnServer: true,
-                        suggestions: [],
+                        generatedSuggestions: [],
                         lastUpdatedTimestamp: new Date(chatSession.lastUpdatedTimestamp ?? 0).getTime(),
                         loadingMessages: false,
                     };
@@ -386,7 +386,7 @@ export const useChat = () => {
                     hidden: false,
                     specializationId: chatSession.specializationId,
                     createdOnServer: true,
-                    suggestions: [],
+                    generatedSuggestions: [],
                     loadingMessages: false,
                 };
 
@@ -519,7 +519,7 @@ export const useChat = () => {
                     hidden: false,
                     specializationId: result.specializationId,
                     createdOnServer: true,
-                    suggestions: [],
+                    generatedSuggestions: [],
                     loadingMessages: false,
                 };
 

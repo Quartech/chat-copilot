@@ -8,7 +8,7 @@ const useStyles = makeStyles({
     },
 
     card: {
-        maxWidth: '250px',
+        width: '250px',
         height: '200px',
     },
 

@@ -237,8 +237,11 @@ export const conversationsSlice = createSlice({
                 );
             }
         },
-        updateSuggestions: (state: ConversationsState, action: PayloadAction<ConversationSuggestionsChange>) => {
-            setConversationSuggestions(state, action.payload.id, action.payload.chatSuggestionMessage);
+        updateConversationGeneratedSuggestions: (
+            state: ConversationsState,
+            action: PayloadAction<ConversationSuggestionsChange>,
+        ) => {
+            setConversationGeneratedSuggestions(state, action.payload.id, action.payload.chatSuggestionMessage);
         },
         setChatMessagesLoading: (state: ConversationsState, action: PayloadAction<MessageLoadingStatusChange>) => {
             state.conversations[action.payload.id].loadingMessages = action.payload.isLoading;
@@ -293,7 +296,7 @@ const extractJsonArray = (str: string) => {
  * @param chatId current chatId guid
  * @param chatMessage the chat message we got in response from the chatbot
  */
-const setConversationSuggestions = (state: ConversationsState, chatId: string, chatMessage: IAskResult) => {
+const setConversationGeneratedSuggestions = (state: ConversationsState, chatId: string, chatMessage: IAskResult) => {
     const conversation = state.conversations[chatId];
     let arraySuggestions: string[] = [];
     const response = chatMessage.variables.find((a) => a.key === 'input');
@@ -310,7 +313,7 @@ const setConversationSuggestions = (state: ConversationsState, chatId: string, c
             arraySuggestions = extractJsonArray(match[1]);
         }
     }
-    conversation.suggestions = arraySuggestions;
+    conversation.generatedSuggestions = arraySuggestions;
 };
 
 export const {
@@ -334,7 +337,7 @@ export const {
     disableConversation,
     updatePluginState,
     editConversationSpecialization,
-    updateSuggestions,
+    updateConversationGeneratedSuggestions,
     deleteConversationHistory,
     editConversationLastUpdate,
     setChatMessagesLoading,

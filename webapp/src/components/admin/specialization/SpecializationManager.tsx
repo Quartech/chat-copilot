@@ -212,6 +212,7 @@ export const SpecializationManager: React.FC = () => {
         setDocumentCount(5);
         setPastMessagesIncludedCount(10);
         setMaxResponseTokenLimit(1024);
+        setSuggestions([]);
     };
 
     useEffect(() => {
@@ -241,6 +242,7 @@ export const SpecializationManager: React.FC = () => {
                 setImageFile({ file: null, src: specializationObj.imageFilePath });
                 setIconFile({ file: null, src: specializationObj.iconFilePath });
                 setOrder(specializationObj.order);
+                setSuggestions(specializationObj.suggestions);
             }
         } else {
             setEditMode(false);
