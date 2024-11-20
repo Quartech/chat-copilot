@@ -196,7 +196,7 @@ public class QAzureOpenAIChatExtension
         {
             foreach (var deployment in connection.ImageGenerationDeployments)
             {
-                textToImageDeployments.Add($"{deployment}");
+                textToImageDeployments.Add($"{deployment.Name}");
             }
         }
         return textToImageDeployments;
