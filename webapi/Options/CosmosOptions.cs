@@ -53,6 +53,12 @@ public class CosmosOptions
     public string SpecializationContainer { get; set; } = string.Empty;
 
     /// <summary>
+    /// Gets or sets the Cosmos container for index sources.
+    /// </summary>
+    [Required, NotEmptyOrWhitespace]
+    public string SpecializationIndexContainer { get; set; } = string.Empty;
+
+    /// <summary>
     /// Gets or sets the Cosmos container for chat users.
     /// /// </summary>
     [Required, NotEmptyOrWhitespace]

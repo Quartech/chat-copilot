@@ -48,9 +48,9 @@ public class Specialization : IStorageEntity
     public IList<string> GroupMemberships { get; set; } = new List<string>();
 
     /// <summary>
-    /// Index Name
+    /// Specialization index id reference
     /// </summary>
-    public string? IndexName { get; set; }
+    public string? IndexId { get; set; }
 
     /// <summary>
     /// Deployment
@@ -142,7 +142,7 @@ public class Specialization : IStorageEntity
         string RoleInformation,
         string InitialChatMessage,
         string? Deployment,
-        string? IndexName,
+        string? IndexId,
         bool? IsDefault,
         bool? RestrictResultScope,
         int? Strictness,
@@ -161,7 +161,7 @@ public class Specialization : IStorageEntity
         this.Description = Description;
         this.RoleInformation = RoleInformation;
         this.Deployment = Deployment;
-        this.IndexName = IndexName;
+        this.IndexId = IndexId;
         this.IsDefault = IsDefault;
         this.RestrictResultScope = RestrictResultScope;
         this.Strictness = Strictness;
