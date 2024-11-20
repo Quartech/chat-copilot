@@ -58,7 +58,7 @@ export class SpecializationService extends BaseService {
         formData.append('roleInformation', body.roleInformation);
         formData.append('deployment', body.deployment);
         formData.append('initialChatMessage', body.initialChatMessage);
-        formData.append('indexName', body.indexName);
+        formData.append('indexId', body.indexId);
         formData.append('groupMemberships', body.groupMemberships.join(','));
         formData.append('order', body.order.toString());
         formData.append('isDefault', body.isDefault.toString());
@@ -121,7 +121,7 @@ export class SpecializationService extends BaseService {
         formData.append('roleInformation', body.roleInformation);
         formData.append('deployment', body.deployment);
         formData.append('initialChatMessage', body.initialChatMessage);
-        formData.append('indexName', body.indexName);
+        formData.append('indexId', body.indexId);
         formData.append('groupMemberships', body.groupMemberships.join(','));
         formData.append('order', body.order.toString());
         formData.append('isDefault', body.isDefault.toString());

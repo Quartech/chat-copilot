@@ -187,6 +187,7 @@ public static class CopilotChatServiceExtensions
         IStorageContext<ChatParticipant> chatParticipantStorageContext;
         IStorageContext<Specialization> specializationStorageContext;
         IStorageContext<ChatUser> chatUserStorageContext;
+        IStorageContext<SpecializationIndex> specializationIndexStorageContext;
 
         ChatStoreOptions chatStoreConfig = services
             .BuildServiceProvider()
@@ -203,6 +204,7 @@ public static class CopilotChatServiceExtensions
                 chatParticipantStorageContext = new VolatileContext<ChatParticipant>();
                 specializationStorageContext = new VolatileContext<Specialization>();
                 chatUserStorageContext = new VolatileContext<ChatUser>();
+                specializationIndexStorageContext = new VolatileContext<SpecializationIndex>();
                 break;
             }
 
@@ -265,6 +267,14 @@ public static class CopilotChatServiceExtensions
                         )
                     )
                 );
+                specializationIndexStorageContext = new FileSystemContext<SpecializationIndex>(
+                    new FileInfo(
+                        Path.Combine(
+                            directory,
+                            $"{Path.GetFileNameWithoutExtension(fullPath)}_indexes{Path.GetExtension(fullPath)}"
+                        )
+                    )
+                );
                 break;
             }
 
@@ -305,6 +315,11 @@ public static class CopilotChatServiceExtensions
                     chatStoreConfig.Cosmos.Database,
                     chatStoreConfig.Cosmos.ChatUserContainer
                 );
+                specializationIndexStorageContext = new CosmosDbContext<SpecializationIndex>(
+                    chatStoreConfig.Cosmos.ConnectionString,
+                    chatStoreConfig.Cosmos.Database,
+                    chatStoreConfig.Cosmos.SpecializationIndexContainer
+                );
 #pragma warning restore CA2000 // Dispose objects before losing scope
                 break;
             }
@@ -323,6 +338,9 @@ public static class CopilotChatServiceExtensions
         services.AddSingleton<ChatParticipantRepository>(new ChatParticipantRepository(chatParticipantStorageContext));
         services.AddSingleton<SpecializationRepository>(new SpecializationRepository(specializationStorageContext));
         services.AddSingleton<ChatUserRepository>(new ChatUserRepository(chatUserStorageContext));
+        services.AddSingleton<SpecializationIndexRepository>(
+            new SpecializationIndexRepository(specializationIndexStorageContext)
+        );
 
         return services;
     }

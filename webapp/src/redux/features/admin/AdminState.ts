@@ -1,14 +1,17 @@
 import { ISpecialization } from '../../../libs/models/Specialization';
+import { ISpecializationIndex } from '../../../libs/models/SpecializationIndex';
 
 export type Specializations = Record<string, AdminState>;
 
 export interface AdminState {
     isAdminSelected: boolean;
+    isIndexSelected: boolean;
     chatSpecialization: ISpecialization | undefined;
     specializations: ISpecialization[];
-    specializationIndexes: string[];
+    specializationIndexes: ISpecializationIndex[];
     chatCompletionDeployments: string[];
     selectedId: string;
+    selectedIndexId: string;
 }
 export const Specializations = [
     {
@@ -18,7 +21,7 @@ export const Specializations = [
         name: 'General',
         description: 'General',
         roleInformation: '',
-        indexName: '',
+        indexId: '',
         deployment: '',
         imageFilePath: '',
         iconFilePath: '',
@@ -37,9 +40,11 @@ export const Specializations = [
 ];
 export const initialState: AdminState = {
     isAdminSelected: false,
+    isIndexSelected: false,
     chatSpecialization: undefined,
     specializations: Specializations,
     specializationIndexes: [],
     chatCompletionDeployments: [],
     selectedId: '',
+    selectedIndexId: '',
 };

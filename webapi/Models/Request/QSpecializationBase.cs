@@ -45,8 +45,8 @@ public class QSpecializationBase
     /// <summary>
     /// IndexName of the specialization
     /// </summary>
-    [JsonPropertyName("indexName")]
-    public string? IndexName { get; set; }
+    [JsonPropertyName("indexId")]
+    public string? IndexId { get; set; }
 
     /// <summary>
     /// Enable/Disable flag of the specialization.

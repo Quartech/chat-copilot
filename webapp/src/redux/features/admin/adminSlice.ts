@@ -1,5 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { ISpecialization } from '../../../libs/models/Specialization';
+import { ISpecializationIndex } from '../../../libs/models/SpecializationIndex';
 import { AdminState, initialState } from './AdminState';
 
 export const adminSlice = createSlice({
@@ -16,7 +17,7 @@ export const adminSlice = createSlice({
             // );
             state.specializations = action.payload;
         },
-        setSpecializationIndexes: (state: AdminState, action: PayloadAction<string[]>) => {
+        setSpecializationIndexes: (state: AdminState, action: PayloadAction<ISpecializationIndex[]>) => {
             state.specializationIndexes = action.payload;
         },
         setChatCompletionDeployments: (state: AdminState, action: PayloadAction<string[]>) => {
@@ -25,11 +26,20 @@ export const adminSlice = createSlice({
         setAdminSelected: (state: AdminState, action: PayloadAction<boolean>) => {
             state.isAdminSelected = action.payload;
         },
+        setIndexSelected: (state: AdminState, action: PayloadAction<boolean>) => {
+            state.isIndexSelected = action.payload;
+        },
         setSelectedKey: (state: AdminState, action: PayloadAction<string>) => {
             state.selectedId = action.payload;
         },
+        setSelectedIndexKey: (state: AdminState, action: PayloadAction<string>) => {
+            state.selectedIndexId = action.payload;
+        },
         addSpecialization: (state: AdminState, action: PayloadAction<ISpecialization>) => {
             state.specializations.push(action.payload);
+        },
+        addSpecializationIndex: (state: AdminState, action: PayloadAction<ISpecializationIndex>) => {
+            state.specializationIndexes.push(action.payload);
         },
         editSpecialization: (state: AdminState, action: PayloadAction<ISpecialization>) => {
             const specializations = state.specializations;
@@ -39,6 +49,12 @@ export const adminSlice = createSlice({
             state.specializations = updatedSpecializations;
             state.specializations.push(action.payload);
         },
+        editSpecializationIndex: (state: AdminState, action: PayloadAction<ISpecializationIndex>) => {
+            const indexes = state.specializationIndexes;
+            const updatedIndexes = indexes.filter((index: ISpecializationIndex) => index.id !== action.payload.id);
+            state.specializationIndexes = updatedIndexes;
+            state.specializationIndexes.push(action.payload);
+        },
         removeSpecialization: (state: AdminState, action: PayloadAction<string>) => {
             const specializations = state.specializations;
             const selectedKey = action.payload;
@@ -46,6 +62,12 @@ export const adminSlice = createSlice({
                 (specialization: ISpecialization) => specialization.id !== selectedKey,
             );
             state.specializations = updatedSpecializations;
+        },
+        removeSpecializationIndex: (state: AdminState, action: PayloadAction<string>) => {
+            const indexes = state.specializationIndexes;
+            const selectedKey = action.payload;
+            const updatedSpecializations = indexes.filter((index: ISpecializationIndex) => index.id !== selectedKey);
+            state.specializationIndexes = updatedSpecializations;
         },
     },
 });
@@ -56,10 +78,15 @@ export const {
     setSpecializationIndexes,
     setChatCompletionDeployments,
     setAdminSelected,
+    setIndexSelected,
     setSelectedKey,
+    setSelectedIndexKey,
     addSpecialization,
+    addSpecializationIndex,
     editSpecialization,
+    editSpecializationIndex,
     removeSpecialization,
+    removeSpecializationIndex,
 } = adminSlice.actions;
 
 export default adminSlice.reducer;
