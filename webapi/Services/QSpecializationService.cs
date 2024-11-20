@@ -210,7 +210,8 @@ public class QSpecializationService : IQSpecializationService
             ? qSpecializationMutate.GroupMemberships.Split(',')
             : specializationToUpdate.GroupMemberships;
 
-        specializationToUpdate.Suggestions = deserializedSuggestions != null ? deserializedSuggestions : specializationToUpdate.Suggestions;
+        specializationToUpdate.Suggestions =
+            deserializedSuggestions != null ? deserializedSuggestions : specializationToUpdate.Suggestions;
 
         await this._specializationSourceRepository.UpsertAsync(specializationToUpdate);
 
