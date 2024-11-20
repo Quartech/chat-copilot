@@ -39,6 +39,7 @@ public class SpecializationController : ControllerBase
         ILogger<SpecializationController> logger,
         IOptions<QAzureOpenAIChatOptions> specializationOptions,
         SpecializationRepository specializationSourceRepository,
+        SpecializationIndexRepository indexRepository,
         IOptions<PromptsOptions> promptsOptions
     )
     {
@@ -46,7 +47,8 @@ public class SpecializationController : ControllerBase
         this._qAzureOpenAIChatOptions = specializationOptions.Value;
         this._qAzureOpenAIChatExtension = new QAzureOpenAIChatExtension(
             specializationOptions.Value,
-            specializationSourceRepository
+            specializationSourceRepository,
+            indexRepository
         );
         this._qspecializationService = new QSpecializationService(
             specializationSourceRepository,
@@ -83,15 +85,15 @@ public class SpecializationController : ControllerBase
     /// Get all available specialization indexes maintained in the system.
     /// </summary>
     /// <returns>A list of available specialization indexes. An empty list if no specialization indexes are found.</returns>
-    [HttpGet]
-    [Route("specialization/indexes")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public List<string> GetAllSpecializationIndexes()
-    {
-        return this._qAzureOpenAIChatExtension.GetAllSpecializationIndexNames();
-    }
+    // [HttpGet]
+    // [Route("specialization/indexes")]
+    // [ProducesResponseType(StatusCodes.Status200OK)]
+    // [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    // [ProducesResponseType(StatusCodes.Status404NotFound)]
+    // public List<string> GetAllSpecializationIndexes()
+    // {
+    //     return this._qAzureOpenAIChatExtension.GetAllSpecializationIndexNames();
+    // }
 
     /// <summary>
     /// Get all chat completion deployments.
@@ -221,7 +223,7 @@ public class SpecializationController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> OrderSpecializationsAsync([FromBody] QSpecializationOrder qSpecializationOrder)
+    public async Task<IActionResult> OrderSpecializationsAsync([FromBody] OrderMapGuidToInt qSpecializationOrder)
     {
         try
         {
