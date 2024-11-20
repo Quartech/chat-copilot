@@ -26,10 +26,7 @@ interface IUserFeedbackProps {
     wasHelpful?: string;
 }
 
-export const UserFeedbackActions: React.FC<IUserFeedbackProps> = ({
-    messageId,
-    wasHelpful,
-}: IUserFeedbackProps) => {
+export const UserFeedbackActions: React.FC<IUserFeedbackProps> = ({ messageId, wasHelpful }: IUserFeedbackProps) => {
     const classes = useClasses();
 
     const { instance, inProgress } = useMsal();
@@ -44,11 +41,7 @@ export const UserFeedbackActions: React.FC<IUserFeedbackProps> = ({
             // Send feedback and update Redux state
             try {
                 const isPositive =
-                    feedback === UserFeedback.Positive
-                        ? true
-                        : feedback === UserFeedback.Negative
-                        ? false
-                        : null;
+                    feedback === UserFeedback.Positive ? true : feedback === UserFeedback.Negative ? false : null;
 
                 await chatService.rateMessageAync(selectedId, messageId, isPositive, token);
 
