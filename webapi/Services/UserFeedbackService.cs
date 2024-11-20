@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text.Json;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using CopilotChat.WebApi.Models.Request;
 using CopilotChat.WebApi.Models.Response;
@@ -17,8 +16,6 @@ public class UserFeedbackService : IUserFeedbackService
 {
     private ChatSessionRepository _sessionRepository;
     private ChatMessageRepository _messageRepository;
-
-    private readonly Regex _dateRegex = new(@"^\[(?<date>\d{2}/\d{2}/\d{4}\s+\d{2}:\d{2}:\d{2}\s+[AP]M)\]");
 
     public UserFeedbackService(ChatSessionRepository sessionRepository, ChatMessageRepository messageRepository)
     {
@@ -116,10 +113,10 @@ public class UserFeedbackService : IUserFeedbackService
     }
 
     /// <summary>
-    /// Extracts the user's prompt from a JSON formatted string, optionally removing a date timestamp from the beginning.
+    /// Retrieves user prompt from JSON, stripping any date in square brackets from the start.
     /// </summary>
-    /// <param name="prompt">A JSON string that might contain a date timestamp followed by the actual user prompt.</param>
-    /// <returns>The user's prompt text, with any leading date timestamp removed if present.</returns>
+    /// <param name="prompt">JSON string with prompt data.</param>
+    /// <returns>User prompt with initial date removed.</returns>
     private string GetUserPrompt(string prompt)
     {
         var document = JsonDocument.Parse(prompt);
@@ -133,10 +130,11 @@ public class UserFeedbackService : IUserFeedbackService
             lastItem.GetProperty("Items").EnumerateArray().FirstOrDefault().GetProperty("Text").GetString()
             ?? "No user prompt found.";
 
-        var match = this._dateRegex.Match(userPrompt);
-        if (match.Success)
+        int start = userPrompt.IndexOf('[', StringComparison.CurrentCulture),
+            end = userPrompt.IndexOf(']', StringComparison.CurrentCulture);
+        if (start >= 0 && end > start)
         {
-            userPrompt = userPrompt.Substring(match.Length).TrimStart();
+            userPrompt = userPrompt.Remove(start, end - start + 1).TrimStart();
         }
 
         return userPrompt;

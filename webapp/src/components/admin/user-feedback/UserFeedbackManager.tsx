@@ -56,11 +56,13 @@ const useClasses = makeStyles({
     label: {
         margin: '0 0 2px 2px',
     },
-    dropdown: {
+    dropdownNarrow: {
         minWidth: '100px',
+        width: '120px',
     },
-    datePicker: {
+    dropdownWide: {
         minWidth: '100px',
+        width: '200px',
     },
     calendar: {
         backgroundColor: 'white',
@@ -282,7 +284,7 @@ export const UserFeedbackManager: React.FC = () => {
                         Feedback:
                     </label>
                     <Dropdown
-                        className={classes.dropdown}
+                        className={classes.dropdownNarrow}
                         aria-labelledby={feedbackDropdownId}
                         defaultSelectedOptions={[feedbackOptions[0].value]}
                         defaultValue={feedbackOptions[0].text}
@@ -305,7 +307,7 @@ export const UserFeedbackManager: React.FC = () => {
                         Specialization:
                     </label>
                     <Dropdown
-                        className={classes.dropdown}
+                        className={classes.dropdownNarrow}
                         aria-labelledby={specializationDropdownId}
                         defaultSelectedOptions={[specializationOptions[0].value]}
                         defaultValue={specializationOptions[0].text}
@@ -329,7 +331,7 @@ export const UserFeedbackManager: React.FC = () => {
                     </label>
                     <DatePicker
                         calendar={calendarProps}
-                        className={classes.datePicker}
+                        className={classes.dropdownWide}
                         aria-labelledby="startDatePicker"
                         value={filter.startDate}
                         onSelectDate={(date) => {
@@ -343,7 +345,7 @@ export const UserFeedbackManager: React.FC = () => {
                     </label>
                     <DatePicker
                         calendar={calendarProps}
-                        className={classes.datePicker}
+                        className={classes.dropdownWide}
                         aria-labelledby="endDatePicker"
                         value={filter.endDate}
                         onSelectDate={(date) => {
@@ -356,7 +358,7 @@ export const UserFeedbackManager: React.FC = () => {
                         Sort By:
                     </label>
                     <Dropdown
-                        className={classes.dropdown}
+                        className={classes.dropdownWide}
                         aria-labelledby={sortDateDropdownId}
                         defaultSelectedOptions={[sortDateOptions[0].value]}
                         defaultValue={sortDateOptions[0].text}
@@ -376,7 +378,7 @@ export const UserFeedbackManager: React.FC = () => {
                         Sort By:
                     </label>
                     <Dropdown
-                        className={classes.dropdown}
+                        className={classes.dropdownWide}
                         aria-labelledby={sortFeedbackDropdownId}
                         defaultSelectedOptions={undefined}
                         defaultValue={'Feedback (None)'}
