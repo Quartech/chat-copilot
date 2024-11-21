@@ -44,6 +44,7 @@ public class QAzureOpenAIChatOptions
     {
         public string Name { get; set; } = string.Empty;
         public int CompletionTokenLimit { get; set; }
+        public int OutputTokens { get; set; }
     }
 
     public class OpenAIDeploymentConnection

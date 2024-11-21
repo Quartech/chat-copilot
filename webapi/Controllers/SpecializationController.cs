@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using static CopilotChat.WebApi.Plugins.Chat.Ext.QAzureOpenAIChatOptions;
 
 namespace CopilotChat.WebApi.Controllers;
 
@@ -105,9 +106,9 @@ public class SpecializationController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public List<string> GetAllChatCompletionDeployments()
+    public List<ChatCompletionDeployment> GetAllChatCompletionDeployments()
     {
-        return this._qAzureOpenAIChatExtension.GetAllChatCompletionDeployments().Select(deploy => deploy.Name).ToList();
+        return this._qAzureOpenAIChatExtension.GetAllChatCompletionDeployments().ToList();
     }
 
     /// <summary>
