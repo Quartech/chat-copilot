@@ -12,18 +12,18 @@ namespace CopilotChat.WebApi.Auth;
 /// </summary>
 public class SpecializationAuthorizationHandler(
     SpecializationRepository specializationRepository,
-    ChatSessionRepository chatSessionRepository
-) : AuthorizationHandler<SpecializationRequirement, IContextValueAccessor>
+    ChatSessionRepository chatSessionRepository,
+    IContextValueAccessor contextValueAccessor
+) : AuthorizationHandler<SpecializationRequirement>
 {
     private const string GROUP_CLAIM_TYPE = "groups";
 
     protected override async Task HandleRequirementAsync(
         AuthorizationHandlerContext context,
-        SpecializationRequirement requirement,
-        IContextValueAccessor resource
+        SpecializationRequirement requirement
     )
     {
-        var chatId = resource.GetRouteValue("chatId")?.ToString();
+        var chatId = contextValueAccessor.GetRouteValue("chatId")?.ToString();
 
         if (string.IsNullOrEmpty(chatId))
         {
