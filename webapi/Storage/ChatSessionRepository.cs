@@ -34,5 +34,13 @@ public class ChatSessionRepository : Repository<ChatSession>
     public Task<IEnumerable<ChatSession>> QueryEntitiesAsync(Expression<Func<ChatSession, bool>> predicate)
     {
         return base.StorageContext.QueryEntitiesAsync(predicate);
+    /// <summary>
+    /// Retrieves all chats assoicated with a user.
+    /// </summary>
+    /// <param name="userId">The user ID.</param>
+    /// <returns>A list of ChatSessions.</returns>
+    public Task<IEnumerable<ChatSession>> FindByUserIdAsync(string userId)
+    {
+        return base.StorageContext.QueryEntitiesAsync(e => e. == userId);
     }
 }

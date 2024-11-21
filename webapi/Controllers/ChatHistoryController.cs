@@ -352,6 +352,20 @@ public class ChatHistoryController : ControllerBase
     }
 
     /// <summary>
+    /// Delete all chat sessions associated with the logged in user.
+    /// </summary>
+    [HttpDelete]
+    [Route("chats")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    /* public async Task<IActionResult> DeleteAllChatSessionsAsync() */
+    /* { */
+    /*  */
+    /* } */
+
+    /// <summary>
     /// Delete a chat session.
     /// </summary>
     /// <param name="chatId">The chat id.</param>
