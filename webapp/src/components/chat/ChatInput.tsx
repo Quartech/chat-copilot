@@ -109,6 +109,8 @@ export const ChatInput: React.FC<ChatInputProps> = ({ disabled, isDraggingOver, 
     const dispatch = useAppDispatch();
     const { instance, inProgress } = useMsal();
 
+    const { chatSpecialization } = useAppSelector((state: RootState) => state.admin);
+
     const { conversations, selectedId } = useAppSelector((state: RootState) => state.conversations);
     const { activeUserInfo } = useAppSelector((state: RootState) => state.app);
 
@@ -241,8 +243,21 @@ export const ChatInput: React.FC<ChatInputProps> = ({ disabled, isDraggingOver, 
         <div className={classes.root}>
             {/* only display the drop zone when the user is dragging files (will block other interactions while active) */}
             {isDraggingOver && <div className={classes.dropZone} onDrop={handleDrop} />}
-            <div className={classes.typingIndicator}>
-                <ChatStatus chatState={chatState} />
+            <div
+                style={{
+                    display: 'grid',
+                    gridTemplateColumns: '1fr auto',
+                    alignItems: 'center',
+                    margin: '0 55px',
+                    minHeight: '40px',
+                }}
+            >
+                <div style={{ textAlign: 'left' }}>
+                    <ChatStatus chatState={chatState} />
+                </div>
+                <div style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
+                    chatting with: {chatSpecialization?.label ?? 'general'}
+                </div>
             </div>
             <div className={classes.content}>
                 <div className={classes.controls}>
