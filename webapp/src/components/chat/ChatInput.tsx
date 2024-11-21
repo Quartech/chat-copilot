@@ -243,13 +243,15 @@ export const ChatInput: React.FC<ChatInputProps> = ({ disabled, isDraggingOver, 
         <div className={classes.root}>
             {/* only display the drop zone when the user is dragging files (will block other interactions while active) */}
             {isDraggingOver && <div className={classes.dropZone} onDrop={handleDrop} />}
-            <div style={{
-                display: 'grid',
-                gridTemplateColumns: '1fr auto',
-                alignItems: 'center',
-                margin: '0 55px',
-                minHeight: '40px'
-            }}>
+            <div
+                style={{
+                    display: 'grid',
+                    gridTemplateColumns: '1fr auto',
+                    alignItems: 'center',
+                    margin: '0 55px',
+                    minHeight: '40px',
+                }}
+            >
                 <div style={{ textAlign: 'left' }}>
                     <ChatStatus chatState={chatState} />
                 </div>
