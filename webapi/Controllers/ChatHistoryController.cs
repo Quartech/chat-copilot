@@ -360,10 +360,44 @@ public class ChatHistoryController : ControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    /* public async Task<IActionResult> DeleteAllChatSessionsAsync() */
-    /* { */
-    /*  */
-    /* } */
+    public async Task<IActionResult> DeleteAllChatSessionsAsync(
+        [FromBody] DeleteAllChatsParamaters deleteAllChatsParamaters,
+        CancellationToken cancellationToken,
+        [FromServices] IHubContext<MessageRelayHub> messageRelayHubContext
+    )
+    {
+        if (deleteAllChatsParamaters.ChatIds == null || deleteAllChatsParamaters.ChatIds.Length == 0)
+        {
+            return this.BadRequest("Chat session parameters cannot be null.");
+        }
+        var chatIds = deleteAllChatsParamaters.ChatIds;
+        ChatSession? chatToDelete = null;
+
+        // Delete all chat sessions and broadcast update to all participants.
+        foreach (var chatId in chatIds)
+        {
+            try
+            {
+                // Make sure the chat session exists
+                chatToDelete = await this._sessionRepository.FindByIdAsync(chatId);
+            }
+            catch (KeyNotFoundException)
+            {
+                return this.NotFound($"No chat session found for chat id '{chatId}'.");
+            }
+            try
+            {
+                await this.DeleteChatResourcesAsync(chatId, cancellationToken);
+            }
+            catch (AggregateException)
+            {
+                return this.StatusCode(500, $"Failed to delete resources for chat id '{chatId}'.");
+            }
+            await this._sessionRepository.DeleteAsync(chatToDelete);
+        }
+
+        return this.NoContent();
+    }
 
     /// <summary>
     /// Delete a chat session.
