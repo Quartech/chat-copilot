@@ -252,11 +252,10 @@ export const ChatInput: React.FC<ChatInputProps> = ({ disabled, isDraggingOver, 
             }}>
                 <div style={{ textAlign: 'left' }}>
                     <ChatStatus chatState={chatState} />
-                </div>
+                </div> 
                 <div style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
                     chatting with: {chatSpecialization?.label ?? 'general'}
                 </div>
-
             </div>
             <div className={classes.content}>
                 <div className={classes.controls}>
