@@ -19,7 +19,7 @@ public class SpecializationAuthorizationHandlerTest
     private SpecializationAuthorizationHandler? handler;
     private AuthorizationHandlerContext? context;
     private ChatSession? chatSession;
-    private Mock<IContextValueAccessor>? resource;
+    private Mock<IContextValueAccessor>? httpContextAccessor;
     private Mock<IStorageContext<ChatSession>>? chatSessionContext;
     private Mock<IStorageContext<Specialization>>? specializationContext;
 
@@ -29,10 +29,7 @@ public class SpecializationAuthorizationHandlerTest
 
         var user = new ClaimsPrincipal(new ClaimsIdentity(claims, "auth"));
 
-        this.resource = new();
-        this.resource.Setup(r => r.GetRouteValue("chatId")).Returns(CHAT_ID);
-
-        return new(requirements, user, this.resource.Object);
+        return new(requirements, user, null);
     }
 
     [TestInitialize]
@@ -48,9 +45,13 @@ public class SpecializationAuthorizationHandlerTest
         this.chatSessionContext = new();
         this.chatSessionContext.Setup(c => c.ReadAsync(CHAT_ID, CHAT_ID)).Returns(Task.FromResult(this.chatSession));
 
+        this.httpContextAccessor = new();
+        this.httpContextAccessor.Setup(r => r.GetRouteValue("chatId")).Returns(CHAT_ID);
+
         this.handler = new(
             new Mock<SpecializationRepository>(this.specializationContext.Object).Object,
-            new Mock<ChatSessionRepository>(this.chatSessionContext.Object).Object
+            new Mock<ChatSessionRepository>(this.chatSessionContext.Object).Object,
+            this.httpContextAccessor.Object
         );
 
         this.context = this.BuildAuthorizationContext(new[] { new Claim("groups", GROUP_ID) });
@@ -87,7 +88,7 @@ public class SpecializationAuthorizationHandlerTest
     [TestMethod]
     public async Task RequestWithoutChatId_Should_NotSucceed()
     {
-        this.resource!.Setup(r => r.GetRouteValue("chatId")).Returns(string.Empty);
+        this.httpContextAccessor!.Setup(r => r.GetRouteValue("chatId")).Returns(string.Empty);
 
         await this.handler!.HandleAsync(this.context!);
 
