@@ -109,6 +109,8 @@ export const ChatInput: React.FC<ChatInputProps> = ({ disabled, isDraggingOver, 
     const dispatch = useAppDispatch();
     const { instance, inProgress } = useMsal();
 
+    const { chatSpecialization } = useAppSelector((state: RootState) => state.admin);
+
     const { conversations, selectedId } = useAppSelector((state: RootState) => state.conversations);
     const { activeUserInfo } = useAppSelector((state: RootState) => state.app);
 
@@ -252,8 +254,9 @@ export const ChatInput: React.FC<ChatInputProps> = ({ disabled, isDraggingOver, 
                     <ChatStatus chatState={chatState} />
                 </div>
                 <div style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
-                    chatting with: Probate Law
+                    chatting with: {chatSpecialization?.label ?? 'general'}
                 </div>
+
             </div>
             <div className={classes.content}>
                 <div className={classes.controls}>
