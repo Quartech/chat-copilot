@@ -136,7 +136,10 @@ public class VolatileCopilotChatMessageContext
         return await Task.FromResult(orderedEntities);
     }
 
-    public IQueryable<CopilotChatMessage> Sort(IQueryable<CopilotChatMessage> queryable, CopilotChatMessageSortOption? sortOption)
+    public IQueryable<CopilotChatMessage> Sort(
+        IQueryable<CopilotChatMessage> queryable,
+        CopilotChatMessageSortOption? sortOption
+    )
     {
         if (sortOption == null)
         {
