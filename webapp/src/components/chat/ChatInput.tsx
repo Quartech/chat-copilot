@@ -45,6 +45,7 @@ const useClasses = makeStyles({
     },
     input: {
         width: '100%',
+        overflow: 'hidden',
     },
     textarea: {
         resize: 'none',
@@ -132,6 +133,9 @@ export const ChatInput: React.FC<ChatInputProps> = ({ disabled, isDraggingOver, 
         ) {
             event.preventDefault();
             handleSubmit(input);
+            if (textAreaRef.current) {
+                textAreaRef.current.style.height = 'auto';
+            }
         } else if (event.key === 'Enter' && !event.shiftKey) {
             // without this the text area will add a new line when pressing enter without shift key while bot is generating a response
             event.preventDefault();
@@ -281,7 +285,6 @@ export const ChatInput: React.FC<ChatInputProps> = ({ disabled, isDraggingOver, 
                     aria-label="Chat input field. Click enter to submit input."
                     ref={textAreaRef}
                     id="chat-input"
-                    resize="vertical"
                     disabled={chatState.disabled || chatState.loadingMessages || inputDisabled}
                     textarea={{
                         className: isDraggingOver
@@ -311,6 +314,10 @@ export const ChatInput: React.FC<ChatInputProps> = ({ disabled, isDraggingOver, 
                         }
 
                         setInput(data.value);
+                        if (textAreaRef.current) {
+                            textAreaRef.current.style.height = 'auto';
+                            textAreaRef.current.style.height = `${textAreaRef.current.scrollHeight}px`;
+                        }
                     }}
                     onKeyDown={handleKeyDown}
                     onBlur={() => {
