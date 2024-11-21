@@ -10,5 +10,5 @@ public class UserFeedbackFilter
     public bool? IsPositive { get; set; }
     public string? ChatId { get; set; }
     public string? SpecializationId { get; set; }
-    public List<CopilotChatMessageSortOption> SortBy { get; set; } = new List<CopilotChatMessageSortOption>();
+    public CopilotChatMessageSortOption? SortBy { get; set; }
 }

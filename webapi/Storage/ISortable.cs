@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using CopilotChat.WebApi.Models.Request;
 using CopilotChat.WebApi.Models.Storage;
 
@@ -7,13 +6,13 @@ namespace CopilotChat.WebApi.Storage;
 
 public interface ISortable<T, TSortOption>
 {
-    IQueryable<T> Sort(IQueryable<T> queryable, IEnumerable<TSortOption> sortOptions);
+    IQueryable<T> Sort(IQueryable<T> queryable, TSortOption? sortOption);
 }
 
-public interface ICopilotChatMessageSortable : ISortable<CopilotChatMessage, CopilotChatMessageSortOption>
+public interface ICopilotChatMessageSortable : ISortable<CopilotChatMessage, CopilotChatMessageSortOption?>
 {
-    new IQueryable<CopilotChatMessage> Sort(
+    IQueryable<CopilotChatMessage> Sort(
         IQueryable<CopilotChatMessage> queryable,
-        IEnumerable<CopilotChatMessageSortOption>? sortOptions
+        CopilotChatMessageSortOption? sortOption
     );
 }

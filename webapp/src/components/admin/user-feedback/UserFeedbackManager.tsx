@@ -63,7 +63,7 @@ const useClasses = makeStyles({
     },
     dropdownWide: {
         minWidth: '100px',
-        width: '200px',
+        width: '220px',
     },
     calendar: {
         backgroundColor: 'white',
@@ -123,7 +123,7 @@ export const UserFeedbackManager: React.FC = () => {
     const [filter, setFilter] = useState<IUserFeedbackFilterRequest>({
         startDate: thirtyDaysAgoDate,
         endDate: todayDate,
-        sortBy: [CopilotChatMessageSortOption.dateDesc],
+        sortBy: CopilotChatMessageSortOption.dateDesc,
     });
 
     const initialFetch = useRef(false);
@@ -160,14 +160,6 @@ export const UserFeedbackManager: React.FC = () => {
         setFilter((prev) => ({ ...prev, [field]: value }));
     };
 
-    const handleSortChange = (group: string, value: CopilotChatMessageSortOption) => {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        setFilter((prevFilter) => ({
-            ...prevFilter,
-            sortBy: [...(prevFilter.sortBy ?? []).filter((item) => !item.startsWith(group)), value],
-        }));
-    };
-
     const handleOpenFeedback = (feedbackItem: IUserFeedbackItem) => {
         setSelectedUserFeedbackItem(feedbackItem);
         setIsDialogOpen(true);
@@ -189,14 +181,10 @@ export const UserFeedbackManager: React.FC = () => {
         })),
     ];
 
-    const sortDateDropdownId = useId('sortDate');
-    const sortDateOptions = [
+    const sortDropdownId = useId('sort');
+    const sortOptions = [
         { value: 'dateDesc', text: 'Date (Newest first)' },
         { value: 'dateAsc', text: 'Date (Oldest first)' },
-    ];
-
-    const sortFeedbackDropdownId = useId('sortFeedback');
-    const sortFeedbackOptions = [
         { value: 'feedbackPos', text: 'Feedback (Positive first)' },
         { value: 'feedbackNeg', text: 'Feedback (Negative first)' },
     ];
@@ -381,39 +369,19 @@ export const UserFeedbackManager: React.FC = () => {
                     />
                 </div>
                 <div className={classes.filter}>
-                    <label className={classes.label} id={sortDateDropdownId}>
+                    <label className={classes.label} id={sortDropdownId}>
                         Sort By:
                     </label>
                     <Dropdown
                         className={classes.dropdownWide}
-                        aria-labelledby={sortDateDropdownId}
-                        defaultSelectedOptions={[sortDateOptions[0].value]}
-                        defaultValue={sortDateOptions[0].text}
+                        aria-labelledby={sortDropdownId}
+                        defaultSelectedOptions={[sortOptions[0].value]}
+                        defaultValue={sortOptions[0].text}
                         onOptionSelect={(_ev, option) => {
-                            handleSortChange('date', option.optionValue as CopilotChatMessageSortOption);
+                            handleFilterChange('sortBy', option.optionValue as CopilotChatMessageSortOption);
                         }}
                     >
-                        {sortDateOptions.map((option, index) => (
-                            <Option key={index} value={option.value}>
-                                {option.text}
-                            </Option>
-                        ))}
-                    </Dropdown>
-                </div>
-                <div className={classes.filter}>
-                    <label className={classes.label} id={sortFeedbackDropdownId}>
-                        Sort By:
-                    </label>
-                    <Dropdown
-                        className={classes.dropdownWide}
-                        aria-labelledby={sortFeedbackDropdownId}
-                        defaultSelectedOptions={undefined}
-                        defaultValue={'Feedback (None)'}
-                        onOptionSelect={(_ev, option) => {
-                            handleSortChange('feedback', option.optionValue as CopilotChatMessageSortOption);
-                        }}
-                    >
-                        {sortFeedbackOptions.map((option, index) => (
+                        {sortOptions.map((option, index) => (
                             <Option key={index} value={option.value}>
                                 {option.text}
                             </Option>

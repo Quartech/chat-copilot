@@ -113,7 +113,7 @@ public class VolatileCopilotChatMessageContext
     /// <inheritdoc/>
     public async Task<IEnumerable<CopilotChatMessage>> QueryEntitiesAsync(
         Expression<Func<CopilotChatMessage, bool>> predicate,
-        IEnumerable<CopilotChatMessageSortOption>? sortOptions,
+        CopilotChatMessageSortOption? sortOption,
         int skip,
         int count
     )
@@ -124,7 +124,7 @@ public class VolatileCopilotChatMessageContext
         var filteredEntities = this._entities.Values.Where(compiledPredicate);
 
         // Apply sorting
-        var orderedEntities = this.Sort(filteredEntities.AsQueryable(), sortOptions);
+        var orderedEntities = this.Sort(filteredEntities.AsQueryable(), sortOption);
 
         // Apply pagination
         orderedEntities = orderedEntities.Skip(skip);
@@ -136,35 +136,24 @@ public class VolatileCopilotChatMessageContext
         return await Task.FromResult(orderedEntities);
     }
 
-    public IQueryable<CopilotChatMessage> Sort(
-        IQueryable<CopilotChatMessage> queryable,
-        IEnumerable<CopilotChatMessageSortOption>? sortOptions
-    )
+    public IQueryable<CopilotChatMessage> Sort(IQueryable<CopilotChatMessage> queryable, CopilotChatMessageSortOption? sortOption)
     {
-        var orderedQueryable = queryable.OrderBy(m => 1);
-        var sortOptionsList = sortOptions?.Reverse().ToList();
-
-        if (sortOptionsList == null || sortOptionsList.Count == 0)
+        if (sortOption == null)
         {
-            return orderedQueryable.OrderByDescending(m => m.Timestamp);
+            return queryable.OrderByDescending(m => m.Timestamp);
         }
 
-        foreach (var sortOption in sortOptionsList)
+        switch (sortOption)
         {
-            orderedQueryable = sortOption switch
-            {
-                CopilotChatMessageSortOption.DateDesc => orderedQueryable.ThenByDescending(m => m.Timestamp),
-                CopilotChatMessageSortOption.DateAsc => orderedQueryable.ThenBy(m => m.Timestamp),
-                CopilotChatMessageSortOption.FeedbackPos => orderedQueryable.ThenByDescending(m =>
-                    m.UserFeedback == UserFeedback.Positive
-                ),
-                CopilotChatMessageSortOption.FeedbackNeg => orderedQueryable.ThenByDescending(m =>
-                    m.UserFeedback == UserFeedback.Negative
-                ),
-                _ => orderedQueryable,
-            };
+            default:
+            case CopilotChatMessageSortOption.DateDesc:
+                return queryable.OrderByDescending(m => m.Timestamp);
+            case CopilotChatMessageSortOption.DateAsc:
+                return queryable.OrderBy(m => m.Timestamp);
+            case CopilotChatMessageSortOption.FeedbackPos:
+                return queryable.OrderByDescending(m => m.UserFeedback == UserFeedback.Positive);
+            case CopilotChatMessageSortOption.FeedbackNeg:
+                return queryable.OrderByDescending(m => m.UserFeedback == UserFeedback.Negative);
         }
-
-        return orderedQueryable;
     }
 }

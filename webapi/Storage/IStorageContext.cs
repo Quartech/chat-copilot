@@ -62,7 +62,7 @@ public interface ICopilotChatMessageStorageContext : IStorageContext<CopilotChat
     /// <returns>A list of ChatMessages matching the given chatId sorted from most recent to oldest.</returns>
     Task<IEnumerable<CopilotChatMessage>> QueryEntitiesAsync(
         Expression<Func<CopilotChatMessage, bool>> predicate,
-        IEnumerable<CopilotChatMessageSortOption>? sortOptions,
+        CopilotChatMessageSortOption? sortOption,
         int skip = 0,
         int count = -1
     );

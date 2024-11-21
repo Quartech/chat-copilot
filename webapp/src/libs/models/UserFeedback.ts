@@ -6,7 +6,7 @@ export interface IUserFeedbackFilterRequest {
     isPositive?: boolean;
     specializationId?: string;
     chatId?: string;
-    sortBy?: CopilotChatMessageSortOption[];
+    sortBy?: CopilotChatMessageSortOption;
 }
 
 export interface IUserFeedbackResult {

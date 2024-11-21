@@ -119,6 +119,11 @@ public class UserFeedbackService : IUserFeedbackService
     /// <returns>User prompt with initial date removed.</returns>
     private string GetUserPrompt(string prompt)
     {
+        if (string.IsNullOrWhiteSpace(prompt))
+        {
+            return string.Empty;
+        }
+
         var document = JsonDocument.Parse(prompt);
         var root = document.RootElement;
 

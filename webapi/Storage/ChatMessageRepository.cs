@@ -29,12 +29,12 @@ public class ChatMessageRepository : CopilotChatMessageRepository
     /// <returns>A list of ChatMessages matching the given chatId sorted from most recent to oldest.</returns>
     public Task<IEnumerable<CopilotChatMessage>> FindByChatIdAsync(
         string chatId,
-        IEnumerable<CopilotChatMessageSortOption>? sortOptions = null,
+        CopilotChatMessageSortOption? sortOption = null,
         int skip = 0,
         int count = -1
     )
     {
-        return base.QueryEntitiesAsync(e => e.ChatId == chatId, sortOptions, skip, count);
+        return base.QueryEntitiesAsync(e => e.ChatId == chatId, sortOption, skip, count);
     }
 
     /// <summary>

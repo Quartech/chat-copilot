@@ -191,7 +191,7 @@ public class FileSystemCopilotChatMessageContext
     /// <inheritdoc/>
     public Task<IEnumerable<CopilotChatMessage>> QueryEntitiesAsync(
         Expression<Func<CopilotChatMessage, bool>> predicate,
-        IEnumerable<CopilotChatMessageSortOption>? sortOptions,
+        CopilotChatMessageSortOption? sortOption,
         int skip,
         int count
     )
