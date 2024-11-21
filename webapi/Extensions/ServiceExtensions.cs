@@ -7,6 +7,7 @@ using System.Net.Http;
 using System.Reflection;
 using CopilotChat.Shared;
 using CopilotChat.WebApi.Auth;
+using CopilotChat.WebApi.Context;
 using CopilotChat.WebApi.Models.Storage;
 using CopilotChat.WebApi.Options;
 using CopilotChat.WebApi.Plugins.Chat.Ext;
@@ -172,6 +173,16 @@ public static class CopilotChatServiceExtensions
                 });
             });
         }
+
+        return services;
+    }
+
+    /// <summary>
+    /// Add Http context accessors
+    /// </summary>
+    public static IServiceCollection AddContextAccessors(this IServiceCollection services)
+    {
+        services.AddTransient<IContextValueAccessor, ContextValueAccessor>();
 
         return services;
     }
@@ -352,6 +363,7 @@ public static class CopilotChatServiceExtensions
     {
         return services
             .AddScoped<IAuthorizationHandler, ChatParticipantAuthorizationHandler>()
+            .AddScoped<IAuthorizationHandler, SpecializationAuthorizationHandler>()
             .AddAuthorizationCore(options =>
             {
                 options.DefaultPolicy = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build();
@@ -360,6 +372,13 @@ public static class CopilotChatServiceExtensions
                     builder =>
                     {
                         builder.RequireAuthenticatedUser().AddRequirements(new ChatParticipantRequirement());
+                    }
+                );
+                options.AddPolicy(
+                    AuthPolicyName.RequireSpecialization,
+                    builder =>
+                    {
+                        builder.RequireAuthenticatedUser().AddRequirements(new SpecializationRequirement());
                     }
                 );
             });
