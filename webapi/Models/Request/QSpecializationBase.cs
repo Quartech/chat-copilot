@@ -110,4 +110,10 @@ public class QSpecializationBase
     /// </summary>>
     [JsonPropertyName("order")]
     public int? Order { get; set; }
+
+    /// <summary>
+    /// Whether or not the specialization can generate images.
+    /// </summary>
+    [JsonPropertyName("canGenerateImages")]
+    public bool? CanGenImages { get; set; }
 }
