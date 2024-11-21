@@ -57,6 +57,14 @@ export const SettingsDialog: React.FC<ISettingsDialogProps> = ({ open, closeDial
     const classes = useClasses();
     const dialogClasses = useDialogClasses();
     const { serviceInfo, settings, tokenUsage } = useAppSelector((state: RootState) => state.app);
+    const { conversations } = useAppSelector((state: RootState) => state.conversations);
+
+    // array of all chat ids that can be used to send to backend to delete
+    const chatIds = React.useMemo(() => {
+        return Object.keys(conversations);
+    }, [conversations]);
+
+    console.log(chatIds);
 
     return (
         <Dialog
@@ -110,6 +118,7 @@ export const SettingsDialog: React.FC<ISettingsDialogProps> = ({ open, closeDial
                             </AccordionItem>
                             <Divider />
                         </Accordion>
+                        <Button appearance="primary">Delete all chats</Button>
                     </DialogContent>
                 </DialogBody>
                 <DialogActions position="start" className={dialogClasses.footer}>
