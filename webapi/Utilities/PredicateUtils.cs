@@ -16,7 +16,7 @@ public static class PredicateUtils
         return Expression.Lambda<Func<T, bool>>(Expression.AndAlso(expr1.Body, body), expr1.Parameters);
     }
 
-    private class ParameterReplacer : ExpressionVisitor
+    private sealed class ParameterReplacer : ExpressionVisitor
     {
         private readonly ParameterExpression _from;
         private readonly ParameterExpression _to;
