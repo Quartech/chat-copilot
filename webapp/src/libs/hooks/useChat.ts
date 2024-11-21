@@ -12,6 +12,7 @@ import { Conversations } from '../../redux/features/conversations/ConversationsS
 import {
     addConversation,
     addMessageToConversationFromUser,
+    deleteAllConversations,
     deleteConversation,
     editConversationLastUpdate,
     editConversationSpecialization,
@@ -597,6 +598,14 @@ export const useChat = () => {
         }
     };
 
+    const deleteAllChats = async (chatIds: string[]) => {
+        await chatService
+            .deleteAllChatsAsync(await AuthHelper.getSKaaSAccessToken(instance, inProgress), chatIds)
+            .then(() => {
+                dispatch(deleteAllConversations());
+            });
+    };
+
     /**
      * Asynchronously deletes the chat history for a given chat ID.
      *
@@ -666,6 +675,7 @@ export const useChat = () => {
         editChatSpecialization,
         getServiceInfo,
         deleteChat,
+        deleteAllChats,
         deleteChatHistory,
         processPlan,
         selectSpecializationAndBeginChat,

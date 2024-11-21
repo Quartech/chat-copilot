@@ -209,6 +209,12 @@ export const conversationsSlice = createSlice({
             const { [id]: _, ...rest } = state.conversations;
             state.conversations = rest;
         },
+        deleteAllConversations: (state: ConversationsState) => {
+            // Clear all conversations
+            state.conversations = {};
+            // Reset selectedId since all conversations are deleted
+            state.selectedId = '';
+        },
         disableConversation: (state: ConversationsState, action: PayloadAction<string>) => {
             const id = action.payload;
             state.conversations[id].disabled = true;
@@ -341,6 +347,7 @@ export const {
     editConversationSpecialization,
     updateSuggestions,
     deleteConversationHistory,
+    deleteAllConversations,
     editConversationLastUpdate,
     setChatMessagesLoading,
 } = conversationsSlice.actions;
