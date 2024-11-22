@@ -25,6 +25,7 @@ import { RootState } from '../../../redux/app/store';
 import { addAlert } from '../../../redux/features/app/appSlice';
 import { ImageUploaderPreview } from '../../files/ImageUploaderPreview';
 import { ConfirmationDialog } from '../../shared/ConfirmationDialog';
+import { Row } from '../../shared/Row';
 
 interface ISpecializationFile {
     file: File | null;
@@ -130,6 +131,7 @@ export const SpecializationManager: React.FC = () => {
     const [pastMessagesIncludedCount, setPastMessagesIncludedCount] = useState<number | null>(0);
     const [maxResponseTokenLimit, setMaxResponseTokenLimit] = useState<number | null>(0);
     const [order, setOrder] = useState(0);
+    const [canGenImages, setCanGenImages] = useState(false);
 
     const [isValid, setIsValid] = useState(false);
     const dropdownId = useId();
@@ -166,6 +168,7 @@ export const SpecializationManager: React.FC = () => {
                 pastMessagesIncludedCount,
                 maxResponseTokenLimit,
                 order,
+                canGenImages,
             });
         } else {
             void specialization.createSpecialization({
@@ -186,6 +189,7 @@ export const SpecializationManager: React.FC = () => {
                 pastMessagesIncludedCount,
                 maxResponseTokenLimit,
                 order: specializations.length,
+                canGenImages,
             });
         }
     };
@@ -237,6 +241,7 @@ export const SpecializationManager: React.FC = () => {
                 setImageFile({ file: null, src: specializationObj.imageFilePath });
                 setIconFile({ file: null, src: specializationObj.iconFilePath });
                 setOrder(specializationObj.order);
+                setCanGenImages(specializationObj.canGenImages);
             }
         } else {
             setEditMode(false);
@@ -474,7 +479,16 @@ export const SpecializationManager: React.FC = () => {
                         </Option>
                     ))}
                 </Dropdown>
-                <Checkbox label="Set as Default Specialization" checked={isDefault} onChange={onChangeIsDefault} />
+                <Row>
+                    <Checkbox label="Set as Default Specialization" checked={isDefault} onChange={onChangeIsDefault} />
+                    <Checkbox
+                        label="Can Generate Images"
+                        checked={canGenImages}
+                        onChange={(_event, data) => {
+                            setCanGenImages(!!data.checked);
+                        }}
+                    />
+                </Row>
                 <ConfirmationDialog
                     open={isDeleteDialogOpen}
                     title="Delete Specialization"
