@@ -19,6 +19,7 @@ import {
     Label,
     makeStyles,
     shorthands,
+    Spinner,
     tokens,
 } from '@fluentui/react-components';
 import React from 'react';
@@ -55,32 +56,36 @@ const useClasses = makeStyles({
 
 interface ISettingsDialogProps {
     open: boolean;
-    closeDialog: () => void;
+    closeSettingsDialog: () => void;
 }
 
-export const SettingsDialog: React.FC<ISettingsDialogProps> = ({ open, closeDialog }) => {
+export const SettingsDialog: React.FC<ISettingsDialogProps> = ({ open, closeSettingsDialog }) => {
     const classes = useClasses();
     const dialogClasses = useDialogClasses();
     const { serviceInfo, settings, tokenUsage } = useAppSelector((state: RootState) => state.app);
     const { conversations } = useAppSelector((state: RootState) => state.conversations);
     const chat = useChat();
     const [confirmDeleteDialogOpen, setConfirmDeleteDialogOpen] = React.useState(false);
+    const [deleting, setDeleting] = React.useState(false);
     // array of all chat ids that can be used to send to backend to delete
     const chatIds = React.useMemo(() => {
         return Object.keys(conversations);
     }, [conversations]);
 
     const onDeleteAllChats = () => {
-        void chat.deleteAllChats(chatIds);
-        setConfirmDeleteDialogOpen(false);
+        setDeleting(true);
+        void chat.deleteAllChats(chatIds).then(() => {
+            setDeleting(false);
+            setConfirmDeleteDialogOpen(false);
+        });
     };
 
     return (
         <>
             <Dialog
-                open={open}
+                open={open && !confirmDeleteDialogOpen}
                 onOpenChange={(_ev: any, data: DialogOpenChangeData) => {
-                    if (!data.open) closeDialog();
+                    if (!data.open) closeSettingsDialog();
                 }}
             >
                 <DialogSurface className={classes.outer}>
@@ -135,7 +140,13 @@ export const SettingsDialog: React.FC<ISettingsDialogProps> = ({ open, closeDial
                                 }}
                                 appearance="primary"
                             >
-                                Delete All Chats
+                                {!deleting ? (
+                                    'Delete All Chats'
+                                ) : (
+                                    <>
+                                        <Spinner /> Deleting...
+                                    </>
+                                )}
                             </Button>
                         </DialogContent>
                     </DialogBody>
@@ -155,8 +166,21 @@ export const SettingsDialog: React.FC<ISettingsDialogProps> = ({ open, closeDial
                 </DialogSurface>
             </Dialog>
             <Modal
+                inProgress={deleting}
                 open={confirmDeleteDialogOpen}
-                text="Are you sure you wish to delete all chats?"
+                text={
+                    !deleting ? (
+                        'Are you sure you wish to delete all chats?'
+                    ) : (
+                        <div>
+                            Deleting all chats...
+                            <Spinner size="small" />
+                        </div>
+                    )
+                }
+                onClose={() => {
+                    setConfirmDeleteDialogOpen(false);
+                }}
                 onConfirm={onDeleteAllChats}
             />
         </>

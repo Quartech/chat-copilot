@@ -599,9 +599,11 @@ export const useChat = () => {
     };
 
     const deleteAllChats = async (chatIds: string[]) => {
+        const chatOnServer = chatIds.filter((chatId) => conversations[chatId].createdOnServer);
         await chatService
-            .deleteAllChatsAsync(await AuthHelper.getSKaaSAccessToken(instance, inProgress), chatIds)
+            .deleteAllChatsAsync(await AuthHelper.getSKaaSAccessToken(instance, inProgress), chatOnServer)
             .then(() => {
+                // will also wipe any chats that are not created on the server
                 dispatch(deleteAllConversations());
             });
     };

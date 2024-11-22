@@ -91,15 +91,6 @@ export const ChatWindow: React.FC = () => {
         setSelectedTab(data.value);
     };
 
-    const arr: any[] = [];
-
-    Object.keys(conversations).forEach((key) => {
-        console.log(key);
-        arr.push(key);
-    });
-
-    console.log(arr);
-
     // Set the chat specialization based on the conversation specialization, ensures UI is in sync with current selected chat
     React.useEffect(() => {
         if (conversationSpecialization) {
