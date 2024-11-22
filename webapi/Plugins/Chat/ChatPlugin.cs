@@ -1010,6 +1010,13 @@ public class ChatPlugin
             var accumulatedContent = new StringBuilder();
             if (this.IsImageRequest(lastUserMessage))
             {
+                if (this._qSpecialization.CanGenImages == false)
+                {
+                    chatMessage.Content =
+                        "Image generation is not enabled for this specialization. Please contact your admin for available options.";
+                    await this.UpdateMessageOnClient(chatMessage, cancellationToken);
+                    return chatMessage;
+                }
                 this._logger.LogInformation("Generating image response");
                 if (imageGen == null)
                 {
