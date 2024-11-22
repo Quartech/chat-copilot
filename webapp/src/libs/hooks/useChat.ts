@@ -4,7 +4,7 @@ import { Constants } from '../../Constants';
 import botIcon1 from '../../assets/bot-icons/bot-icon-1.png';
 import { getErrorDetails } from '../../components/utils/TextUtils';
 import { useAppDispatch, useAppSelector } from '../../redux/app/hooks';
-import { RootState } from '../../redux/app/store';
+import { RootState, store } from '../../redux/app/store';
 import { FeatureKeys } from '../../redux/features/app/AppState';
 import { addAlert, toggleFeatureState, updateTokenUsage } from '../../redux/features/app/appSlice';
 import { ChatState } from '../../redux/features/conversations/ChatState';
@@ -17,7 +17,6 @@ import {
     editConversationSpecialization,
     setChatMessagesLoading,
     setConversations,
-    setSelectedConversation,
     updateBotResponseStatus,
 } from '../../redux/features/conversations/conversationsSlice';
 import { Plugin } from '../../redux/features/plugins/PluginsState';
@@ -107,9 +106,7 @@ export const useChat = () => {
             lastUpdatedTimestamp: new Date().getTime(),
             loadingMessages: false,
         };
-
         dispatch(addConversation(newChat));
-        dispatch(setSelectedConversation(newChat.id));
         return newChat.id;
     };
 
@@ -121,7 +118,8 @@ export const useChat = () => {
      * @param chatId
      */
     const selectSpecializationAndBeginChat = async (specializationId: string, chatId: string) => {
-        const conversation = conversations[chatId];
+        const { conversations: freshConversations } = store.getState().conversations;
+        const conversation = freshConversations[chatId];
         await chatService
             .createChatAsync(
                 conversation.title,
