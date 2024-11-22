@@ -25,7 +25,7 @@ public sealed class SemanticKernelProvider
         QAzureOpenAIChatOptions qAzureOpenAIChatOptions
     )
     {
-        this._kernel = InitializeCompletionKernel(
+        this._kernel = InitializeSemanticKernel(
             serviceProvider,
             configuration,
             httpClientFactory,
@@ -34,11 +34,11 @@ public sealed class SemanticKernelProvider
     }
 
     /// <summary>
-    /// Produce semantic-kernel with only completion services for chat.
+    /// Produce semantic-kernel with completion and dalle-3 services for chat.
     /// </summary>
-    public Kernel GetCompletionKernel() => this._kernel.Clone();
+    public Kernel GetSemanticKernel() => this._kernel.Clone();
 
-    private static Kernel InitializeCompletionKernel(
+    private static Kernel InitializeSemanticKernel(
         IServiceProvider serviceProvider,
         IConfiguration configuration,
         IHttpClientFactory httpClientFactory,
@@ -70,7 +70,19 @@ public sealed class SemanticKernelProvider
                             serviceId: $"{deployment.Name} ({connection.Name})"
                         );
                     }
+                    foreach (var deployment in connection.ImageGenerationDeployments)
+                    {
+#pragma warning disable SKEXP0010 // Experimental method AddAzureOpenAITextToImage, suppressed instability warning
+                        builder.AddAzureOpenAITextToImage(
+                            deployment.Name,
+                            connection.Endpoint?.ToString(),
+                            connection.APIKey,
+                            httpClient: httpClientFactory.CreateClient(),
+                            serviceId: deployment.Name
+                        );
+                    }
                 }
+#pragma warning restore SKEXP0010
                 break;
 
             case string x when x.Equals("OpenAI", StringComparison.OrdinalIgnoreCase):
@@ -82,7 +94,6 @@ public sealed class SemanticKernelProvider
                 );
 #pragma warning restore CA2000
                 break;
-
             default:
                 throw new ArgumentException(
                     $"Invalid {nameof(memoryOptions.TextGeneratorType)} value in 'KernelMemory' settings."

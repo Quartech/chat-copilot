@@ -105,7 +105,8 @@ public class QSpecializationService : IQSpecializationService
                 ImageFilePath: imageFilePath,
                 IconFilePath: iconFilePath,
                 GroupMemberships: qSpecializationMutate.GroupMemberships.Split(','),
-                Order: qSpecializationMutate.Order
+                Order: qSpecializationMutate.Order,
+                CanGenImages: qSpecializationMutate.CanGenImages
             );
 
         await this._specializationSourceRepository.CreateAsync(specializationSource);
@@ -215,6 +216,8 @@ public class QSpecializationService : IQSpecializationService
         specializationToUpdate.GroupMemberships = !string.IsNullOrEmpty(qSpecializationMutate.GroupMemberships)
             ? qSpecializationMutate.GroupMemberships.Split(',')
             : specializationToUpdate.GroupMemberships;
+
+        specializationToUpdate.CanGenImages = qSpecializationMutate.CanGenImages;
 
         await this._specializationSourceRepository.UpsertAsync(specializationToUpdate);
 

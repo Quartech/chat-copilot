@@ -66,6 +66,12 @@ public class QSpecializationBase
     public bool isActive { get; set; } = true;
 
     /// <summary>
+    /// Whether or not the specialization can generate images.
+    /// </summary>
+    [JsonPropertyName("canGenerateImages")]
+    public bool CanGenImages { get; set; }
+
+    /// <summary>
     /// Deployment of the specialization
     /// </summary>
     [JsonPropertyName("deployment")]
