@@ -117,7 +117,7 @@ export const UserSettingsMenu: FC<IUserSettingsProps> = ({ setLoadingState }) =>
             )}
             <SettingsDialog
                 open={openSettingsDialog}
-                closeDialog={() => {
+                closeSettingsDialog={() => {
                     setOpenSettingsDialog(false);
                 }}
             />
