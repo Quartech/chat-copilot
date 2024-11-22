@@ -361,16 +361,16 @@ public class ChatHistoryController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> DeleteAllChatSessionsAsync(
-        [FromBody] DeleteAllChatsParamaters deleteAllChatsParamaters,
+        [FromBody] DeleteAllChatsParameters deleteAllChatsParameters,
         CancellationToken cancellationToken,
         [FromServices] IHubContext<MessageRelayHub> messageRelayHubContext
     )
     {
-        if (deleteAllChatsParamaters.ChatIds == null || deleteAllChatsParamaters.ChatIds.Length == 0)
+        if (deleteAllChatsParameters.ChatIds == null || deleteAllChatsParameters.ChatIds.Length == 0)
         {
             return this.BadRequest("Chat session parameters cannot be null.");
         }
-        var chatIds = deleteAllChatsParamaters.ChatIds;
+        var chatIds = deleteAllChatsParameters.ChatIds;
         ChatSession? chatToDelete = null;
 
         // Delete all chat sessions and broadcast update to all participants.
