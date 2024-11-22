@@ -205,7 +205,7 @@ public class QSpecializationService : IQSpecializationService
             ? qSpecializationMutate.GroupMemberships.Split(',')
             : specializationToUpdate.GroupMemberships;
 
-        specializationToUpdate.CanGenImages = qSpecializationMutate.CanGenImages ?? specializationToUpdate.CanGenImages;
+        specializationToUpdate.CanGenImages = qSpecializationMutate.CanGenImages;
 
         await this._specializationSourceRepository.UpsertAsync(specializationToUpdate);
 

@@ -136,7 +136,7 @@ public class Specialization : IStorageEntity
     /// <summary>
     /// Whether or not this specialization can create images with dall-e.
     /// </summary>
-    public bool? CanGenImages { get; set; } = false;
+    public bool CanGenImages { get; set; } = false;
 
     public Specialization() { }
 
@@ -158,7 +158,7 @@ public class Specialization : IStorageEntity
         string IconFilePath,
         IList<string> GroupMemberships,
         int? Order,
-        bool? CanGenImages
+        bool CanGenImages
     )
     {
         this.Id = Guid.NewGuid().ToString();

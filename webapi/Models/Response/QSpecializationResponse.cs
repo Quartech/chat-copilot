@@ -128,7 +128,7 @@ public class QSpecializationResponse
     /// Whether or not this specialization can create images with dall-e.
     /// </summary>
     [JsonPropertyName("canGenImages")]
-    public bool? CanGenImages { get; set; } = false;
+    public bool CanGenImages { get; set; } = false;
 
     /// <summary>
     /// Creates new instance from SpecializationSource.
