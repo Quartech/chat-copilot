@@ -366,7 +366,7 @@ public class ChatHistoryController : ControllerBase
         [FromServices] IHubContext<MessageRelayHub> messageRelayHubContext
     )
     {
-        if (deleteAllChatsParameters.ChatIds == null || deleteAllChatsParameters.ChatIds.Length == 0)
+        if (deleteAllChatsParameters.ChatIds == null || deleteAllChatsParameters.ChatIds.Count() == 0)
         {
             return this.BadRequest("Chat session parameters cannot be null.");
         }
