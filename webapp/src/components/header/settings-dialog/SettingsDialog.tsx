@@ -77,6 +77,8 @@ export const SettingsDialog: React.FC<ISettingsDialogProps> = ({ open, closeSett
         void chat.deleteAllChats(chatIds).then(() => {
             setDeleting(false);
             setConfirmDeleteDialogOpen(false);
+            // create the default chat when all chats are deleted instead of greeting user with blank screen
+            chat.createChat('');
         });
     };
 

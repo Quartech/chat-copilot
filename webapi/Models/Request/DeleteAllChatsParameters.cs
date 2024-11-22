@@ -6,11 +6,11 @@ namespace CopilotChat.WebApi.Models.Request;
 /// <summary>
 /// Request definition for Specialization
 /// </summary>
-public class DeleteAllChatsParamaters
+public class DeleteAllChatsParameters
 {
     /// <summary>
     /// Image FilePath of the specialization.
     /// </summary>
     [JsonPropertyName("chatIds")]
-    public string[] ChatIds { get; set; } = [];
+    public string[]? ChatIds { get; set; }
 }
