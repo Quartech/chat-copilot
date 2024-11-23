@@ -2,11 +2,13 @@ import { Button, makeStyles, shorthands, tokens } from '@fluentui/react-componen
 import { FC } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import { useAppDispatch } from '../../../../redux/app/hooks';
+import { useSpecializationIndex } from '../../../../libs/hooks/useSpecializationIndex';
+import { useAppDispatch, useAppSelector } from '../../../../redux/app/hooks';
+import { RootState } from '../../../../redux/app/store';
 import { setSelectedIndexKey } from '../../../../redux/features/admin/adminSlice';
 import { Breakpoints } from '../../../../styles';
 import { Add20 } from '../../../shared/BundledIcons';
-import { SpecializationIndexListSection } from './SpecializationIndexListSection';
+import { AdminItemListSection } from '../../shared/list/AdminListItemSection';
 
 const useClasses = makeStyles({
     root: {
@@ -52,7 +54,8 @@ const useClasses = makeStyles({
 export const SpecializationIndexList: FC = () => {
     const classes = useClasses();
     const dispatch = useAppDispatch();
-
+    const indexes = useSpecializationIndex();
+    const { specializationIndexes, selectedIndexId } = useAppSelector((state: RootState) => state.admin);
     const onAddSpecializationClick = () => {
         dispatch(setSelectedIndexKey(''));
     };
@@ -73,8 +76,18 @@ export const SpecializationIndexList: FC = () => {
                             New Index
                         </Button>
                     </div>
-                    <div aria-label={'specialization list'} className={classes.list}>
-                        <SpecializationIndexListSection header="All" />
+                    <div aria-label={'specialization index list'} className={classes.list}>
+                        <AdminItemListSection
+                            header="All"
+                            items={specializationIndexes}
+                            onItemCollectionReorder={(items) => {
+                                void indexes.setSpecializationIndexOrder(items);
+                            }}
+                            onItemSelected={(id: string) => {
+                                dispatch(setSelectedIndexKey(id));
+                            }}
+                            selectedId={selectedIndexId}
+                        />
                     </div>
                 </div>
             </DndProvider>

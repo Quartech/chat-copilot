@@ -2,11 +2,13 @@ import { Button, makeStyles, shorthands, tokens } from '@fluentui/react-componen
 import { FC } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import { useAppDispatch } from '../../../../redux/app/hooks';
+import { useSpecialization } from '../../../../libs/hooks';
+import { useAppDispatch, useAppSelector } from '../../../../redux/app/hooks';
+import { RootState } from '../../../../redux/app/store';
 import { setSelectedKey } from '../../../../redux/features/admin/adminSlice';
 import { Breakpoints } from '../../../../styles';
 import { Add20 } from '../../../shared/BundledIcons';
-import { SpecializationListSection } from './SpecializationListSection';
+import { AdminItemListSection } from '../../shared/list/AdminListItemSection';
 
 const useClasses = makeStyles({
     root: {
@@ -52,7 +54,8 @@ const useClasses = makeStyles({
 export const SpecializationList: FC = () => {
     const classes = useClasses();
     const dispatch = useAppDispatch();
-
+    const specialization = useSpecialization();
+    const { specializations, selectedId } = useAppSelector((state: RootState) => state.admin);
     const onAddSpecializationClick = () => {
         dispatch(setSelectedKey(''));
     };
@@ -74,7 +77,17 @@ export const SpecializationList: FC = () => {
                         </Button>
                     </div>
                     <div aria-label={'specialization list'} className={classes.list}>
-                        <SpecializationListSection header="All" />
+                        <AdminItemListSection
+                            items={specializations}
+                            onItemCollectionReorder={(specs) => {
+                                void specialization.setSpecializationsOrder(specs);
+                            }}
+                            onItemSelected={(id) => dispatch(setSelectedKey(id))}
+                            selectedId={selectedId}
+                            onItemToggled={(id, toggle) => {
+                                return specialization.toggleSpecialization(id, toggle);
+                            }}
+                        />
                     </div>
                 </div>
             </DndProvider>
