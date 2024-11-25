@@ -2,10 +2,11 @@ import { makeStyles, shorthands } from '@fluentui/react-components';
 import { FC } from 'react';
 import { useAppSelector } from '../../redux/app/hooks';
 import { RootState } from '../../redux/app/store';
-import { SpecializationIndexWindow } from '../admin/specialization-index/SpecializationIndexWindow';
-import { SpecializationIndexList } from '../admin/specialization-index/index-list/SpecializationIndexList';
-import { AdminWindow } from '../admin/specialization/SpecializationWindow';
-import { SpecializationList } from '../admin/specialization/specialization-list/SpecializationList';
+import { AdminWindow } from '../admin/shared/AdminWindow';
+import { SpecializationIndexList } from '../admin/specialization-index/SpecializationIndexList';
+import { SpecializationIndexManager } from '../admin/specialization-index/SpecializationIndexManager';
+import { SpecializationList } from '../admin/specialization/SpecializationList';
+import { SpecializationManager } from '../admin/specialization/SpecializationManager';
 import { ChatWindow } from '../chat/ChatWindow';
 import { ChatType } from '../chat/chat-list/ChatType';
 import { SearchWindow } from '../search/SearchWindow';
@@ -32,7 +33,9 @@ export const ChatView: FC = () => {
             {isAdminSelected && (
                 <>
                     <SpecializationList />
-                    <AdminWindow />
+                    <AdminWindow>
+                        <SpecializationManager />
+                    </AdminWindow>
                 </>
             )}
             {selected && <SearchWindow />}
@@ -40,7 +43,9 @@ export const ChatView: FC = () => {
             {isIndexSelected && (
                 <>
                     <SpecializationIndexList />
-                    <SpecializationIndexWindow />
+                    <AdminWindow>
+                        <SpecializationIndexManager />
+                    </AdminWindow>
                 </>
             )}
         </div>
