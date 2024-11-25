@@ -3,6 +3,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 
 namespace CopilotChat.WebApi.Models.Request;
 
@@ -41,11 +42,22 @@ public class QSpecializationBase
     [JsonPropertyName("groupMemberships")]
     public IList<string>? GroupMemberships { get; set; }
 
+    private string? indexId;
+    public bool IsIndexIdSet { get; private set; }
+
     /// <summary>
     /// IndexName of the specialization
     /// </summary>
-    [JsonPropertyName("indexId")]
-    public string? IndexId { get; set; }
+    [JsonProperty("indexId")]
+    public string? IndexId
+    {
+        get { return this.indexId; }
+        set
+        {
+            this.indexId = value;
+            this.IsIndexIdSet = true;
+        }
+    }
 
     /// <summary>
     /// Enable/Disable flag of the specialization.

@@ -1,4 +1,4 @@
-// Copyright (c) Quartech. All rights reserved.
+﻿// Copyright (c) Quartech. All rights reserved.
 
 using System;
 using CopilotChat.WebApi.Storage;
