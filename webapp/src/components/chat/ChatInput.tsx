@@ -45,6 +45,7 @@ const useClasses = makeStyles({
     },
     input: {
         width: '100%',
+        overflow: 'hidden',
     },
     textarea: {
         resize: 'none',
@@ -109,6 +110,8 @@ export const ChatInput: React.FC<ChatInputProps> = ({ disabled, isDraggingOver, 
     const dispatch = useAppDispatch();
     const { instance, inProgress } = useMsal();
 
+    const { chatSpecialization } = useAppSelector((state: RootState) => state.admin);
+
     const { conversations, selectedId } = useAppSelector((state: RootState) => state.conversations);
     const { activeUserInfo } = useAppSelector((state: RootState) => state.app);
 
@@ -132,6 +135,9 @@ export const ChatInput: React.FC<ChatInputProps> = ({ disabled, isDraggingOver, 
         ) {
             event.preventDefault();
             handleSubmit(input);
+            if (textAreaRef.current) {
+                textAreaRef.current.style.height = 'auto';
+            }
         } else if (event.key === 'Enter' && !event.shiftKey) {
             // without this the text area will add a new line when pressing enter without shift key while bot is generating a response
             event.preventDefault();
@@ -241,8 +247,21 @@ export const ChatInput: React.FC<ChatInputProps> = ({ disabled, isDraggingOver, 
         <div className={classes.root}>
             {/* only display the drop zone when the user is dragging files (will block other interactions while active) */}
             {isDraggingOver && <div className={classes.dropZone} onDrop={handleDrop} />}
-            <div className={classes.typingIndicator}>
-                <ChatStatus chatState={chatState} />
+            <div
+                style={{
+                    display: 'grid',
+                    gridTemplateColumns: '1fr auto',
+                    alignItems: 'center',
+                    margin: '0 55px',
+                    minHeight: '40px',
+                }}
+            >
+                <div style={{ textAlign: 'left' }}>
+                    <ChatStatus chatState={chatState} />
+                </div>
+                <div style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
+                    chatting with: {chatSpecialization?.label ?? 'general'}
+                </div>
             </div>
             <div className={classes.content}>
                 <div className={classes.controls}>
@@ -281,7 +300,6 @@ export const ChatInput: React.FC<ChatInputProps> = ({ disabled, isDraggingOver, 
                     aria-label="Chat input field. Click enter to submit input."
                     ref={textAreaRef}
                     id="chat-input"
-                    resize="vertical"
                     disabled={chatState.disabled || chatState.loadingMessages || inputDisabled}
                     textarea={{
                         className: isDraggingOver
@@ -311,6 +329,10 @@ export const ChatInput: React.FC<ChatInputProps> = ({ disabled, isDraggingOver, 
                         }
 
                         setInput(data.value);
+                        if (textAreaRef.current) {
+                            textAreaRef.current.style.height = 'auto';
+                            textAreaRef.current.style.height = `${textAreaRef.current.scrollHeight}px`;
+                        }
                     }}
                     onKeyDown={handleKeyDown}
                     onBlur={() => {

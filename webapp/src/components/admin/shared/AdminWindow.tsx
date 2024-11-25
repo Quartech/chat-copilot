@@ -1,7 +1,6 @@
 import { makeStyles, tokens } from '@fluentui/react-components';
 
-import React from 'react';
-import { SpecializationIndexManager } from './SpecializationIndexManager';
+import React, { PropsWithChildren } from 'react';
 
 const useClasses = makeStyles({
     root: {
@@ -13,12 +12,8 @@ const useClasses = makeStyles({
     },
 });
 
-export const SpecializationIndexWindow: React.FC = () => {
+export const AdminWindow: React.FC<PropsWithChildren> = (props) => {
     const classes = useClasses();
 
-    return (
-        <div className={classes.root}>
-            <SpecializationIndexManager />
-        </div>
-    );
+    return <div className={classes.root}>{props.children}</div>;
 };
