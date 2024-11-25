@@ -431,6 +431,9 @@ export const SpecializationManager: React.FC = () => {
         const outputTokens = chatCompletionDeployments.find((d) => d.name === value)?.outputTokens;
         setDeploymentOutputTokens(outputTokens ?? 4096);
         setDeployment(value ?? '');
+        if (maxResponseTokenLimit && outputTokens && maxResponseTokenLimit > outputTokens) {
+            setMaxResponseTokenLimit(outputTokens);
+        }
     };
 
     return (
