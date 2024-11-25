@@ -10,7 +10,7 @@ import { IChatUser } from '../../../libs/models/ChatUser';
 import { PlanState } from '../../../libs/models/Plan';
 import { BackendServiceUrl } from '../../../libs/services/BaseService';
 import { StoreMiddlewareAPI } from '../../app/store';
-import { addAlert, setMaintenance, addReloadDialog } from '../app/appSlice';
+import { addAlert, addReloadDialog, setMaintenance } from '../app/appSlice';
 import { ChatState } from '../conversations/ChatState';
 import { UpdatePluginStatePayload } from '../conversations/ConversationsState';
 
