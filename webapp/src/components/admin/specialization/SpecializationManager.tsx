@@ -253,7 +253,7 @@ export const SpecializationManager: React.FC = () => {
             setEditMode(false);
             resetSpecialization();
         }
-    }, [editMode, selectedId, specializations]);
+    }, [editMode, selectedId, specializations, chatCompletionDeployments]);
 
     useEffect(() => {
         const isValid =
