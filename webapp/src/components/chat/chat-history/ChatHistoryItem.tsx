@@ -209,7 +209,8 @@ export const ChatHistoryItem: React.FC<ChatHistoryItemProps> = ({ message, messa
                         </Tooltip>
                     </div>
                 </div>
-                <div className="message-content">{content}</div>
+                {!message.isImage && <div className="message-content">{content}</div>}
+                {isBot && message.isImage && <img height="512" width="512" src={message.content} />}
 
                 <div className={classes.controls}>
                     {showMessageCitation && (

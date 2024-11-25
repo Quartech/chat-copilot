@@ -133,6 +133,11 @@ public class Specialization : IStorageEntity
     /// </summary>>
     public int? Order { get; set; }
 
+    /// <summary>
+    /// Whether or not this specialization can create images with dall-e.
+    /// </summary>
+    public bool CanGenImages { get; set; } = false;
+
     public Specialization() { }
 
     public Specialization(
@@ -152,7 +157,8 @@ public class Specialization : IStorageEntity
         string ImageFilePath,
         string IconFilePath,
         IList<string> GroupMemberships,
-        int? Order
+        int? Order,
+        bool CanGenImages
     )
     {
         this.Id = Guid.NewGuid().ToString();
@@ -175,5 +181,6 @@ public class Specialization : IStorageEntity
         this.IsActive = true;
         this.InitialChatMessage = InitialChatMessage;
         this.Order = Order;
+        this.CanGenImages = CanGenImages;
     }
 }
