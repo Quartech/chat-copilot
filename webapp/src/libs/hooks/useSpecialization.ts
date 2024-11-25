@@ -12,7 +12,12 @@ import {
 import { addAlert, hideSpinner, showSpinner } from '../../redux/features/app/appSlice';
 import { AuthHelper } from '../auth/AuthHelper';
 import { AlertType } from '../models/AlertType';
-import { IChatCompletionDeployment, ISpecialization, ISpecializationRequest } from '../models/Specialization';
+import {
+    IChatCompletionDeployment,
+    ISpecialization,
+    ISpecializationRequest,
+    ISpecializationToggleRequest,
+} from '../models/Specialization';
 import { SpecializationService } from '../services/SpecializationService';
 
 export const useSpecialization = () => {
@@ -149,9 +154,9 @@ export const useSpecialization = () => {
         }
     };
 
-    const toggleSpecialization = async (id: string, isActive: boolean) => {
+    const toggleSpecialization = async (id: string, request: ISpecializationToggleRequest) => {
         try {
-            if (!isActive) {
+            if (!request.isActive) {
                 const { specializations } = store.getState().admin;
                 const targetSpecialization = specializations.find((spec) => spec.id === id);
                 if (targetSpecialization?.isDefault) {
@@ -166,7 +171,7 @@ export const useSpecialization = () => {
             }
             const accessToken = await AuthHelper.getSKaaSAccessToken(instance, inProgress);
             await specializationService
-                .onOffSpecializationAsync(id, isActive, accessToken)
+                .onOffSpecializationAsync(id, request, accessToken)
                 .then((result: ISpecialization) => {
                     dispatch(editSpecialization(result));
                 });

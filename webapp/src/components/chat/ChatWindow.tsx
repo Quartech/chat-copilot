@@ -105,25 +105,25 @@ export const ChatWindow: React.FC = () => {
     }, [conversationSpecialization]);
 
     const onNewChatClick = () => {
-        chat.createChat(chatSpecialization?.id);
+        const newChatId = chat.createChat(chatSpecialization?.id);
         if (chatSpecialization) {
-            void chat.selectSpecializationAndBeginChat(chatSpecialization.id, selectedId).then(() => {
+            void chat.selectSpecializationAndBeginChat(chatSpecialization.id, newChatId).then(() => {
                 const specializationMatch = specializations.find((spec) => spec.id === chatSpecialization.id);
                 if (specializationMatch) {
                     dispatch(setChatSpecialization(specializationMatch));
                 }
-                dispatch(editConversationSpecialization({ id: selectedId, specializationId: chatSpecialization.id }));
+                dispatch(editConversationSpecialization({ id: newChatId, specializationId: chatSpecialization.id }));
                 dispatch(
                     editConversationSystemDescription({
-                        id: selectedId,
+                        id: newChatId,
                         newSystemDescription: chatSpecialization.roleInformation,
                     }),
                 );
             });
             void chat
-                .getSuggestions({ chatId: selectedId, specializationId: chatSpecialization.id })
+                .getSuggestions({ chatId: newChatId, specializationId: chatSpecialization.id })
                 .then((response) => {
-                    dispatch(updateSuggestions({ id: selectedId, chatSuggestionMessage: response }));
+                    dispatch(updateSuggestions({ id: newChatId, chatSuggestionMessage: response }));
                 })
                 .catch((reason) => {
                     console.error(`Failed to retrieve suggestions: ${reason}`);
