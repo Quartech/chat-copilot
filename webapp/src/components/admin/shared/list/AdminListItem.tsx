@@ -1,11 +1,9 @@
 import { makeStyles, mergeClasses, shorthands, Text, tokens } from '@fluentui/react-components';
 
-import { FC, useId } from 'react';
+import { useId } from 'react';
 import { useDrag } from 'react-dnd';
-import { useAppDispatch } from '../../../../redux/app/hooks';
-import { setSelectedKey } from '../../../../redux/features/admin/adminSlice';
 import { Breakpoints, SharedStyles } from '../../../../styles';
-import { SpecializationListItemActions } from '../SpecializationListItemActions';
+import { AdminListItemToggleAction } from './AdminListItemToggleAction';
 
 const useClasses = makeStyles({
     root: {
@@ -60,32 +58,31 @@ const useClasses = makeStyles({
     },
 });
 
-interface ISpecializationListItemProps {
-    specializationId: string;
-    label: string;
+interface IAdminListItemProps {
     name: string;
-    specializationMode: boolean;
+    label: string;
+    id: string;
+    editMode: boolean;
     isSelected: boolean;
+    onItemSelected: (id: string) => void;
+    onItemToggled?: (id: string, checked: boolean) => Promise<boolean>;
 }
 
-export const SpecializationListItem: FC<ISpecializationListItemProps> = ({
-    specializationId,
-    label,
-    name,
-    specializationMode,
+export const AdminListItem = ({
     isSelected,
-}) => {
+    name,
+    id,
+    editMode,
+    onItemSelected,
+    onItemToggled,
+}: IAdminListItemProps) => {
     const classes = useClasses();
-    const dispatch = useAppDispatch();
     const friendlyTitle = name.length > 30 ? name.substring(0, 30) + '...' : name;
-    const onEditSpecializationClick = (specializationId: string) => {
-        dispatch(setSelectedKey(specializationId));
-    };
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const [{ isDragging }, drag] = useDrag({
         type: 'Specialization',
-        item: { id: specializationId },
+        item: { id },
         collect: (monitor) => ({
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             isDragging: monitor.isDragging(),
@@ -94,32 +91,29 @@ export const SpecializationListItem: FC<ISpecializationListItemProps> = ({
 
     return (
         <div
-            data-id={specializationId}
+            data-id={id}
             ref={drag}
             style={{ opacity: isDragging ? 0.5 : 1, cursor: 'move' }}
             className={mergeClasses(classes.root, isSelected && classes.selected)}
             onClick={() => {
-                onEditSpecializationClick(specializationId);
+                onItemSelected(id);
             }}
             title={`Chat: ${friendlyTitle}`}
             aria-label={`Chat list item: ${friendlyTitle}`}
         >
-            <>
-                <div key={useId()} className={classes.body}>
-                    <div className={classes.header}>
-                        <Text className={classes.title} title={friendlyTitle}>
-                            {friendlyTitle}
-                        </Text>
-                    </div>
-                    <Text className={classes.specialization} title={label}>
-                        {label}
+            <div key={useId()} className={classes.body}>
+                <div className={classes.header}>
+                    <Text className={classes.title} title={friendlyTitle}>
+                        {friendlyTitle}
                     </Text>
                 </div>
-                <SpecializationListItemActions
-                    specializationId={specializationId}
-                    specializationMode={specializationMode}
-                />
-            </>
+                <Text className={classes.specialization} title={name}>
+                    {name}
+                </Text>
+            </div>
+            {onItemToggled && (
+                <AdminListItemToggleAction toggleStatus={editMode} id={id} onItemToggled={onItemToggled} />
+            )}
         </div>
     );
 };

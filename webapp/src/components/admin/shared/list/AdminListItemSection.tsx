@@ -3,12 +3,8 @@
 import { makeStyles, shorthands, Text, tokens } from '@fluentui/react-components';
 import React from 'react';
 import { DropTargetMonitor, useDrop } from 'react-dnd';
-import { useSpecialization } from '../../../../libs/hooks';
-import { ISpecialization } from '../../../../libs/models/Specialization';
-import { useAppSelector } from '../../../../redux/app/hooks';
-import { RootState } from '../../../../redux/app/store';
 import { Breakpoints } from '../../../../styles';
-import { SpecializationListItem } from './SpecializationListItem';
+import { AdminListItem } from './AdminListItem';
 
 const useClasses = makeStyles({
     root: {
@@ -31,8 +27,21 @@ const useClasses = makeStyles({
     },
 });
 
-interface IChatListSectionProps {
+interface IListItem {
+    id: string;
+    name: string;
+    label?: string;
+    isActive?: boolean;
+    order: number;
+}
+
+interface IChatListSectionProps<T extends IListItem> {
     header?: string;
+    items: T[];
+    onItemCollectionReorder: (newOrderedArray: T[]) => void;
+    onItemSelected: (id: string) => void;
+    onItemToggled?: (id: string, toggle: boolean) => Promise<boolean>;
+    selectedId: string;
 }
 
 /**
@@ -40,10 +49,15 @@ interface IChatListSectionProps {
  * @param {IChatListSectionProps} param0 - The props for this component, including the header text.
  * @returns {React.ReactElement} Returns the list section for specializations or null if no specializations are available.
  */
-export const SpecializationListSection: React.FC<IChatListSectionProps> = ({ header }) => {
+export const AdminItemListSection = <T extends IListItem>({
+    header,
+    items,
+    selectedId,
+    onItemCollectionReorder,
+    onItemSelected,
+    onItemToggled,
+}: IChatListSectionProps<T>) => {
     const classes = useClasses();
-    const specialization = useSpecialization();
-    const { specializations, selectedId } = useAppSelector((state: RootState) => state.admin);
 
     const dropRef = React.useRef<HTMLDivElement | null>(null);
 
@@ -56,7 +70,7 @@ export const SpecializationListSection: React.FC<IChatListSectionProps> = ({ hea
             if (fromId === toId) return;
 
             // Function to reorder items
-            const reorder = (list: ISpecialization[], startIndex: number, endIndex: number) => {
+            const reorder = (list: T[], startIndex: number, endIndex: number) => {
                 const result = Array.from(list);
                 const [removed] = result.splice(startIndex, 1);
                 result.splice(endIndex, 0, removed);
@@ -64,13 +78,13 @@ export const SpecializationListSection: React.FC<IChatListSectionProps> = ({ hea
             };
 
             // Assuming specializations is accessible here or can be fetched
-            const updatedSpecializations: ISpecialization[] = reorder(
-                specializations,
-                specializations.findIndex((spec) => spec.id === fromId),
-                specializations.findIndex((spec) => spec.id === toId),
+            const updatedItems: T[] = reorder(
+                items,
+                items.findIndex((item) => item.id === fromId),
+                items.findIndex((item) => item.id === toId),
             );
 
-            void specialization.setSpecializationsOrder(updatedSpecializations);
+            onItemCollectionReorder(updatedItems);
         },
     });
 
@@ -98,7 +112,7 @@ export const SpecializationListSection: React.FC<IChatListSectionProps> = ({ hea
         return '';
     };
 
-    return specializations.length > 0 ? (
+    return items.length > 0 ? (
         <div className={classes.root}>
             <Text className={classes.header}>{header}</Text>
             <div
@@ -107,19 +121,21 @@ export const SpecializationListSection: React.FC<IChatListSectionProps> = ({ hea
                     drop(element);
                 }}
             >
-                {specializations
+                {items
                     .slice()
                     .sort((a, b) => a.order - b.order)
-                    .map((specialization) => {
-                        const isSelected = specialization.id === selectedId;
+                    .map((item) => {
+                        const isSelected = item.id === selectedId;
                         return (
-                            <SpecializationListItem
-                                key={specialization.id}
-                                specializationId={specialization.id}
-                                label={specialization.label}
-                                name={specialization.name}
-                                specializationMode={specialization.isActive}
+                            <AdminListItem
+                                key={item.id}
+                                id={item.id}
+                                label={item.label ?? item.name}
+                                name={item.name}
                                 isSelected={isSelected}
+                                editMode={!!item.isActive}
+                                onItemSelected={onItemSelected}
+                                onItemToggled={onItemToggled}
                             />
                         );
                     })}
