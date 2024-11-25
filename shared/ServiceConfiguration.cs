@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-//using Elastic.Transport;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.KernelMemory;
@@ -124,7 +123,7 @@ internal sealed class ServiceConfiguration
         return builder.Build();
     }
 
-    private void ConfigureAzureOpenAIText(Microsoft.KernelMemory.AzureOpenAIConfig config)
+    private void ConfigureAzureOpenAIText(AzureOpenAIConfig config)
     {
 
         config.APIKey = this._defaultConfig.APIKey;
