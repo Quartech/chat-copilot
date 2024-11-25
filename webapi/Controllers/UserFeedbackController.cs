@@ -23,9 +23,8 @@ public class UserFeedbackController : ControllerBase
         this._userFeedbackService = new UserFeedbackService(sessionRepository, messageRepository);
     }
 
-    [HttpPost]
-    [Route("userfeedback/search")]
-    public async Task<IActionResult> SearchUserFeedback([FromBody] UserFeedbackFilter filter)
+    [HttpGet("userfeedback/search")]
+    public async Task<IActionResult> SearchUserFeedback([FromQuery] UserFeedbackFilter filter)
     {
         var chatMessages = await this._userFeedbackService.Search(filter);
 
