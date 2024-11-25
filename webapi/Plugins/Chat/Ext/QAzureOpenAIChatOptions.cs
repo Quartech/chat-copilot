@@ -46,6 +46,12 @@ public class QAzureOpenAIChatOptions
         public int CompletionTokenLimit { get; set; }
     }
 
+    public class ImageCompletionDeployment
+    {
+        // may contain future settings
+        public string Name { get; set; } = string.Empty;
+    }
+
     public class OpenAIDeploymentConnection
     {
         public string Name { get; set; } = string.Empty;
@@ -53,7 +59,17 @@ public class QAzureOpenAIChatOptions
         public string APIKey { get; set; } = string.Empty;
         public IList<ChatCompletionDeployment> ChatCompletionDeployments { get; set; } =
             new List<ChatCompletionDeployment>();
+        public IList<ImageCompletionDeployment> ImageGenerationDeployments { get; set; } =
+            new List<ImageCompletionDeployment>();
         public IList<string> EmbeddingDeployments { get; set; } = new List<string>();
+    }
+
+    public class AITextToImageDeploymentConnection
+    {
+        public string Name { get; set; } = string.Empty;
+        public Uri? Endpoint { get; set; } = null;
+        public string APIKey { get; set; } = string.Empty;
+        public string Deployment { get; set; } = string.Empty;
     }
 
     public class AISearchDeploymentConnection

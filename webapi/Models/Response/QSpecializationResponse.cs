@@ -131,6 +131,12 @@ public class QSpecializationResponse
     public IList<string> Suggestions { get; set; } = new List<string>();
 
     /// <summary>
+    /// Whether or not this specialization can create images with dall-e.
+    /// </summary>
+    [JsonPropertyName("canGenImages")]
+    public bool CanGenImages { get; set; } = false;
+
+    /// <summary>
     /// Creates new instance from SpecializationSource.
     /// </summary>
     public QSpecializationResponse(Specialization specializationSource)
@@ -150,6 +156,7 @@ public class QSpecializationResponse
         this.PastMessagesIncludedCount = specializationSource.PastMessagesIncludedCount;
         this.MaxResponseTokenLimit = specializationSource.MaxResponseTokenLimit;
         this.GroupMemberships = specializationSource.GroupMemberships;
+        this.CanGenImages = specializationSource.CanGenImages;
         this.InitialChatMessage = specializationSource.InitialChatMessage;
         this.Order = specializationSource.Order;
         this.Suggestions = specializationSource.Suggestions;

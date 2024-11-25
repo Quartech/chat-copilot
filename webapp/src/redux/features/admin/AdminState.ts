@@ -36,6 +36,7 @@ export const Specializations = [
         initialChatMessage: '',
         order: 0,
         suggestions: [],
+        canGenImages: false,
     },
 ];
 export const initialState: AdminState = {

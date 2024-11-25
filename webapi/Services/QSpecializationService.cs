@@ -109,7 +109,8 @@ public class QSpecializationService : IQSpecializationService
                 IconFilePath: iconFilePath,
                 GroupMemberships: qSpecializationMutate.GroupMemberships.Split(','),
                 Order: qSpecializationMutate.Order,
-                Suggestions: deserializedSuggestions != null ? deserializedSuggestions : new List<string>()
+                Suggestions: deserializedSuggestions != null ? deserializedSuggestions : new List<string>(),
+                CanGenImages: qSpecializationMutate.CanGenImages
             );
 
         await this._specializationSourceRepository.CreateAsync(specializationSource);
@@ -212,6 +213,7 @@ public class QSpecializationService : IQSpecializationService
 
         specializationToUpdate.Suggestions =
             deserializedSuggestions != null ? deserializedSuggestions : specializationToUpdate.Suggestions;
+        specializationToUpdate.CanGenImages = qSpecializationMutate.CanGenImages;
 
         await this._specializationSourceRepository.UpsertAsync(specializationToUpdate);
 

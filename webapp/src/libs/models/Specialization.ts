@@ -19,6 +19,7 @@ export interface ISpecialization {
     initialChatMessage: string;
     order: number;
     suggestions: string[];
+    canGenImages: boolean;
 }
 
 /**
@@ -46,6 +47,7 @@ export interface ISpecializationRequest {
     maxResponseTokenLimit: number | null;
     order: number;
     suggestions: string[];
+    canGenImages: boolean;
 }
 
 export interface ISpecializationToggleRequest {
