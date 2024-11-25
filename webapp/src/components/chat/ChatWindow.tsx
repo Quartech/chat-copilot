@@ -105,26 +105,26 @@ export const ChatWindow: React.FC = () => {
     }, [conversationSpecialization]);
 
     const onNewChatClick = () => {
-        chat.createChat(chatSpecialization?.id);
+        const newChatId = chat.createChat(chatSpecialization?.id);
         if (chatSpecialization) {
-            void chat.selectSpecializationAndBeginChat(chatSpecialization.id, selectedId).then(() => {
+            void chat.selectSpecializationAndBeginChat(chatSpecialization.id, newChatId).then(() => {
                 const specializationMatch = specializations.find((spec) => spec.id === chatSpecialization.id);
                 if (specializationMatch) {
                     dispatch(setChatSpecialization(specializationMatch));
                 }
-                dispatch(editConversationSpecialization({ id: selectedId, specializationId: chatSpecialization.id }));
+                dispatch(editConversationSpecialization({ id: newChatId, specializationId: chatSpecialization.id }));
                 dispatch(
                     editConversationSystemDescription({
-                        id: selectedId,
+                        id: newChatId,
                         newSystemDescription: chatSpecialization.roleInformation,
                     }),
                 );
             });
             if (chatSpecialization.suggestions.length < 1) {
-                chat.getSuggestions({ chatId: selectedId, specializationId: chatSpecialization.id })
+                chat.getSuggestions({ chatId: newChatId, specializationId: chatSpecialization.id })
                     .then((response) => {
                         dispatch(
-                            updateConversationGeneratedSuggestions({ id: selectedId, chatSuggestionMessage: response }),
+                            updateConversationGeneratedSuggestions({ id: newChatId, chatSuggestionMessage: response }),
                         );
                     })
                     .catch((reason) => {

@@ -178,33 +178,45 @@ public class QSpecializationService : IQSpecializationService
 
         specializationToUpdate.Deployment = qSpecializationMutate.Deployment ?? specializationToUpdate.Deployment;
 
-        specializationToUpdate.IndexId = qSpecializationMutate.IndexId ?? specializationToUpdate.IndexId;
+        if (qSpecializationMutate.IsIndexIdSet)
+        {
+            // IndexName was explicitly set
+            specializationToUpdate.IndexId = qSpecializationMutate.IndexId;
+
+            if (specializationToUpdate.IndexId == null)
+            {
+                // If IndexName is explicitly set to null, set related properties to null
+                specializationToUpdate.RestrictResultScope = null;
+                specializationToUpdate.Strictness = null;
+                specializationToUpdate.DocumentCount = null;
+                specializationToUpdate.PastMessagesIncludedCount = null;
+                specializationToUpdate.MaxResponseTokenLimit = null;
+            }
+            else
+            {
+                // If IndexName is not null, update related properties
+                specializationToUpdate.RestrictResultScope =
+                    qSpecializationMutate.RestrictResultScope ?? specializationToUpdate.RestrictResultScope;
+                specializationToUpdate.Strictness =
+                    qSpecializationMutate.Strictness ?? specializationToUpdate.Strictness;
+                specializationToUpdate.DocumentCount =
+                    qSpecializationMutate.DocumentCount ?? specializationToUpdate.DocumentCount;
+                specializationToUpdate.PastMessagesIncludedCount =
+                    qSpecializationMutate.PastMessagesIncludedCount ?? specializationToUpdate.PastMessagesIncludedCount;
+                specializationToUpdate.MaxResponseTokenLimit =
+                    qSpecializationMutate.MaxResponseTokenLimit ?? specializationToUpdate.MaxResponseTokenLimit;
+            }
+        }
+        else
+        {
+            // IndexName was not specified, retain existing values
+            specializationToUpdate.RestrictResultScope = specializationToUpdate.RestrictResultScope;
+            specializationToUpdate.Strictness = specializationToUpdate.Strictness;
+            specializationToUpdate.DocumentCount = specializationToUpdate.DocumentCount;
+            specializationToUpdate.PastMessagesIncludedCount = specializationToUpdate.PastMessagesIncludedCount;
+            specializationToUpdate.MaxResponseTokenLimit = specializationToUpdate.MaxResponseTokenLimit;
+        }
         specializationToUpdate.IsDefault = qSpecializationMutate.IsDefault ?? specializationToUpdate.IsDefault;
-
-        specializationToUpdate.RestrictResultScope =
-            qSpecializationMutate.IndexId == null
-                ? null
-                : qSpecializationMutate.RestrictResultScope ?? specializationToUpdate.RestrictResultScope;
-
-        specializationToUpdate.Strictness =
-            qSpecializationMutate.IndexId == null
-                ? null
-                : qSpecializationMutate.Strictness ?? specializationToUpdate.Strictness;
-
-        specializationToUpdate.DocumentCount =
-            qSpecializationMutate.IndexId == null
-                ? null
-                : qSpecializationMutate.DocumentCount ?? specializationToUpdate.DocumentCount;
-
-        specializationToUpdate.PastMessagesIncludedCount =
-            qSpecializationMutate.IndexId == null
-                ? null
-                : qSpecializationMutate.PastMessagesIncludedCount ?? specializationToUpdate.PastMessagesIncludedCount;
-
-        specializationToUpdate.MaxResponseTokenLimit =
-            qSpecializationMutate.IndexId == null
-                ? null
-                : qSpecializationMutate.MaxResponseTokenLimit ?? specializationToUpdate.MaxResponseTokenLimit;
 
         // Group memberships (mutate payload) are a comma separated list of UUIDs.
         specializationToUpdate.GroupMemberships = !string.IsNullOrEmpty(qSpecializationMutate.GroupMemberships)

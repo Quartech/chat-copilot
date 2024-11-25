@@ -14,13 +14,13 @@ public class QSpecializationMutate : QSpecializationBase
     /// <summary>
     /// Image file of the Specialization.
     /// </summary>
-    [JsonPropertyName("imageFile")]
+    [JsonPropertyName("iconFile")]
     public IFormFile? IconFile { get; set; } = null;
 
     /// <summary>
     /// Icon file of the Specialization.
     /// </summary>
-    [JsonPropertyName("iconFile")]
+    [JsonPropertyName("imageFile")]
     public IFormFile? ImageFile { get; set; } = null;
 
     /// <summary>
