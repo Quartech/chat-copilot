@@ -111,6 +111,7 @@ public class ChatHistoryController : ControllerBase
             chatParameters.Title,
             systemDescription,
             chatParameters.specializationId,
+            this._authInfo.UserId,
             chatParameters.Id
         );
         await this._sessionRepository.CreateAsync(newChat);
@@ -361,39 +362,34 @@ public class ChatHistoryController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> DeleteAllChatSessionsAsync(
-        [FromBody] DeleteAllChatsParameters deleteAllChatsParameters,
         CancellationToken cancellationToken,
         [FromServices] IHubContext<MessageRelayHub> messageRelayHubContext
     )
     {
-        if (deleteAllChatsParameters.ChatIds == null || deleteAllChatsParameters.ChatIds.Count() == 0)
-        {
-            return this.BadRequest("Chat session parameters cannot be null.");
-        }
-        var chatIds = deleteAllChatsParameters.ChatIds;
-        ChatSession? chatToDelete = null;
+        IEnumerable<ChatSession> sessions = await this._sessionRepository.FindByUserIdAsync(this._authInfo.UserId);
 
-        // Delete all chat sessions and broadcast update to all participants.
-        foreach (var chatId in chatIds)
+        var tasks = sessions.Select(async session =>
         {
             try
             {
-                // Make sure the chat session exists
-                chatToDelete = await this._sessionRepository.FindByIdAsync(chatId);
+                this._logger.LogInformation("Deleting chat session {0}", session.Id);
+                await this.DeleteChatResourcesAsync(session.Id, cancellationToken);
+                await this._sessionRepository.DeleteAsync(session);
             }
-            catch (KeyNotFoundException)
+            catch (InvalidOperationException ex)
             {
-                return this.NotFound($"No chat session found for chat id '{chatId}'.");
+                throw new InvalidOperationException($"Failed to delete chat session {session.Id}", ex);
             }
-            try
-            {
-                await this.DeleteChatResourcesAsync(chatId, cancellationToken);
-            }
-            catch (AggregateException)
-            {
-                return this.StatusCode(500, $"Failed to delete resources for chat id '{chatId}'.");
-            }
-            await this._sessionRepository.DeleteAsync(chatToDelete);
+        });
+
+        try
+        {
+            // run tasks in parallel
+            await Task.WhenAll(tasks);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return this.StatusCode(500, ex.Message);
         }
 
         return this.NoContent();
