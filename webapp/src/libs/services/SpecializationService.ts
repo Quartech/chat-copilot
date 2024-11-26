@@ -126,7 +126,7 @@ export class SpecializationService extends BaseService {
         formData.append('order', body.order.toString());
         formData.append('isDefault', body.isDefault.toString());
         formData.append('canGenImages', body.canGenImages.toString());
-        if (body.restrictResultScope) {
+        if (body.restrictResultScope != null) {
             formData.append('restrictResultScope', body.restrictResultScope.toString());
         }
         if (body.strictness) {
