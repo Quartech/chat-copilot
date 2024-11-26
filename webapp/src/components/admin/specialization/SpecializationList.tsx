@@ -85,7 +85,7 @@ export const SpecializationList: FC = () => {
                             onItemSelected={(id) => dispatch(setSelectedKey(id))}
                             selectedId={selectedId}
                             onItemToggled={(id, toggle) => {
-                                return specialization.toggleSpecialization(id, toggle);
+                                return specialization.toggleSpecialization(id, { isActive: toggle });
                             }}
                         />
                     </div>
