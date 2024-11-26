@@ -12,6 +12,7 @@ using CopilotChat.WebApi.Plugins.Chat.Ext;
 using CopilotChat.WebApi.Storage;
 using CopilotChat.WebApi.Utilities;
 using Microsoft.AspNetCore.Http;
+using Newtonsoft.Json;
 
 namespace CopilotChat.WebApi.Services;
 
@@ -81,6 +82,8 @@ public class QSpecializationService : IQSpecializationService
                 ? ResourceUtils.GetImageAsDataUri(this._qAzureOpenAIChatOptions.DefaultSpecializationIcon)
                 : await this._qBlobStorage.AddBlobAsync(qSpecializationMutate.IconFile);
 
+        var deserializedSuggestions = JsonConvert.DeserializeObject<List<string>>(qSpecializationMutate.Suggestions);
+
         Specialization specializationSource =
             new(
                 Label: qSpecializationMutate.Label,
@@ -106,6 +109,7 @@ public class QSpecializationService : IQSpecializationService
                 IconFilePath: iconFilePath,
                 GroupMemberships: qSpecializationMutate.GroupMemberships.Split(','),
                 Order: qSpecializationMutate.Order,
+                Suggestions: deserializedSuggestions != null ? deserializedSuggestions : new List<string>(),
                 CanGenImages: qSpecializationMutate.CanGenImages
             );
 
@@ -157,6 +161,8 @@ public class QSpecializationService : IQSpecializationService
             qSpecializationMutate.isActive,
             CultureInfo.InvariantCulture
         );
+
+        var deserializedSuggestions = JsonConvert.DeserializeObject<List<string>>(qSpecializationMutate.Suggestions);
 
         specializationToUpdate.Name = qSpecializationMutate.Name ?? specializationToUpdate.Name;
 
@@ -217,6 +223,8 @@ public class QSpecializationService : IQSpecializationService
             ? qSpecializationMutate.GroupMemberships.Split(',')
             : specializationToUpdate.GroupMemberships;
 
+        specializationToUpdate.Suggestions =
+            deserializedSuggestions != null ? deserializedSuggestions : specializationToUpdate.Suggestions;
         specializationToUpdate.CanGenImages = qSpecializationMutate.CanGenImages;
 
         await this._specializationSourceRepository.UpsertAsync(specializationToUpdate);

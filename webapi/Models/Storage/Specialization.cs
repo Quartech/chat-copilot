@@ -134,6 +134,11 @@ public class Specialization : IStorageEntity
     public int? Order { get; set; }
 
     /// <summary>
+    /// Suggestions to be displayed to the user when starting a chat under this specialization.
+    /// </summary>
+    public IList<string> Suggestions { get; set; } = new List<string>();
+
+    /// <summary>
     /// Whether or not this specialization can create images with dall-e.
     /// </summary>
     public bool CanGenImages { get; set; } = false;
@@ -158,6 +163,7 @@ public class Specialization : IStorageEntity
         string IconFilePath,
         IList<string> GroupMemberships,
         int? Order,
+        IList<string> Suggestions,
         bool CanGenImages
     )
     {
@@ -181,6 +187,7 @@ public class Specialization : IStorageEntity
         this.IsActive = true;
         this.InitialChatMessage = InitialChatMessage;
         this.Order = Order;
+        this.Suggestions = Suggestions;
         this.CanGenImages = CanGenImages;
     }
 }
