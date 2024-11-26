@@ -21,7 +21,7 @@ import { addAlert } from '../../redux/features/app/appSlice';
 import {
     editConversationSpecialization,
     editConversationSystemDescription,
-    updateSuggestions,
+    updateConversationGeneratedSuggestions,
 } from '../../redux/features/conversations/conversationsSlice';
 
 const useStyles = makeStyles({
@@ -113,7 +113,9 @@ export const SpecializationCard: React.FC<SpecializationItemProps> = ({ speciali
                 chat
                     .getSuggestions({ chatId: selectedId, specializationId: specialization.id })
                     .then((response) => {
-                        dispatch(updateSuggestions({ id: selectedId, chatSuggestionMessage: response }));
+                        dispatch(
+                            updateConversationGeneratedSuggestions({ id: selectedId, chatSuggestionMessage: response }),
+                        );
                     })
                     .catch((reason) => {
                         console.error(`Failed to retrieve suggestions: ${reason}`);

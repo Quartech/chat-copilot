@@ -26,10 +26,18 @@ export const ChatSuggestionList: React.FC<ChatSuggestionListProps> = ({
     onClickSuggestion,
 }: ChatSuggestionListProps) => {
     const { conversations, selectedId } = useAppSelector((state: RootState) => state.conversations);
+    const { specializations } = useAppSelector((state: RootState) => state.admin);
+    const specialization = specializations.find((a) => a.id === conversations[selectedId].specializationId);
     const classes = useClasses();
+    //If there are user defied suggestions set for the specialization selected, we will show those.
+    //Otherwise, we will send a request to the silent
+    const suggestions =
+        specialization && specialization.suggestions.length > 0
+            ? specialization.suggestions
+            : conversations[selectedId].generatedSuggestions;
     return (
         <div className={classes.root}>
-            {conversations[selectedId].suggestions.map((suggestion, idx) => (
+            {suggestions.map((suggestion, idx) => (
                 <ChatSuggestion
                     onClick={onClickSuggestion}
                     key={`suggestions-${idx}`}

@@ -29,6 +29,9 @@ export const adminSlice = createSlice({
         setIndexSelected: (state: AdminState, action: PayloadAction<boolean>) => {
             state.isIndexSelected = action.payload;
         },
+        setUserFeedbackSelected: (state: AdminState, action: PayloadAction<boolean>) => {
+            state.isUserFeedbackSelected = action.payload;
+        },
         setSelectedKey: (state: AdminState, action: PayloadAction<string>) => {
             state.selectedId = action.payload;
         },
@@ -79,6 +82,7 @@ export const {
     setChatCompletionDeployments,
     setAdminSelected,
     setIndexSelected,
+    setUserFeedbackSelected,
     setSelectedKey,
     setSelectedIndexKey,
     addSpecialization,

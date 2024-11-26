@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using Elastic.Transport;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.KernelMemory;
@@ -156,7 +155,7 @@ internal sealed class ServiceConfiguration
 
                 case string y when y.Equals("RabbitMQ", StringComparison.OrdinalIgnoreCase):
                     // Check 2 keys for backward compatibility
-                    builder.Services.AddRabbitMQOrchestration(this.GetServiceConfig<RabbitMqConfig>("RabbitMq"));
+                    builder.Services.AddRabbitMQOrchestration(this.GetServiceConfig<RabbitMQConfig>("RabbitMq"));
                     break;
 
                 case string y when y.Equals("SimpleQueues", StringComparison.OrdinalIgnoreCase):

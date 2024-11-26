@@ -128,4 +128,10 @@ public class QSpecializationBase
     /// </summary>>
     [JsonPropertyName("order")]
     public int? Order { get; set; }
+
+    /// <summary>
+    /// Suggestions we should display to the user on chat start.
+    /// </summary>>
+    [JsonPropertyName("suggestions")]
+    public IList<string>? Suggestions { get; set; }
 }

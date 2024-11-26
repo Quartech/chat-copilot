@@ -7,6 +7,7 @@ import { SpecializationIndexList } from '../admin/specialization-index/Specializ
 import { SpecializationIndexManager } from '../admin/specialization-index/SpecializationIndexManager';
 import { SpecializationList } from '../admin/specialization/SpecializationList';
 import { SpecializationManager } from '../admin/specialization/SpecializationManager';
+import { UserFeedbackManager } from '../admin/user-feedback/UserFeedbackManager';
 import { ChatWindow } from '../chat/ChatWindow';
 import { ChatType } from '../chat/chat-list/ChatType';
 import { SearchWindow } from '../search/SearchWindow';
@@ -25,7 +26,9 @@ export const ChatView: FC = () => {
     const classes = useClasses();
     const { selectedId } = useAppSelector((state: RootState) => state.conversations);
     const { selected } = useAppSelector((state: RootState) => state.search);
-    const { isAdminSelected, isIndexSelected } = useAppSelector((state: RootState) => state.admin);
+    const { isAdminSelected, isIndexSelected, isUserFeedbackSelected } = useAppSelector(
+        (state: RootState) => state.admin,
+    );
 
     return (
         <div className={classes.container}>
@@ -39,12 +42,21 @@ export const ChatView: FC = () => {
                 </>
             )}
             {selected && <SearchWindow />}
-            {selectedId !== '' && !selected && !isAdminSelected && !isIndexSelected && <ChatWindow />}
+            {selectedId !== '' && !selected && !isAdminSelected && !isIndexSelected && !isUserFeedbackSelected && (
+                <ChatWindow />
+            )}
             {isIndexSelected && (
                 <>
                     <SpecializationIndexList />
                     <AdminWindow>
                         <SpecializationIndexManager />
+                    </AdminWindow>
+                </>
+            )}
+            {isUserFeedbackSelected && (
+                <>
+                    <AdminWindow>
+                        <UserFeedbackManager />
                     </AdminWindow>
                 </>
             )}

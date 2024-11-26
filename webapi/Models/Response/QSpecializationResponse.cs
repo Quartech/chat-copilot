@@ -125,6 +125,12 @@ public class QSpecializationResponse
     public IList<string> GroupMemberships { get; set; } = new List<string>();
 
     /// <summary>
+    /// List of group memberships for the user.
+    /// </summary>
+    [JsonPropertyName("suggestions")]
+    public IList<string> Suggestions { get; set; } = new List<string>();
+
+    /// <summary>
     /// Whether or not this specialization can create images with dall-e.
     /// </summary>
     [JsonPropertyName("canGenImages")]
@@ -153,6 +159,7 @@ public class QSpecializationResponse
         this.CanGenImages = specializationSource.CanGenImages;
         this.InitialChatMessage = specializationSource.InitialChatMessage;
         this.Order = specializationSource.Order;
+        this.Suggestions = specializationSource.Suggestions;
         if (specializationSource.IndexId != null)
         {
             this.IndexId = specializationSource.IndexId;
