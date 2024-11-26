@@ -59,6 +59,12 @@ public class CosmosOptions
     public string SpecializationIndexContainer { get; set; } = string.Empty;
 
     /// <summary>
+    /// Gets or sets the Cosmos container for deployment sources.
+    /// </summary>
+    [Required, NotEmptyOrWhitespace]
+    public string OpenAIDeploymentContainer { get; set; } = string.Empty;
+
+    /// <summary>
     /// Gets or sets the Cosmos container for chat users.
     /// /// </summary>
     [Required, NotEmptyOrWhitespace]
