@@ -10,7 +10,7 @@ import {
 import React, { FC, useEffect, useState } from 'react';
 import { useAppDispatch, useAppSelector } from '../../../redux/app/hooks';
 import { RootState } from '../../../redux/app/store';
-import { setAdminSelected, setIndexSelected } from '../../../redux/features/admin/adminSlice';
+import { setAdminSelected, setIndexSelected, setUserFeedbackSelected } from '../../../redux/features/admin/adminSlice';
 import { setSearchSelected } from '../../../redux/features/search/searchSlice';
 import { Breakpoints } from '../../../styles';
 import { SearchList } from '../../search/search-list/SearchList';
@@ -63,19 +63,27 @@ export const ChatType: FC = () => {
             }
             dispatch(setAdminSelected(false));
             dispatch(setIndexSelected(false));
+            dispatch(setUserFeedbackSelected(false));
         } else if (selectedTab === 'admin') {
             dispatch(setSearchSelected({ selected: false, specializationId: '' }));
             if (selectedAdminSubTab === 'specializations') {
                 dispatch(setAdminSelected(true));
                 dispatch(setIndexSelected(false));
+                dispatch(setUserFeedbackSelected(false));
             } else if (selectedAdminSubTab === 'indexes') {
                 dispatch(setAdminSelected(false));
                 dispatch(setIndexSelected(true));
+                dispatch(setUserFeedbackSelected(false));
+            } else if (selectedAdminSubTab === 'userFeedback') {
+                dispatch(setAdminSelected(false));
+                dispatch(setIndexSelected(false));
+                dispatch(setUserFeedbackSelected(true));
             }
         } else {
             dispatch(setSearchSelected({ selected: false, specializationId: '' }));
             dispatch(setAdminSelected(false));
             dispatch(setIndexSelected(false));
+            dispatch(setUserFeedbackSelected(false));
         }
     }, [selectedTab, selectedAdminSubTab, conversations, selectedId, dispatch]);
 
@@ -115,6 +123,9 @@ export const ChatType: FC = () => {
                         </Tab>
                         <Tab id="indexes" value={'indexes'}>
                             Indexes
+                        </Tab>
+                        <Tab id="userFeedback" value={'userFeedback'}>
+                            User Feedback
                         </Tab>
                     </TabList>
                 </div>

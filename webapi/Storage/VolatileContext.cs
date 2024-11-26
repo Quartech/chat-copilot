@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+using CopilotChat.WebApi.Models.Request;
 using CopilotChat.WebApi.Models.Storage;
 
 namespace CopilotChat.WebApi.Storage;
@@ -104,26 +105,58 @@ public class VolatileContext<T> : IStorageContext<T>
 /// <summary>
 /// Specialization of VolatileContext<T> for CopilotChatMessage.
 /// </summary>
-public class VolatileCopilotChatMessageContext : VolatileContext<CopilotChatMessage>, ICopilotChatMessageStorageContext
+public class VolatileCopilotChatMessageContext
+    : VolatileContext<CopilotChatMessage>,
+        ICopilotChatMessageStorageContext,
+        ICopilotChatMessageSortable
 {
     /// <inheritdoc/>
-    public Task<IEnumerable<CopilotChatMessage>> QueryEntitiesAsync(
+    public async Task<IEnumerable<CopilotChatMessage>> QueryEntitiesAsync(
         Expression<Func<CopilotChatMessage, bool>> predicate,
+        CopilotChatMessageSortOption? sortOption,
         int skip,
         int count
     )
     {
         var compiledPredicate = predicate.Compile();
 
-        // Apply the compiled predicate, ordering, and pagination
-        var result = this._entities.Values.Where(compiledPredicate).OrderByDescending(m => m.Timestamp).Skip(skip);
+        // Apply the compiled predicate
+        var filteredEntities = this._entities.Values.Where(compiledPredicate);
 
-        // Apply Take only if count is greater than 0; otherwise, return all remaining results
+        // Apply sorting
+        var orderedEntities = this.Sort(filteredEntities.AsQueryable(), sortOption);
+
+        // Apply pagination
+        orderedEntities = orderedEntities.Skip(skip);
         if (count > 0)
         {
-            result = result.Take(count);
+            orderedEntities = orderedEntities.Take(count);
         }
 
-        return Task.FromResult(result);
+        return await Task.FromResult(orderedEntities);
+    }
+
+    public IQueryable<CopilotChatMessage> Sort(
+        IQueryable<CopilotChatMessage> queryable,
+        CopilotChatMessageSortOption? sortOption
+    )
+    {
+        if (sortOption == null)
+        {
+            return queryable.OrderByDescending(m => m.Timestamp);
+        }
+
+        switch (sortOption)
+        {
+            default:
+            case CopilotChatMessageSortOption.DateDesc:
+                return queryable.OrderByDescending(m => m.Timestamp);
+            case CopilotChatMessageSortOption.DateAsc:
+                return queryable.OrderBy(m => m.Timestamp);
+            case CopilotChatMessageSortOption.FeedbackPos:
+                return queryable.OrderByDescending(m => m.UserFeedback == UserFeedback.Positive);
+            case CopilotChatMessageSortOption.FeedbackNeg:
+                return queryable.OrderByDescending(m => m.UserFeedback == UserFeedback.Negative);
+        }
     }
 }
