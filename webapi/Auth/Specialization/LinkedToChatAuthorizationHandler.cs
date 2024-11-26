@@ -5,7 +5,7 @@ using CopilotChat.WebApi.Context;
 using CopilotChat.WebApi.Storage;
 using Microsoft.AspNetCore.Authorization;
 
-namespace CopilotChat.WebApi.Auth;
+namespace CopilotChat.WebApi.Auth.Specialization;
 
 /// <summary>
 /// Class implementing "authorization" that validates the user has access to a specialization linked to the chat being targeted.
