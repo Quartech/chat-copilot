@@ -366,6 +366,7 @@ public static class CopilotChatServiceExtensions
         return services
             .AddScoped<IAuthorizationHandler, ChatParticipantAuthorizationHandler>()
             .AddScoped<IAuthorizationHandler, LinkedToChatAuthorizationHandler>()
+            .AddScoped<IAuthorizationHandler, AuthorizationHandler>()
             .AddAuthorizationCore(options =>
             {
                 options.DefaultPolicy = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build();
