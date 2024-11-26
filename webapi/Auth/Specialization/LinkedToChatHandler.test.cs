@@ -11,12 +11,12 @@ using Moq;
 namespace CopilotChat.WebApi.Auth;
 
 [TestClass]
-public class SpecializationAuthorizationHandlerTest
+public class LinkedToChatHandlerTest
 {
     private const string CHAT_ID = "9845c881-0d77-4cf2-8211-85556de26c15";
     private const string SPECIALIZATION_ID = "b10723df-8312-41b6-be80-703f0af2e192";
     private const string GROUP_ID = "e67ecc45-b456-4109-9546-c177800d0186";
-    private SpecializationAuthorizationHandler? handler;
+    private LinkedToChatHandler? handler;
     private AuthorizationHandlerContext? context;
     private ChatSession? chatSession;
     private Mock<IContextValueAccessor>? httpContextAccessor;

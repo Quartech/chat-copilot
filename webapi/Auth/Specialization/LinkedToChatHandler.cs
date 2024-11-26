@@ -8,9 +8,9 @@ using Microsoft.AspNetCore.Authorization;
 namespace CopilotChat.WebApi.Auth;
 
 /// <summary>
-/// Class implementing "authorization" that validates the user has access to a specialization.
+/// Class implementing "authorization" that validates the user has access to a specialization linked to the chat being targeted.
 /// </summary>
-public class SpecializationAuthorizationHandler(
+public class LinkedToChatHandler(
     SpecializationRepository specializationRepository,
     ChatSessionRepository chatSessionRepository,
     IContextValueAccessor contextValueAccessor
