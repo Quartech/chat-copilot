@@ -7,7 +7,7 @@ using System.Net.Http;
 using System.Reflection;
 using CopilotChat.Shared;
 using CopilotChat.WebApi.Auth;
-using CopilotChat.WebApi.Auth.Specialization;
+using CopilotChat.WebApi.Auth.Specializations;
 using CopilotChat.WebApi.Context;
 using CopilotChat.WebApi.Models.Storage;
 using CopilotChat.WebApi.Options;

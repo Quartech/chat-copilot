@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
-namespace CopilotChat.WebApi.Auth.Specialization;
+namespace CopilotChat.WebApi.Auth.Specializations;
 
 [TestClass]
 public class LinkedToChatAuthorizationHandlerTest
@@ -21,7 +21,7 @@ public class LinkedToChatAuthorizationHandlerTest
     private ChatSession? chatSession;
     private Mock<IContextValueAccessor>? httpContextAccessor;
     private Mock<IStorageContext<ChatSession>>? chatSessionContext;
-    private Mock<IStorageContext<Models.Storage.Specialization>>? specializationContext;
+    private Mock<IStorageContext<Specialization>>? specializationContext;
 
     private AuthorizationHandlerContext BuildAuthorizationContext(IEnumerable<Claim> claims)
     {
@@ -36,7 +36,7 @@ public class LinkedToChatAuthorizationHandlerTest
     public void Setup()
     {
         this.chatSession = new ChatSession("title", "description", SPECIALIZATION_ID, CHAT_ID);
-        var specialization = new Models.Storage.Specialization() { GroupMemberships = new[] { GROUP_ID } };
+        var specialization = new Specialization() { GroupMemberships = new[] { GROUP_ID } };
 
         this.specializationContext = new();
         this.specializationContext.Setup(s => s.ReadAsync(SPECIALIZATION_ID, SPECIALIZATION_ID))
@@ -109,7 +109,7 @@ public class LinkedToChatAuthorizationHandlerTest
     public async Task NullSpecialization_Should_NotSucceed()
     {
         this.specializationContext!.Setup(c => c.ReadAsync(SPECIALIZATION_ID, SPECIALIZATION_ID))
-            .Returns(Task.FromResult<Models.Storage.Specialization>(null));
+            .Returns(Task.FromResult<Specialization>(null));
 
         await this.handler!.HandleAsync(this.context!);
 
