@@ -598,10 +598,8 @@ export const useChat = () => {
         }
     };
 
-    const deleteAllChats = async (chatIds: string[]) => {
-        // no need to call backend with chats that are not created on server
-        const chatOnServer = chatIds.filter((chatId) => conversations[chatId].createdOnServer);
-        await chatService.deleteAllChatsAsync(await AuthHelper.getSKaaSAccessToken(instance, inProgress), chatOnServer);
+    const deleteAllChats = async () => {
+        await chatService.deleteAllChatsAsync(await AuthHelper.getSKaaSAccessToken(instance, inProgress));
         dispatch(deleteAllConversations());
     };
 

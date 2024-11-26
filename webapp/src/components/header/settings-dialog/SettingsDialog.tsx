@@ -63,18 +63,13 @@ export const SettingsDialog: React.FC<ISettingsDialogProps> = ({ open, closeSett
     const classes = useClasses();
     const dialogClasses = useDialogClasses();
     const { serviceInfo, settings, tokenUsage } = useAppSelector((state: RootState) => state.app);
-    const { conversations } = useAppSelector((state: RootState) => state.conversations);
     const chat = useChat();
     const [confirmDeleteDialogOpen, setConfirmDeleteDialogOpen] = React.useState(false);
     const [deleting, setDeleting] = React.useState(false);
-    // array of all chat ids that can be used to send to backend to delete
-    const chatIds = React.useMemo(() => {
-        return Object.keys(conversations);
-    }, [conversations]);
 
     const onDeleteAllChats = () => {
         setDeleting(true);
-        void chat.deleteAllChats(chatIds).then(() => {
+        void chat.deleteAllChats().then(() => {
             setDeleting(false);
             setConfirmDeleteDialogOpen(false);
             // create the default chat when all chats are deleted instead of greeting user with blank screen

@@ -74,17 +74,20 @@ public class ChatSession : IStorageEntity
     /// </summary>
     public DateTimeOffset LastUpdatedTimestamp { get; set; }
 
+    public string UserId { get; set; }
+
     /// <summary>
     /// Initializes a new instance of the <see cref="ChatSession"/> class.
     /// </summary>
     /// <param name="title">The title of the chat.</param>
     /// <param name="systemDescription">The system description of the chat.</param>
     /// <param name="specialization">The specialization id associated with the chat.</param>
-    public ChatSession(string title, string systemDescription, string specializationId, string? id = "")
+    public ChatSession(string title, string systemDescription, string specializationId, string userId, string? id = "")
     {
         this.Id = string.IsNullOrEmpty(id) ? Guid.NewGuid().ToString() : id;
         this.Title = title;
         this.CreatedOn = DateTimeOffset.Now;
+        this.UserId = userId;
         this.SystemDescription = systemDescription;
         this.Version = CurrentVersion;
         this.specializationId = specializationId;

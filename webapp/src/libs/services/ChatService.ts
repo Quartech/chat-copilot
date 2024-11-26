@@ -142,13 +142,11 @@ export class ChatService extends BaseService {
         return result;
     };
 
-    public deleteAllChatsAsync = async (accessToken: string, chatIds: string[]): Promise<object> => {
-        const body = { chatIds };
+    public deleteAllChatsAsync = async (accessToken: string): Promise<object> => {
         const result = await this.getResponseAsync<object>(
             {
                 commandPath: `chats`,
                 method: 'DELETE',
-                body,
             },
             accessToken,
         );
