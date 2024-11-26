@@ -22,6 +22,7 @@ using CopilotChat.WebApi.Plugins.Chat;
 using CopilotChat.WebApi.Services;
 using CopilotChat.WebApi.Storage;
 using CopilotChat.WebApi.Utilities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
@@ -96,6 +97,7 @@ public class ChatController : ControllerBase, IDisposable
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status504GatewayTimeout)]
+    [Authorize(Policy = AuthPolicyName.RequireSpecialization)]
     public async Task<IActionResult> ChatAsync(
         [FromServices] Kernel kernel,
         [FromServices] IHubContext<MessageRelayHub> messageRelayHubContext,
