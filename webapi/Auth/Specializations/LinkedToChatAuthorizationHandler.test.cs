@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Security.Claims;
+﻿using System.Security.Claims;
 using System.Threading.Tasks;
 using CopilotChat.WebApi.Context;
 using CopilotChat.WebApi.Models.Storage;
@@ -23,15 +22,6 @@ public class LinkedToChatAuthorizationHandlerTest
     private Mock<IStorageContext<ChatSession>>? chatSessionContext;
     private Mock<IStorageContext<Specialization>>? specializationContext;
 
-    private AuthorizationHandlerContext BuildAuthorizationContext(IEnumerable<Claim> claims)
-    {
-        var requirements = new[] { new SpecializationRequirement() };
-
-        var user = new ClaimsPrincipal(new ClaimsIdentity(claims, "auth"));
-
-        return new(requirements, user, null);
-    }
-
     [TestInitialize]
     public void Setup()
     {
@@ -54,7 +44,7 @@ public class LinkedToChatAuthorizationHandlerTest
             this.httpContextAccessor.Object
         );
 
-        this.context = this.BuildAuthorizationContext(new[] { new Claim("groups", GROUP_ID) });
+        this.context = AuthorizationTestContext.BuildAuthorizationContext(new[] { new Claim("groups", GROUP_ID) });
     }
 
     [TestMethod]
@@ -68,7 +58,7 @@ public class LinkedToChatAuthorizationHandlerTest
     [TestMethod]
     public async Task UserWithoutGroupMembership_Should_NotSucceed()
     {
-        var context = this.BuildAuthorizationContext(new Claim[0]);
+        var context = AuthorizationTestContext.BuildAuthorizationContext(new Claim[0]);
 
         await this.handler!.HandleAsync(context);
 
