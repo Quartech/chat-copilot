@@ -25,14 +25,7 @@ public class ContextBodyAccessorTest
         this.body = new() { Id = this.id };
         var stream = new MemoryStream(Encoding.BigEndianUnicode.GetBytes(JsonSerializer.Serialize(this.body)));
 
-        this.context = new()
-        {
-            Request =
-            {
-                Body = stream,
-                ContentLength = stream.Length
-            }
-        };
+        this.context = new() { Request = { Body = stream, ContentLength = stream.Length } };
 
         this.mockAccessor = new();
         this.mockAccessor.Setup(m => m.HttpContext).Returns(this.context);
@@ -71,7 +64,7 @@ public class ContextBodyAccessorTest
     }
 }
 
-class TestObject
+public sealed class TestObject
 {
     public Guid? Id { get; set; }
 }

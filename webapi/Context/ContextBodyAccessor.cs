@@ -32,7 +32,7 @@ public class ContextBodyAccessor(IHttpContextAccessor contextAccessor) : IContex
             var buffer = new byte[Convert.ToInt32(request.ContentLength)];
             await request.Body.ReadExactlyAsync(buffer, 0, buffer.Length);
 
-            var bodyText = Encoding.UTF8.GetString(buffer).Replace("\0", string.Empty);
+            var bodyText = Encoding.UTF8.GetString(buffer).Replace("\0", string.Empty, StringComparison.CurrentCulture);
 
             return JsonSerializer.Deserialize<T>(bodyText);
         }
