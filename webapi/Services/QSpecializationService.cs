@@ -88,7 +88,8 @@ public class QSpecializationService : IQSpecializationService
                 Description: qSpecializationMutate.Description,
                 RoleInformation: qSpecializationMutate.RoleInformation,
                 InitialChatMessage: qSpecializationMutate.InitialChatMessage,
-                Deployment: qSpecializationMutate.Deployment,
+                OpenAIDeploymentId: qSpecializationMutate.OpenAIDeploymentId,
+                CompletionDeploymentName: qSpecializationMutate.CompletionDeploymentName,
                 IndexId: qSpecializationMutate.IndexId,
                 IsDefault: qSpecializationMutate.IsDefault,
                 RestrictResultScope: qSpecializationMutate.IndexId != null
@@ -170,7 +171,11 @@ public class QSpecializationService : IQSpecializationService
         specializationToUpdate.InitialChatMessage =
             qSpecializationMutate.InitialChatMessage ?? specializationToUpdate.InitialChatMessage;
 
-        specializationToUpdate.Deployment = qSpecializationMutate.Deployment ?? specializationToUpdate.Deployment;
+        specializationToUpdate.OpenAIDeploymentId =
+            qSpecializationMutate.OpenAIDeploymentId ?? specializationToUpdate.OpenAIDeploymentId;
+
+        specializationToUpdate.CompletionDeploymentName =
+            qSpecializationMutate.CompletionDeploymentName ?? specializationToUpdate.CompletionDeploymentName;
 
         if (qSpecializationMutate.IsIndexIdSet)
         {

@@ -1,8 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Net.Http;
+using CopilotChat.WebApi.Models.Storage;
 using CopilotChat.WebApi.Plugins.Chat.Ext;
+using CopilotChat.WebApi.Storage;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -22,14 +25,18 @@ public sealed class SemanticKernelProvider
         IServiceProvider serviceProvider,
         IConfiguration configuration,
         IHttpClientFactory httpClientFactory,
-        QAzureOpenAIChatOptions qAzureOpenAIChatOptions
+        QAzureOpenAIChatOptions qAzureOpenAIChatOptions,
+        IEnumerable<OpenAIDeployment> openAIDeployments,
+        IDictionary<string, string> secretNameKeyMap
     )
     {
         this._kernel = InitializeSemanticKernel(
             serviceProvider,
             configuration,
             httpClientFactory,
-            qAzureOpenAIChatOptions
+            qAzureOpenAIChatOptions,
+            openAIDeployments,
+            secretNameKeyMap
         );
     }
 
@@ -42,7 +49,9 @@ public sealed class SemanticKernelProvider
         IServiceProvider serviceProvider,
         IConfiguration configuration,
         IHttpClientFactory httpClientFactory,
-        QAzureOpenAIChatOptions qAzureOpenAIChatOptions
+        QAzureOpenAIChatOptions qAzureOpenAIChatOptions,
+        IEnumerable<OpenAIDeployment> openAIDeployments,
+        IDictionary<string, string> secretNameKeyMap
     )
     {
         var builder = Kernel.CreateBuilder();
@@ -50,14 +59,11 @@ public sealed class SemanticKernelProvider
         builder.Services.AddLogging();
 
         var memoryOptions = serviceProvider.GetRequiredService<IOptions<KernelMemoryConfig>>().Value;
-
         switch (memoryOptions.TextGeneratorType)
         {
             case string x when x.Equals("AzureOpenAI", StringComparison.OrdinalIgnoreCase):
             case string y when y.Equals("AzureOpenAIText", StringComparison.OrdinalIgnoreCase):
-                foreach (
-                    QAzureOpenAIChatOptions.OpenAIDeploymentConnection connection in qAzureOpenAIChatOptions.OpenAIDeploymentConnections
-                )
+                foreach (var connection in openAIDeployments)
                 {
                     foreach (var deployment in connection.ChatCompletionDeployments)
                     {
@@ -65,18 +71,20 @@ public sealed class SemanticKernelProvider
                         builder.AddAzureOpenAIChatCompletion(
                             deployment.Name,
                             connection.Endpoint?.ToString(),
-                            connection.APIKey,
+                            secretNameKeyMap[connection.SecretName],
                             httpClient: httpClientFactory.CreateClient(),
                             serviceId: $"{deployment.Name} ({connection.Name})"
                         );
                     }
-                    foreach (var deployment in connection.ImageGenerationDeployments)
+                    foreach (
+                        var deployment in new List<OpenAIDeployment>() /*connection.ImageGenerationDeployments*/
+                    )
                     {
 #pragma warning disable SKEXP0010 // Experimental method AddAzureOpenAITextToImage, suppressed instability warning
                         builder.AddAzureOpenAITextToImage(
                             deployment.Name,
                             connection.Endpoint?.ToString(),
-                            connection.APIKey,
+                            secretNameKeyMap[connection.SecretName],
                             httpClient: httpClientFactory.CreateClient(),
                             serviceId: deployment.Name
                         );

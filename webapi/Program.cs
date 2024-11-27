@@ -5,11 +5,14 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Azure.Identity;
+using Azure.Security.KeyVault.Secrets;
 using CopilotChat.Shared;
 using CopilotChat.WebApi.Extensions;
 using CopilotChat.WebApi.Hubs;
 using CopilotChat.WebApi.Plugins.Chat.Ext;
 using CopilotChat.WebApi.Services;
+using CopilotChat.WebApi.Storage;
 using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.ApplicationInsights.Extensibility.Implementation;
 using Microsoft.AspNetCore.Builder;
@@ -57,18 +60,31 @@ public sealed class Program
             builder.Configuration.GetSection(QAzureOpenAIChatOptions.PropertyName).Get<QAzureOpenAIChatOptions>()
             ?? new QAzureOpenAIChatOptions { Enabled = false };
 
-        var defaultConnection = qAzureOpenAIChatOptions.OpenAIDeploymentConnections.FirstOrDefault(conn =>
+        // var defaultConnection = qAzureOpenAIChatOptions.OpenAIDeploymentConnections.FirstOrDefault(conn =>
+        //     conn.Name.Equals(qAzureOpenAIChatOptions.DefaultConnection, StringComparison.OrdinalIgnoreCase)
+        // );
+        var serviceProvider = builder.Services.BuildServiceProvider();
+        var deploymentService = new QOpenAIDeploymentService(
+            serviceProvider.GetRequiredService<OpenAIDeploymentRepository>()
+        );
+        var deploymentConnections = await deploymentService.GetAllDeployments();
+        var defaultConnection = deploymentConnections.FirstOrDefault(conn =>
             conn.Name.Equals(qAzureOpenAIChatOptions.DefaultConnection, StringComparison.OrdinalIgnoreCase)
+        );
+        var secret = new SecretClient(
+            vaultUri: new Uri("https://kvt-copilot-cnc-app-dev.vault.azure.net/"),
+            credential: new DefaultAzureCredential()
         );
         if (defaultConnection == null)
         {
             throw new InvalidOperationException("Default connection not found. Please check the configuration.");
         }
+        var apiKey = await secret.GetSecretAsync(defaultConnection.SecretName);
         var defaultConfig = new DefaultConfiguration(
             qAzureOpenAIChatOptions.DefaultModel,
             qAzureOpenAIChatOptions.DefaultEmbeddingModel,
-            defaultConnection.APIKey,
-            defaultConnection.Endpoint
+            apiKey.Value.ToString(),
+            new Uri(defaultConnection.Endpoint)
         );
         // Configure and add semantic services
         builder.AddBotConfig().AddSemanticKernelServices().AddSemanticMemoryServices(defaultConfig);

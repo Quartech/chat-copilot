@@ -367,7 +367,9 @@ public static class CopilotChatServiceExtensions
         services.AddSingleton<SpecializationIndexRepository>(
             new SpecializationIndexRepository(specializationIndexStorageContext)
         );
-        services.AddSingleton<OpenAIDeploymentRepository>(new OpenAIDeploymentRepository(openAIDeploymentStorageContext));
+        services.AddSingleton<OpenAIDeploymentRepository>(
+            new OpenAIDeploymentRepository(openAIDeploymentStorageContext)
+        );
 
         return services;
     }

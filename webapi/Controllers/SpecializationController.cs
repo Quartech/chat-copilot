@@ -40,6 +40,7 @@ public class SpecializationController : ControllerBase
         IOptions<QAzureOpenAIChatOptions> specializationOptions,
         SpecializationRepository specializationSourceRepository,
         SpecializationIndexRepository indexRepository,
+        OpenAIDeploymentRepository openAIDeploymentRepository,
         IOptions<PromptsOptions> promptsOptions
     )
     {
@@ -48,7 +49,8 @@ public class SpecializationController : ControllerBase
         this._qAzureOpenAIChatExtension = new QAzureOpenAIChatExtension(
             specializationOptions.Value,
             specializationSourceRepository,
-            indexRepository
+            indexRepository,
+            openAIDeploymentRepository
         );
         this._qspecializationService = new QSpecializationService(
             specializationSourceRepository,
@@ -99,16 +101,16 @@ public class SpecializationController : ControllerBase
     /// Get all chat completion deployments.
     /// </summary>
     /// <returns>A list of chat completion deployments.</returns>
-    [HttpGet]
-    [Route("specialization/deployments")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public List<string> GetAllChatCompletionDeployments()
-    {
-        return this._qAzureOpenAIChatExtension.GetAllChatCompletionDeployments().Select(deploy => deploy.Name).ToList();
-    }
+    // [HttpGet]
+    // [Route("specialization/deployments")]
+    // [ProducesResponseType(StatusCodes.Status200OK)]
+    // [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    // [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    // [ProducesResponseType(StatusCodes.Status404NotFound)]
+    // public List<string> GetAllChatCompletionDeployments()
+    // {
+    //     return this._qAzureOpenAIChatExtension.GetAllChatCompletionDeployments().Select(deploy => deploy.Name).ToList();
+    // }
 
     /// <summary>
     /// Creates a new specialization.

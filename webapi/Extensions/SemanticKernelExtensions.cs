@@ -1,11 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Reflection;
 using System.Threading.Tasks;
+using Azure.Identity;
+using Azure.Security.KeyVault.Secrets;
 using CopilotChat.WebApi.Hubs;
 using CopilotChat.WebApi.Models.Response;
 using CopilotChat.WebApi.Options;
@@ -115,7 +118,8 @@ internal static class SemanticKernelExtensions
                 documentImportOptions: sp.GetRequiredService<IOptions<DocumentMemoryOptions>>(),
                 qAzureOpenAIChatOptions: sp.GetRequiredService<IOptions<QAzureOpenAIChatOptions>>(),
                 contentSafety: sp.GetService<AzureContentSafety>(),
-                logger: sp.GetRequiredService<ILogger<ChatPlugin>>()
+                logger: sp.GetRequiredService<ILogger<ChatPlugin>>(),
+                openAIDeploymentRepository: sp.GetRequiredService<OpenAIDeploymentRepository>()
             ),
             nameof(ChatPlugin)
         );
@@ -125,12 +129,35 @@ internal static class SemanticKernelExtensions
 
     private static void InitializeKernelProvider(this WebApplicationBuilder builder)
     {
-        builder.Services.AddSingleton(sp => new SemanticKernelProvider(
-            sp,
-            builder.Configuration,
-            sp.GetRequiredService<IHttpClientFactory>(),
-            builder.Configuration.GetSection(QAzureOpenAIChatOptions.PropertyName).Get<QAzureOpenAIChatOptions>()
-        ));
+        builder.Services.AddSingleton(sp =>
+        {
+            var openAiRepo = sp.GetRequiredService<OpenAIDeploymentRepository>();
+            var openAiService = new QOpenAIDeploymentService(openAiRepo);
+            var openAiDeploymentsTask = openAiService.GetAllDeployments();
+            openAiDeploymentsTask.Wait();
+            var openAiDeployments = openAiDeploymentsTask.Result;
+            var keyMap = new Dictionary<string, string>();
+            var secretClient = new SecretClient(
+                vaultUri: new Uri("https://kvt-copilot-cnc-app-dev.vault.azure.net/"),
+                credential: new DefaultAzureCredential()
+            );
+
+            async Task InsertAPIKeyIntoDict(string secretName)
+            {
+                var secretValue = await secretClient.GetSecretAsync(secretName);
+                keyMap.Add(secretName, secretValue.Value.ToString() ?? "");
+            }
+            var tasks = openAiDeployments.Select(a => InsertAPIKeyIntoDict(a.SecretName));
+            Task.WaitAll(tasks.ToArray());
+            return new SemanticKernelProvider(
+                sp,
+                builder.Configuration,
+                sp.GetRequiredService<IHttpClientFactory>(),
+                builder.Configuration.GetSection(QAzureOpenAIChatOptions.PropertyName).Get<QAzureOpenAIChatOptions>(),
+                openAiDeployments,
+                keyMap
+            );
+        });
     }
 
     /// <summary>

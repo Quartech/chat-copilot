@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Azure.Identity;
+using Azure.Security.KeyVault.Secrets;
 using CopilotChat.WebApi.Models.Request;
 using CopilotChat.WebApi.Models.Storage;
 using CopilotChat.WebApi.Storage;
@@ -12,10 +14,18 @@ namespace CopilotChat.WebApi.Services;
 public class QOpenAIDeploymentService : IQOpenAIDeploymentService
 {
     private OpenAIDeploymentRepository _openAIDeploymentRepository;
+    private SecretClient _secretClient;
+
     public QOpenAIDeploymentService(OpenAIDeploymentRepository deploymentRepository)
     {
         this._openAIDeploymentRepository = deploymentRepository;
+        //TODO: Don't leave the vault uri hardcoded.
+        this._secretClient = new SecretClient(
+            vaultUri: new Uri("https://kvt-copilot-cnc-app-dev.vault.azure.net/"),
+            credential: new DefaultAzureCredential()
+        );
     }
+
     public async Task<OpenAIDeployment?> DeleteDeployment(Guid indexId)
     {
         var deploymentToDelete = await this._openAIDeploymentRepository.FindByIdAsync(indexId.ToString());
@@ -37,9 +47,37 @@ public class QOpenAIDeploymentService : IQOpenAIDeploymentService
         return this._openAIDeploymentRepository.FindByIdAsync(id);
     }
 
+    public async Task<string> GetAPIKeyFromVaultForDeployment(OpenAIDeployment deployment)
+    {
+        var secretName = deployment.SecretName;
+        var secretValue = await this._secretClient.GetSecretAsync(secretName);
+        return secretValue.Value.ToString() ?? "";
+    }
+
+    public async Task<IEnumerable<ChatCompletionDeployment>> GetAllChatCompletionDeployments()
+    {
+        var deployments = await this._openAIDeploymentRepository.GetAllDeploymentsAsync();
+        var chatCompletionDeployments = new List<ChatCompletionDeployment>();
+        foreach (OpenAIDeployment connection in deployments)
+        {
+            foreach (var deployment in connection.ChatCompletionDeployments)
+            {
+                var deploymentWithConnection = new ChatCompletionDeployment
+                {
+                    Name = $"{deployment.Name} ({connection.Name})",
+                    CompletionTokenLimit = deployment.CompletionTokenLimit,
+                };
+                chatCompletionDeployments.Add(deploymentWithConnection);
+            }
+        }
+        return chatCompletionDeployments;
+    }
+
     public async Task<OpenAIDeployment> SaveDeployment(QOpenAIDeploymentCreate deployment)
     {
-        var deserializeCompletions = JsonConvert.DeserializeObject<List<ChatCompletionDeployment>>(deployment.ChatCompletionDeployments);
+        var deserializeCompletions = JsonConvert.DeserializeObject<List<ChatCompletionDeployment>>(
+            deployment.ChatCompletionDeployments
+        );
         var deserializeEmbeddings = JsonConvert.DeserializeObject<List<string>>(deployment.EmbeddingDeployments);
 
         var deploymentInsert = new OpenAIDeployment(
@@ -56,14 +94,17 @@ public class QOpenAIDeploymentService : IQOpenAIDeploymentService
 
     public async Task<OpenAIDeployment?> UpdateDeployment(Guid indexId, QOpenAIDeploymentMutate qDeploymentMutate)
     {
-        var deserializeCompletions = JsonConvert.DeserializeObject<List<ChatCompletionDeployment>>(qDeploymentMutate.ChatCompletionDeployments);
+        var deserializeCompletions = JsonConvert.DeserializeObject<List<ChatCompletionDeployment>>(
+            qDeploymentMutate.ChatCompletionDeployments
+        );
         var deserializeEmbeddings = JsonConvert.DeserializeObject<List<string>>(qDeploymentMutate.EmbeddingDeployments);
         var deploymentToEdit = await this._openAIDeploymentRepository.FindByIdAsync(indexId.ToString());
 
         deploymentToEdit.Name = qDeploymentMutate.Name ?? deploymentToEdit.Name;
         deploymentToEdit.SecretName = qDeploymentMutate.SecretName ?? deploymentToEdit.SecretName;
         deploymentToEdit.Endpoint = qDeploymentMutate.Endpoint ?? deploymentToEdit.Endpoint;
-        deploymentToEdit.ChatCompletionDeployments = deserializeCompletions ?? deploymentToEdit.ChatCompletionDeployments;
+        deploymentToEdit.ChatCompletionDeployments =
+            deserializeCompletions ?? deploymentToEdit.ChatCompletionDeployments;
         deploymentToEdit.EmbeddingDeployments = deserializeEmbeddings ?? deploymentToEdit.EmbeddingDeployments;
 
         await this._openAIDeploymentRepository.UpsertAsync(deploymentToEdit);

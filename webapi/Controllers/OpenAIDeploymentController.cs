@@ -18,9 +18,9 @@ public class OpenAIDeploymentController : ControllerBase
     private readonly QOpenAIDeploymentService _qOpenAIDeploymentService;
 
     public OpenAIDeploymentController(
-       ILogger<OpenAIDeploymentController> logger,
-       OpenAIDeploymentRepository openAIDeploymentRepository
-   )
+        ILogger<OpenAIDeploymentController> logger,
+        OpenAIDeploymentRepository openAIDeploymentRepository
+    )
     {
         this._logger = logger;
         this._openAIDeploymentRepository = openAIDeploymentRepository;
@@ -74,7 +74,10 @@ public class OpenAIDeploymentController : ControllerBase
     {
         try
         {
-            var deploymentToEdit = await this._qOpenAIDeploymentService.UpdateDeployment(deploymentId, qDeploymentMutate);
+            var deploymentToEdit = await this._qOpenAIDeploymentService.UpdateDeployment(
+                deploymentId,
+                qDeploymentMutate
+            );
             if (deploymentToEdit != null)
             {
                 return this.Ok(deploymentToEdit);

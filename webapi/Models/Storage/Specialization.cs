@@ -53,9 +53,14 @@ public class Specialization : IStorageEntity
     public string? IndexId { get; set; }
 
     /// <summary>
-    /// Deployment
+    /// Open AI Deployment, which may host several chat completions.
     /// </summary>
-    public string? Deployment { get; set; }
+    public string? OpenAIDeploymentId { get; set; }
+
+    /// <summary>
+    /// Completion deployment name.
+    /// </summary>
+    public string? CompletionDeploymentName { get; set; }
 
     /// <summary>
     /// Image URL for pictorial description of specialization.
@@ -146,7 +151,8 @@ public class Specialization : IStorageEntity
         string Description,
         string RoleInformation,
         string InitialChatMessage,
-        string? Deployment,
+        string? OpenAIDeploymentId,
+        string? CompletionDeploymentName,
         string? IndexId,
         bool? IsDefault,
         bool? RestrictResultScope,
@@ -166,7 +172,7 @@ public class Specialization : IStorageEntity
         this.Name = Name;
         this.Description = Description;
         this.RoleInformation = RoleInformation;
-        this.Deployment = Deployment;
+        this.OpenAIDeploymentId = OpenAIDeploymentId;
         this.IndexId = IndexId;
         this.IsDefault = IsDefault;
         this.RestrictResultScope = RestrictResultScope;
@@ -182,5 +188,6 @@ public class Specialization : IStorageEntity
         this.InitialChatMessage = InitialChatMessage;
         this.Order = Order;
         this.CanGenImages = CanGenImages;
+        this.CompletionDeploymentName = CompletionDeploymentName;
     }
 }

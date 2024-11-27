@@ -6,9 +6,8 @@ namespace CopilotChat.WebApi.Storage;
 
 public class OpenAIDeploymentRepository : Repository<OpenAIDeployment>
 {
-    public OpenAIDeploymentRepository(IStorageContext<OpenAIDeployment> storageContext) : base(storageContext)
-    {
-    }
+    public OpenAIDeploymentRepository(IStorageContext<OpenAIDeployment> storageContext)
+        : base(storageContext) { }
 
     public Task<IEnumerable<OpenAIDeployment>> GetAllDeploymentsAsync()
     {

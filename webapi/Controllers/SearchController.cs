@@ -26,6 +26,7 @@ public class SearchController : ControllerBase
         ILogger<SearchController> logger,
         SpecializationRepository specializationSourceRepository,
         SpecializationIndexRepository specializationIndexRepository,
+        OpenAIDeploymentRepository openAIDeploymentRepository,
         IOptions<QAzureOpenAIChatOptions> specializationOptions
     )
     {
@@ -33,7 +34,8 @@ public class SearchController : ControllerBase
         this._qSearchService = new QSearchService(
             specializationOptions.Value,
             specializationSourceRepository,
-            specializationIndexRepository
+            specializationIndexRepository,
+            openAIDeploymentRepository
         );
     }
 
