@@ -25,6 +25,8 @@ public class OpenAIDeployment : IStorageEntity
 
     public IList<ChatCompletionDeployment> ChatCompletionDeployments { get; set; }
 
+    public IList<string> ImageGenerationDeployments { get; set; }
+
     public IList<string> EmbeddingDeployments { get; set; }
 
     public int Order { get; set; }
@@ -34,6 +36,7 @@ public class OpenAIDeployment : IStorageEntity
         string Endpoint,
         string SecretName,
         IList<ChatCompletionDeployment> ChatCompletionDeployments,
+        IList<string> ImageGenerationDeployments,
         IList<string> EmbeddingDeployments
     )
     {
@@ -43,5 +46,6 @@ public class OpenAIDeployment : IStorageEntity
         this.Endpoint = Endpoint;
         this.ChatCompletionDeployments = ChatCompletionDeployments;
         this.EmbeddingDeployments = EmbeddingDeployments;
+        this.ImageGenerationDeployments = ImageGenerationDeployments;
     }
 }

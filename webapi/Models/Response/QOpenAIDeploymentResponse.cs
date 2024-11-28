@@ -21,6 +21,8 @@ public class QOpenAIDeploymentResponse
 
     [JsonPropertyName("embeddingDeployments")]
     public IList<string> EmbeddingDeployments { get; set; } = new List<string>();
+    [JsonPropertyName("imageGenerationDeployments")]
+    public IList<string> ImageGenerationDeployments { get; set; } = new List<string>();
 
     [JsonPropertyName("order")]
     public int Order { get; set; } = 0;
@@ -33,5 +35,6 @@ public class QOpenAIDeploymentResponse
         this.ChatCompletionDeployments = deployment.ChatCompletionDeployments;
         this.EmbeddingDeployments = deployment.EmbeddingDeployments;
         this.Order = deployment.Order;
+        this.ImageGenerationDeployments = deployment.ImageGenerationDeployments;
     }
 }

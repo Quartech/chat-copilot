@@ -18,6 +18,9 @@ public class QOpenAIDeploymentBase
     [JsonPropertyName("chatCompletionDeployments")]
     public IList<ChatCompletionDeployment>? ChatCompletionDeployments { get; set; }
 
+    [JsonPropertyName("imageGenerationDeployments")]
+    public IList<string>? ImageGenerationDeployments { get; set; }
+
     [JsonPropertyName("embeddingDeployments")]
     public IList<string>? EmbeddingDeployments { get; set; }
 

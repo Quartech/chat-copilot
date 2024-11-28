@@ -77,16 +77,16 @@ public sealed class SemanticKernelProvider
                         );
                     }
                     foreach (
-                        var deployment in new List<OpenAIDeployment>() /*connection.ImageGenerationDeployments*/
+                        var deployment in openAIDeployment.ImageGenerationDeployments
                     )
                     {
 #pragma warning disable SKEXP0010 // Experimental method AddAzureOpenAITextToImage, suppressed instability warning
                         builder.AddAzureOpenAITextToImage(
-                            deployment.Name,
+                            deployment,
                             openAIDeployment.Endpoint?.ToString(),
                             secretNameKeyMap[openAIDeployment.SecretName],
                             httpClient: httpClientFactory.CreateClient(),
-                            serviceId: deployment.Name
+                            serviceId: deployment
                         );
                     }
                 }

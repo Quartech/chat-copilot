@@ -16,6 +16,9 @@ public class QOpenAIDeploymentCreate : QOpenAIDeploymentBase
     [JsonPropertyName("embeddingDeployments")]
     public new required string EmbeddingDeployments { get; set; }
 
+    [JsonPropertyName("imageGenerationDeployments")]
+    public new required string ImageGenerationDeployments { get; set; }
+
     [JsonPropertyName("secretName")]
     public new required string SecretName { get; set; }
 }
