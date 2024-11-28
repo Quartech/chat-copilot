@@ -145,7 +145,7 @@ internal static class SemanticKernelExtensions
             async Task InsertAPIKeyIntoDict(string secretName)
             {
                 var secretValue = await secretClient.GetSecretAsync(secretName);
-                keyMap.Add(secretName, secretValue.Value.ToString() ?? "");
+                keyMap.Add(secretName, secretValue.Value.Value ?? "");
             }
             var tasks = openAiDeployments.Select(a => InsertAPIKeyIntoDict(a.SecretName));
             Task.WaitAll(tasks.ToArray());

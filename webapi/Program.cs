@@ -60,9 +60,6 @@ public sealed class Program
             builder.Configuration.GetSection(QAzureOpenAIChatOptions.PropertyName).Get<QAzureOpenAIChatOptions>()
             ?? new QAzureOpenAIChatOptions { Enabled = false };
 
-        // var defaultConnection = qAzureOpenAIChatOptions.OpenAIDeploymentConnections.FirstOrDefault(conn =>
-        //     conn.Name.Equals(qAzureOpenAIChatOptions.DefaultConnection, StringComparison.OrdinalIgnoreCase)
-        // );
         var serviceProvider = builder.Services.BuildServiceProvider();
         var deploymentService = new QOpenAIDeploymentService(
             serviceProvider.GetRequiredService<OpenAIDeploymentRepository>()
@@ -83,7 +80,7 @@ public sealed class Program
         var defaultConfig = new DefaultConfiguration(
             qAzureOpenAIChatOptions.DefaultModel,
             qAzureOpenAIChatOptions.DefaultEmbeddingModel,
-            apiKey.Value.ToString(),
+            apiKey.Value.Value,
             new Uri(defaultConnection.Endpoint)
         );
         // Configure and add semantic services

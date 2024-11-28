@@ -74,7 +74,7 @@ public class QSpecializationBase
     /// <summary>
     /// Deployment of the specialization
     /// </summary>
-    [JsonPropertyName("deployment")]
+    [JsonPropertyName("openAIDeploymentId")]
     public string? OpenAIDeploymentId { get; set; }
 
     /// <summary>

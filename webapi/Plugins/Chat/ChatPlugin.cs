@@ -952,10 +952,9 @@ public class ChatPlugin
     {
         // Create the stream
         var provider = this._kernel.GetRequiredService<IServiceProvider>();
-        var openAiDeploymentService = new QOpenAIDeploymentService(provider.GetRequiredService<OpenAIDeploymentRepository>());
-        var deployment = await openAiDeploymentService.GetDeployment(this._qSpecialization.OpenAIDeploymentId);
+        var deployment = await this._qOpenAIDeploymentService.GetDeployment(this._qSpecialization.OpenAIDeploymentId);
         var chatCompletion = provider.GetKeyedService<IChatCompletionService>(
-            $"{deployment.Name} ({this._qSpecialization.CompletionDeploymentName})"
+            $"{this._qSpecialization.CompletionDeploymentName} ({deployment.Name})"
         );
 
 #pragma warning disable SKEXP0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.

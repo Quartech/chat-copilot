@@ -51,7 +51,7 @@ public class QOpenAIDeploymentService : IQOpenAIDeploymentService
     {
         var secretName = deployment.SecretName;
         var secretValue = await this._secretClient.GetSecretAsync(secretName);
-        return secretValue.Value.ToString() ?? "";
+        return secretValue.Value.Value ?? "";
     }
 
     public async Task<IEnumerable<ChatCompletionDeployment>> GetAllChatCompletionDeployments()

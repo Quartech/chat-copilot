@@ -17,7 +17,7 @@ import {
     Tooltip,
 } from '@fluentui/react-components';
 import { Info20Regular } from '@fluentui/react-icons';
-import React, { useEffect, useId, useState } from 'react';
+import React, { useEffect, useId, useMemo, useState } from 'react';
 import { useSpecialization } from '../../../libs/hooks';
 import { AlertType } from '../../../libs/models/AlertType';
 import { useAppDispatch, useAppSelector } from '../../../redux/app/hooks';
@@ -110,6 +110,26 @@ export const SpecializationManager: React.FC = () => {
         (state: RootState) => state.admin,
     );
 
+    interface FormattedOpenAIDeployment {
+        id: string;
+        deploymentName: string;
+        completionName: string;
+    }
+
+    const completionDeploymentsFormatted = useMemo(() => {
+        const formatted: FormattedOpenAIDeployment[] = [];
+        chatCompletionDeployments.forEach((dep) =>
+            formatted.push(
+                ...dep.chatCompletionDeployments.map((comp) => ({
+                    id: dep.id,
+                    deploymentName: dep.name,
+                    completionName: comp.name,
+                })),
+            ),
+        );
+        return formatted;
+    }, [chatCompletionDeployments]);
+
     const [editMode, setEditMode] = useState(false);
     const defaultSpecializationId = specializations.find((spec) => spec.isDefault)?.id;
     const [id, setId] = useState('');
@@ -119,7 +139,8 @@ export const SpecializationManager: React.FC = () => {
     const [roleInformation, setRoleInformation] = useState('');
     const [initialChatMessage, setInitialChatMessage] = useState('');
     const [indexId, setIndexId] = useState('');
-    const [deployment, setDeployment] = useState('');
+    const [deploymentId, setDeploymentId] = useState('');
+    const [completionDeploymentName, setCompletionDeploymentName] = useState('');
     const [membershipId, setMembershipId] = useState<string[]>([]);
     const [imageFile, setImageFile] = useState<ISpecializationFile>({ file: null, src: null });
     const [iconFile, setIconFile] = useState<ISpecializationFile>({ file: null, src: null });
@@ -158,7 +179,8 @@ export const SpecializationManager: React.FC = () => {
                 iconFile: iconFile.file,
                 deleteImage: !imageFile.src, // Set the delete flag if the src is null
                 deleteIcon: !iconFile.src, // Set the delete flag if the src is null,
-                deployment,
+                openAIDeploymentId: deploymentId,
+                completionDeploymentName,
                 groupMemberships: membershipId,
                 initialChatMessage,
                 isDefault,
@@ -179,7 +201,8 @@ export const SpecializationManager: React.FC = () => {
                 indexId,
                 imageFile: imageFile.file,
                 iconFile: iconFile.file,
-                deployment,
+                openAIDeploymentId: deploymentId,
+                completionDeploymentName,
                 groupMemberships: membershipId,
                 initialChatMessage,
                 isDefault,
@@ -204,7 +227,8 @@ export const SpecializationManager: React.FC = () => {
         setImageFile({ file: null, src: null });
         setIconFile({ file: null, src: null });
         setIndexId('');
-        setDeployment('');
+        setDeploymentId('');
+        setCompletionDeploymentName('');
         setInitialChatMessage('');
         setIsDefault(false);
         setRestrictResultScope(false);
@@ -225,7 +249,8 @@ export const SpecializationManager: React.FC = () => {
                 setDescription(specializationObj.description);
                 setRoleInformation(specializationObj.roleInformation);
                 setMembershipId(specializationObj.groupMemberships);
-                setDeployment(specializationObj.deployment);
+                setDeploymentId(specializationObj.openAIDeploymentId);
+                setCompletionDeploymentName(specializationObj.completionDeploymentName);
                 setInitialChatMessage(specializationObj.initialChatMessage);
                 setIndexId(specializationObj.indexId);
                 setIsDefault(specializationObj.isDefault);
@@ -257,7 +282,7 @@ export const SpecializationManager: React.FC = () => {
             !!description &&
             !!initialChatMessage &&
             membershipId.length > 0 &&
-            !!deployment;
+            !!deploymentId;
         setIsValid(isValid);
         return () => {};
     }, [
@@ -269,7 +294,7 @@ export const SpecializationManager: React.FC = () => {
         membershipId,
         description,
         initialChatMessage,
-        deployment,
+        deploymentId,
     ]);
 
     const onDeleteSpecialization = () => {
@@ -451,13 +476,15 @@ export const SpecializationManager: React.FC = () => {
                     id="deployment"
                     aria-labelledby={dropdownId}
                     onOptionSelect={(_control, data) => {
-                        setDeployment(data.optionValue ?? '');
+                        const obj = JSON.parse(data.optionValue ?? '{}') as unknown as FormattedOpenAIDeployment;
+                        setDeploymentId(obj.id);
+                        setCompletionDeploymentName(obj.deploymentName);
                     }}
-                    value={deployment}
+                    value={`${completionDeploymentName} (${chatCompletionDeployments.find((a) => a.id === deploymentId)?.name})`}
                 >
-                    {chatCompletionDeployments.map((deployment) => (
-                        <Option key={deployment} value={deployment}>
-                            {deployment}
+                    {completionDeploymentsFormatted.map((deployment) => (
+                        <Option key={deployment.id} value={JSON.stringify(deployment)}>
+                            {`${deployment.completionName} (${deployment.deploymentName})`}
                         </Option>
                     ))}
                 </Dropdown>

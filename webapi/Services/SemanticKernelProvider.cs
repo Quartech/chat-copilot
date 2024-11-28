@@ -63,17 +63,17 @@ public sealed class SemanticKernelProvider
         {
             case string x when x.Equals("AzureOpenAI", StringComparison.OrdinalIgnoreCase):
             case string y when y.Equals("AzureOpenAIText", StringComparison.OrdinalIgnoreCase):
-                foreach (var connection in openAIDeployments)
+                foreach (var openAIDeployment in openAIDeployments)
                 {
-                    foreach (var deployment in connection.ChatCompletionDeployments)
+                    foreach (var deployment in openAIDeployment.ChatCompletionDeployments)
                     {
 #pragma warning disable CA2000 // No need to dispose of HttpClient instances from IHttpClientFactory
                         builder.AddAzureOpenAIChatCompletion(
                             deployment.Name,
-                            connection.Endpoint?.ToString(),
-                            secretNameKeyMap[connection.SecretName],
+                            openAIDeployment.Endpoint?.ToString(),
+                            secretNameKeyMap[openAIDeployment.SecretName],
                             httpClient: httpClientFactory.CreateClient(),
-                            serviceId: $"{deployment.Name} ({connection.Name})"
+                            serviceId: $"{deployment.Name} ({openAIDeployment.Name})"
                         );
                     }
                     foreach (
@@ -83,8 +83,8 @@ public sealed class SemanticKernelProvider
 #pragma warning disable SKEXP0010 // Experimental method AddAzureOpenAITextToImage, suppressed instability warning
                         builder.AddAzureOpenAITextToImage(
                             deployment.Name,
-                            connection.Endpoint?.ToString(),
-                            secretNameKeyMap[connection.SecretName],
+                            openAIDeployment.Endpoint?.ToString(),
+                            secretNameKeyMap[openAIDeployment.SecretName],
                             httpClient: httpClientFactory.CreateClient(),
                             serviceId: deployment.Name
                         );

@@ -1,3 +1,4 @@
+import { IOpenAIDeployment } from '../models/OpenAIDeployment';
 import { ISpecialization, ISpecializationRequest, ISpecializationToggleRequest } from '../models/Specialization';
 import { BaseService } from './BaseService';
 
@@ -24,10 +25,10 @@ export class SpecializationService extends BaseService {
         return result;
     };
 
-    public getAllChatCompletionDeploymentsAsync = async (accessToken: string): Promise<string[]> => {
-        const result = await this.getResponseAsync<string[]>(
+    public getAllChatCompletionDeploymentsAsync = async (accessToken: string): Promise<IOpenAIDeployment[]> => {
+        const result = await this.getResponseAsync<IOpenAIDeployment[]>(
             {
-                commandPath: 'specialization/deployments',
+                commandPath: 'openAIDeployments',
                 method: 'GET',
             },
             accessToken,
@@ -56,7 +57,8 @@ export class SpecializationService extends BaseService {
         formData.append('name', body.name);
         formData.append('description', body.description);
         formData.append('roleInformation', body.roleInformation);
-        formData.append('deployment', body.deployment);
+        formData.append('openAIDeploymentId', body.openAIDeploymentId);
+        formData.append('completionDeploymentName', body.completionDeploymentName);
         formData.append('initialChatMessage', body.initialChatMessage);
         formData.append('indexId', body.indexId);
         formData.append('groupMemberships', body.groupMemberships.join(','));
@@ -119,7 +121,8 @@ export class SpecializationService extends BaseService {
         formData.append('name', body.name);
         formData.append('description', body.description);
         formData.append('roleInformation', body.roleInformation);
-        formData.append('deployment', body.deployment);
+        formData.append('openAIDeploymentId', body.openAIDeploymentId);
+        formData.append('completionDeploymentName', body.completionDeploymentName);
         formData.append('initialChatMessage', body.initialChatMessage);
         formData.append('indexId', body.indexId);
         formData.append('groupMemberships', body.groupMemberships.join(','));
