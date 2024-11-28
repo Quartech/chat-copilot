@@ -53,3 +53,9 @@ export interface ISpecializationRequest {
 export interface ISpecializationToggleRequest {
     isActive: boolean;
 }
+
+export interface IChatCompletionDeployment {
+    name: string;
+    completionTokenLimit: number;
+    outputTokens: number;
+}

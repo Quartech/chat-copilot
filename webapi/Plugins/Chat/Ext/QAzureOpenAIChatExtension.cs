@@ -167,6 +167,7 @@ public class QAzureOpenAIChatExtension
                 {
                     Name = $"{deployment.Name} ({connection.Name})",
                     CompletionTokenLimit = deployment.CompletionTokenLimit,
+                    OutputTokens = deployment.OutputTokens,
                 };
                 chatCompletionDeployments.Add(deploymentWithConnection);
             }

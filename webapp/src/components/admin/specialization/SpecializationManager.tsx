@@ -121,6 +121,7 @@ export const SpecializationManager: React.FC = () => {
     const [initialChatMessage, setInitialChatMessage] = useState('');
     const [indexId, setIndexId] = useState('');
     const [deployment, setDeployment] = useState('');
+    const [deploymentOutputTokens, setDeploymentOutputTokens] = useState(0);
     const [membershipId, setMembershipId] = useState<string[]>([]);
     const [imageFile, setImageFile] = useState<ISpecializationFile>({ file: null, src: null });
     const [iconFile, setIconFile] = useState<ISpecializationFile>({ file: null, src: null });
@@ -209,6 +210,7 @@ export const SpecializationManager: React.FC = () => {
         setIconFile({ file: null, src: null });
         setIndexId('');
         setDeployment('');
+        setDeploymentOutputTokens(4096);
         setInitialChatMessage('');
         setIsDefault(false);
         setRestrictResultScope(false);
@@ -231,6 +233,10 @@ export const SpecializationManager: React.FC = () => {
                 setRoleInformation(specializationObj.roleInformation);
                 setMembershipId(specializationObj.groupMemberships);
                 setDeployment(specializationObj.deployment);
+                setDeploymentOutputTokens(
+                    chatCompletionDeployments.find((d) => d.name === specializationObj.deployment)?.outputTokens ??
+                        4096,
+                );
                 setInitialChatMessage(specializationObj.initialChatMessage);
                 setIndexId(specializationObj.indexId);
                 setIsDefault(specializationObj.isDefault);
@@ -253,7 +259,7 @@ export const SpecializationManager: React.FC = () => {
             setEditMode(false);
             resetSpecialization();
         }
-    }, [editMode, selectedId, specializations]);
+    }, [editMode, selectedId, specializations, chatCompletionDeployments]);
 
     useEffect(() => {
         const isValid =
@@ -423,6 +429,19 @@ export const SpecializationManager: React.FC = () => {
         setMaxResponseTokenLimit(intValue);
     };
 
+    /**
+     * Callback function for handling changes to the "Deployment" dropdown.
+     */
+    const onDeploymentChange = (_event: SelectionEvents, data: OptionOnSelectData) => {
+        const value = data.optionValue;
+        const outputTokens = chatCompletionDeployments.find((d) => d.name === value)?.outputTokens;
+        setDeploymentOutputTokens(outputTokens ?? 4096);
+        setDeployment(value ?? '');
+        if (maxResponseTokenLimit && outputTokens && maxResponseTokenLimit > outputTokens) {
+            setMaxResponseTokenLimit(outputTokens);
+        }
+    };
+
     return (
         <div className={classes.scrollableContainer}>
             <div className={classes.root}>
@@ -456,14 +475,12 @@ export const SpecializationManager: React.FC = () => {
                     clearable
                     id="deployment"
                     aria-labelledby={dropdownId}
-                    onOptionSelect={(_control, data) => {
-                        setDeployment(data.optionValue ?? '');
-                    }}
+                    onOptionSelect={onDeploymentChange}
                     value={deployment}
                 >
                     {chatCompletionDeployments.map((deployment) => (
-                        <Option key={deployment} value={deployment}>
-                            {deployment}
+                        <Option key={deployment.name} value={deployment.name}>
+                            {deployment.name}
                         </Option>
                     ))}
                 </Dropdown>
@@ -599,11 +616,11 @@ export const SpecializationManager: React.FC = () => {
                                     <Button icon={<Info20Regular />} appearance="transparent" />
                                 </Tooltip>
                             </div>
-                            <label htmlFor="maxResponse">Max Response (1-4096)</label>
+                            <label htmlFor="maxResponse">Max Response (1-{deploymentOutputTokens})</label>
                             <div id="maxResponse" className={classes.slider}>
                                 <Slider
                                     min={1}
-                                    max={4096}
+                                    max={deploymentOutputTokens}
                                     value={maxResponseTokenLimit ?? 1024}
                                     onChange={onChangeMaxResponseTokenLimit}
                                 />
@@ -612,7 +629,7 @@ export const SpecializationManager: React.FC = () => {
                                     onChange={onInputChangeMaxResponseTokenLimit}
                                     type="number"
                                     min={1}
-                                    max={4096}
+                                    max={deploymentOutputTokens}
                                     className={classes.input}
                                 ></Input>
                                 <Tooltip

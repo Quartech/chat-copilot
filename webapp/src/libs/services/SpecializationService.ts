@@ -1,4 +1,9 @@
-import { ISpecialization, ISpecializationRequest, ISpecializationToggleRequest } from '../models/Specialization';
+import {
+    IChatCompletionDeployment,
+    ISpecialization,
+    ISpecializationRequest,
+    ISpecializationToggleRequest,
+} from '../models/Specialization';
 import { BaseService } from './BaseService';
 
 export class SpecializationService extends BaseService {
@@ -24,8 +29,8 @@ export class SpecializationService extends BaseService {
         return result;
     };
 
-    public getAllChatCompletionDeploymentsAsync = async (accessToken: string): Promise<string[]> => {
-        const result = await this.getResponseAsync<string[]>(
+    public getAllChatCompletionDeploymentsAsync = async (accessToken: string): Promise<IChatCompletionDeployment[]> => {
+        const result = await this.getResponseAsync<IChatCompletionDeployment[]>(
             {
                 commandPath: 'specialization/deployments',
                 method: 'GET',

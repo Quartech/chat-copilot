@@ -1,4 +1,4 @@
-import { ISpecialization } from '../../../libs/models/Specialization';
+import { IChatCompletionDeployment, ISpecialization } from '../../../libs/models/Specialization';
 import { ISpecializationIndex } from '../../../libs/models/SpecializationIndex';
 
 export type Specializations = Record<string, AdminState>;
@@ -10,7 +10,7 @@ export interface AdminState {
     chatSpecialization: ISpecialization | undefined;
     specializations: ISpecialization[];
     specializationIndexes: ISpecializationIndex[];
-    chatCompletionDeployments: string[];
+    chatCompletionDeployments: IChatCompletionDeployment[];
     selectedId: string;
     selectedIndexId: string;
 }
