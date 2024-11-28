@@ -76,9 +76,7 @@ public sealed class SemanticKernelProvider
                             serviceId: $"{deployment.Name} ({openAIDeployment.Name})"
                         );
                     }
-                    foreach (
-                        var deployment in openAIDeployment.ImageGenerationDeployments
-                    )
+                    foreach (var deployment in openAIDeployment.ImageGenerationDeployments)
                     {
 #pragma warning disable SKEXP0010 // Experimental method AddAzureOpenAITextToImage, suppressed instability warning
                         builder.AddAzureOpenAITextToImage(

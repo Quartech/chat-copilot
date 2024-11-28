@@ -9,6 +9,7 @@ public class QOpenAIDeploymentMutate : QOpenAIDeploymentBase
 
     [JsonPropertyName("embeddingDeployments")]
     public new required string EmbeddingDeployments { get; set; }
+
     [JsonPropertyName("imageGenerationDeployments")]
     public new required string ImageGenerationDeployments { get; set; }
 }

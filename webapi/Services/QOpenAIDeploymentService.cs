@@ -100,7 +100,9 @@ public class QOpenAIDeploymentService : IQOpenAIDeploymentService
             qDeploymentMutate.ChatCompletionDeployments
         );
         var deserializeEmbeddings = JsonConvert.DeserializeObject<List<string>>(qDeploymentMutate.EmbeddingDeployments);
-        var deserializeImageGeneration = JsonConvert.DeserializeObject<List<string>>(qDeploymentMutate.ImageGenerationDeployments);
+        var deserializeImageGeneration = JsonConvert.DeserializeObject<List<string>>(
+            qDeploymentMutate.ImageGenerationDeployments
+        );
         var deploymentToEdit = await this._openAIDeploymentRepository.FindByIdAsync(indexId.ToString());
 
         deploymentToEdit.Name = qDeploymentMutate.Name ?? deploymentToEdit.Name;
@@ -109,7 +111,8 @@ public class QOpenAIDeploymentService : IQOpenAIDeploymentService
         deploymentToEdit.ChatCompletionDeployments =
             deserializeCompletions ?? deploymentToEdit.ChatCompletionDeployments;
         deploymentToEdit.EmbeddingDeployments = deserializeEmbeddings ?? deploymentToEdit.EmbeddingDeployments;
-        deploymentToEdit.ImageGenerationDeployments = deserializeImageGeneration ?? deploymentToEdit.ImageGenerationDeployments;
+        deploymentToEdit.ImageGenerationDeployments =
+            deserializeImageGeneration ?? deploymentToEdit.ImageGenerationDeployments;
 
         await this._openAIDeploymentRepository.UpsertAsync(deploymentToEdit);
         return deploymentToEdit;

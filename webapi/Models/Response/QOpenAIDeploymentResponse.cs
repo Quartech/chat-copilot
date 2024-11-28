@@ -21,6 +21,7 @@ public class QOpenAIDeploymentResponse
 
     [JsonPropertyName("embeddingDeployments")]
     public IList<string> EmbeddingDeployments { get; set; } = new List<string>();
+
     [JsonPropertyName("imageGenerationDeployments")]
     public IList<string> ImageGenerationDeployments { get; set; } = new List<string>();
 
