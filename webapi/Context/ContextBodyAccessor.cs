@@ -34,7 +34,9 @@ public class ContextBodyAccessor(IHttpContextAccessor contextAccessor) : IContex
 
             var bodyText = Encoding.UTF8.GetString(buffer).Replace("\0", string.Empty, StringComparison.Ordinal);
 
-            return JsonSerializer.Deserialize<T>(bodyText);
+            var options = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
+
+            return JsonSerializer.Deserialize<T>(bodyText, options);
         }
         finally
         {
