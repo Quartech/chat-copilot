@@ -1,14 +1,5 @@
-<<<<<<< HEAD
 import { IOpenAIDeployment } from '../models/OpenAIDeployment';
 import { ISpecialization, ISpecializationRequest, ISpecializationToggleRequest } from '../models/Specialization';
-=======
-import {
-    IChatCompletionDeployment,
-    ISpecialization,
-    ISpecializationRequest,
-    ISpecializationToggleRequest,
-} from '../models/Specialization';
->>>>>>> main
 import { BaseService } from './BaseService';
 
 export class SpecializationService extends BaseService {
@@ -34,13 +25,8 @@ export class SpecializationService extends BaseService {
         return result;
     };
 
-<<<<<<< HEAD
     public getAllChatCompletionDeploymentsAsync = async (accessToken: string): Promise<IOpenAIDeployment[]> => {
         const result = await this.getResponseAsync<IOpenAIDeployment[]>(
-=======
-    public getAllChatCompletionDeploymentsAsync = async (accessToken: string): Promise<IChatCompletionDeployment[]> => {
-        const result = await this.getResponseAsync<IChatCompletionDeployment[]>(
->>>>>>> main
             {
                 commandPath: 'openAIDeployments',
                 method: 'GET',
