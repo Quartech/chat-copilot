@@ -6,6 +6,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Net;
 using System.Threading.Tasks;
+using CopilotChat.WebApi.Models.Request;
 using CopilotChat.WebApi.Models.Storage;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Azure.Cosmos.Linq;
@@ -134,7 +135,10 @@ public class CosmosDbContext<T> : IStorageContext<T>, IDisposable
 /// <summary>
 /// Specialization of CosmosDbContext<T> for CopilotChatMessage.
 /// </summary>
-public class CosmosDbCopilotChatMessageContext : CosmosDbContext<CopilotChatMessage>, ICopilotChatMessageStorageContext
+public class CosmosDbCopilotChatMessageContext
+    : CosmosDbContext<CopilotChatMessage>,
+        ICopilotChatMessageStorageContext,
+        ICopilotChatMessageSortable
 {
     /// <summary>
     /// Initializes a new instance of the CosmosDbCopilotChatMessageContext class.
@@ -148,20 +152,25 @@ public class CosmosDbCopilotChatMessageContext : CosmosDbContext<CopilotChatMess
     /// <inheritdoc/>
     public async Task<IEnumerable<CopilotChatMessage>> QueryEntitiesAsync(
         Expression<Func<CopilotChatMessage, bool>> predicate,
+        CopilotChatMessageSortOption? sortOption,
         int skip,
         int count
     )
     {
-        var results = new List<CopilotChatMessage>();
-        var queryable = this
-            ._container.GetItemLinqQueryable<CopilotChatMessage>(true)
-            .Where(predicate)
-            .OrderByDescending(m => m.Timestamp)
-            .Skip(skip);
+        // Apply predicate
+        var queryable = this._container.GetItemLinqQueryable<CopilotChatMessage>(true).Where(predicate);
+
+        // Apply sorting
+        queryable = this.Sort(queryable, sortOption);
+
+        // Apply pagination
+        queryable = queryable.Skip(skip);
         if (count > 0)
         {
             queryable = queryable.Take(count);
         }
+
+        var results = new List<CopilotChatMessage>();
         var iterator = queryable.ToFeedIterator();
         while (iterator.HasMoreResults)
         {
@@ -170,5 +179,29 @@ public class CosmosDbCopilotChatMessageContext : CosmosDbContext<CopilotChatMess
         }
 
         return results;
+    }
+
+    public IQueryable<CopilotChatMessage> Sort(
+        IQueryable<CopilotChatMessage> queryable,
+        CopilotChatMessageSortOption? sortOption
+    )
+    {
+        if (sortOption == null)
+        {
+            return queryable.OrderByDescending(m => m.Timestamp);
+        }
+
+        switch (sortOption)
+        {
+            default:
+            case CopilotChatMessageSortOption.DateDesc:
+                return queryable.OrderByDescending(m => m.Timestamp);
+            case CopilotChatMessageSortOption.DateAsc:
+                return queryable.OrderBy(m => m.Timestamp);
+            case CopilotChatMessageSortOption.FeedbackPos:
+                return queryable.OrderBy(m => m.UserFeedback);
+            case CopilotChatMessageSortOption.FeedbackNeg:
+                return queryable.OrderByDescending(m => m.UserFeedback);
+        }
     }
 }

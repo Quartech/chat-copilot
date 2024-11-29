@@ -4,6 +4,7 @@ using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Azure.Identity;
 using Azure.Security.KeyVault.Secrets;
@@ -112,6 +113,7 @@ public sealed class Program
             .AddJsonOptions(options =>
             {
                 options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+                options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
             });
         builder.Services.AddHealthChecks();
 

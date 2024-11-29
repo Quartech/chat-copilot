@@ -11,6 +11,7 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure.AI.OpenAI.Chat;
 using CopilotChat.WebApi.Hubs;
 using CopilotChat.WebApi.Models.Response;
 using CopilotChat.WebApi.Models.Storage;
@@ -27,8 +28,10 @@ using Microsoft.Extensions.Options;
 using Microsoft.KernelMemory;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.TextToImage;
+using OpenAI.Chat;
 
 namespace CopilotChat.WebApi.Plugins.Chat;
 
@@ -643,7 +646,7 @@ public class ChatPlugin
     )
     {
         int count = this._qSpecialization?.PastMessagesIncludedCount ?? 100;
-        var sortedMessages = await this._chatMessageRepository.FindByChatIdAsync(chatId, 0, count);
+        var sortedMessages = await this._chatMessageRepository.FindByChatIdAsync(chatId, null, 0, count);
 
         ChatHistory allottedChatHistory = new();
         var remainingToken = tokenLimit;
@@ -802,10 +805,10 @@ public class ChatPlugin
     /// <summary>
     /// Create `OpenAIPromptExecutionSettings` for chat response. Parameters are read from the PromptSettings class.
     /// </summary>
-    private async Task<OpenAIPromptExecutionSettings> CreateChatRequestSettings()
+    private async Task<AzureOpenAIPromptExecutionSettings> CreateChatRequestSettings()
     {
 #pragma warning disable SKEXP0010 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-        return new OpenAIPromptExecutionSettings
+        return new AzureOpenAIPromptExecutionSettings
         {
             MaxTokens = this.GetResponseTokenLimit(),
             Temperature = this._promptOptions.ResponseTemperature,
@@ -813,7 +816,7 @@ public class ChatPlugin
             FrequencyPenalty = this._promptOptions.ResponseFrequencyPenalty,
             PresencePenalty = this._promptOptions.ResponsePresencePenalty,
             ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions,
-            AzureChatExtensionsOptions = await this._qAzureOpenAIChatExtension.GetAzureChatExtensionsOptions(
+            AzureChatDataSource = await this._qAzureOpenAIChatExtension.GetAzureSearchChatDataSource(
                 this._qSpecialization
             ),
         };
@@ -823,10 +826,10 @@ public class ChatPlugin
     /// <summary>
     /// Create `OpenAIPromptExecutionSettings` for intent response. Parameters are read from the PromptSettings class.
     /// </summary>
-    private async Task<OpenAIPromptExecutionSettings> CreateIntentCompletionSettings()
+    private async Task<AzureOpenAIPromptExecutionSettings> CreateIntentCompletionSettings()
     {
 #pragma warning disable SKEXP0010 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-        return new OpenAIPromptExecutionSettings
+        return new AzureOpenAIPromptExecutionSettings
         {
             MaxTokens = this.GetResponseTokenLimit(),
             Temperature = this._promptOptions.IntentTemperature,
@@ -834,7 +837,7 @@ public class ChatPlugin
             FrequencyPenalty = this._promptOptions.IntentFrequencyPenalty,
             PresencePenalty = this._promptOptions.IntentPresencePenalty,
             StopSequences = new string[] { "] bot:" },
-            AzureChatExtensionsOptions = await this._qAzureOpenAIChatExtension.GetAzureChatExtensionsOptions(
+            AzureChatDataSource = await this._qAzureOpenAIChatExtension.GetAzureSearchChatDataSource(
                 this._qSpecialization
             ),
         };
@@ -1009,7 +1012,7 @@ public class ChatPlugin
         var chatHistory = prompt.MetaPromptTemplate;
 
         // logic to get the last user message and extract relevant text
-        var messageArray = new ChatMessageContent[chatHistory.Count()];
+        var messageArray = new Microsoft.SemanticKernel.ChatMessageContent[chatHistory.Count];
         chatHistory.CopyTo(messageArray, 0);
         var lastUserMessage = messageArray.Where(m => m.Role == AuthorRole.User).LastOrDefault()?.Content;
         int startIndex = lastUserMessage.IndexOf("said:", StringComparison.Ordinal) + "said:".Length;
@@ -1057,19 +1060,22 @@ public class ChatPlugin
 
                 accumulatedContent.Append(contentPiece.ToString());
 
-                if (contentPiece.InnerContent is Azure.AI.OpenAI.StreamingChatCompletionsUpdate actx)
+                if (contentPiece.InnerContent is StreamingChatCompletionUpdate actx)
                 {
-                    if (actx.AzureExtensionsContext?.Citations != null)
+#pragma warning disable AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+                    var messageContext = actx.GetMessageContext();
+#pragma warning restore AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+                    if (messageContext?.Citations != null)
                     {
                         // Load data source citations into the citation map, with part numbering for repeated sources.
                         foreach (
-                            var citation in actx.AzureExtensionsContext.Citations.Select(
+                            var citation in messageContext.Citations.Select(
                                 (c, index) => new { Citation = c, Index = index }
                             )
                         )
                         {
-                            var sourceName = citation.Citation.Filepath;
-                            var link = citation.Citation.Filepath;
+                            var sourceName = citation.Citation.FilePath;
+                            var link = citation.Citation.FilePath;
 
                             CitationUtils.UpdateMapCount(ref citationCountMap, sourceName);
                             var partNumber = citationCountMap[sourceName];
@@ -1077,11 +1083,7 @@ public class ChatPlugin
                             {
                                 sourceName = $"{sourceName} - Part {partNumber}";
                             }
-                            else if (
-                                actx.AzureExtensionsContext.Citations.Count(c =>
-                                    c.Filepath == citation.Citation.Filepath
-                                ) > 1
-                            )
+                            else if (messageContext.Citations.Count(c => c.FilePath == citation.Citation.FilePath) > 1)
                             {
                                 sourceName = $"{sourceName} - Part 1";
                             }

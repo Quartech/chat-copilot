@@ -1,16 +1,15 @@
 ﻿// Copyright (c) Quartech. All rights reserved.
 
+using System;
 using System.Collections.Generic;
-using Azure.AI.OpenAI;
+using System.Linq;
+using System.Threading.Tasks;
+using Azure.AI.OpenAI.Chat;
 using CopilotChat.WebApi.Models.Storage;
 using CopilotChat.WebApi.Services;
 using CopilotChat.WebApi.Storage;
 
 namespace CopilotChat.WebApi.Plugins.Chat.Ext;
-
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 
 /// <summary>
 /// Chat extension class to support Azure search indexes for bot response.
@@ -62,7 +61,8 @@ public class QAzureOpenAIChatExtension
         return this._qAzureOpenAIChatOptions.Enabled && specializationId != this.DefaultSpecialization;
     }
 
-    public async Task<AzureChatExtensionsOptions?> GetAzureChatExtensionsOptions(Specialization? specialization)
+#pragma warning disable AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+    public async Task<AzureSearchChatDataSource?> GetAzureSearchChatDataSource(Specialization? specialization)
     {
         if (
             specialization == null
@@ -100,39 +100,29 @@ public class QAzureOpenAIChatExtension
             new Uri(openAIDeploymentConnection.Endpoint),
             qSpecializationIndex
         );
-
-        return new AzureChatExtensionsOptions()
+        return new AzureSearchChatDataSource
         {
-            Extensions =
+            IndexName = qSpecializationIndex.Name,
+            Endpoint = aiSearchDeploymentConnection.Endpoint,
+            Strictness = specialization.Strictness,
+            FieldMappings = new DataSourceFieldMappings
             {
-                new AzureSearchChatExtensionConfiguration()
-                {
-                    Filter = null,
-                    IndexName = qSpecializationIndex.Name,
-                    SearchEndpoint = aiSearchDeploymentConnection.Endpoint,
-                    Strictness = specialization.Strictness,
-                    FieldMappingOptions = new AzureSearchIndexFieldMappingOptions
-                    {
-                        UrlFieldName = null, //qSpecializationIndex.FieldMapping?.UrlFieldName,
-                        TitleFieldName = null, //qSpecializationIndex.FieldMapping?.TitleFieldName,
-                        FilepathFieldName =
-                            null //qSpecializationIndex.FieldMapping?.FilepathFieldName,
-                        ,
-                    },
-                    SemanticConfiguration = "default", //qSpecializationIndex.SemanticConfiguration,
-                    QueryType = new AzureSearchQueryType(qSpecializationIndex.QueryType),
-                    ShouldRestrictResultScope = specialization.RestrictResultScope,
-                    RoleInformation = specialization.RoleInformation,
-                    DocumentCount = specialization.DocumentCount,
-                    Authentication = new OnYourDataApiKeyAuthenticationOptions(aiSearchDeploymentConnection.APIKey),
-                    VectorizationSource = new OnYourDataEndpointVectorizationSource(
-                        embeddingEndpoint,
-                        new OnYourDataApiKeyAuthenticationOptions(apiKey)
-                    ),
-                },
+                UrlFieldName = null, //qSpecializationIndex.FieldMapping?.UrlFieldName,
+                TitleFieldName = null, //qSpecializationIndex.FieldMapping?.TitleFieldName,
+                FilePathFieldName = null, //qSpecializationIndex.FieldMapping?.FilepathFieldName,
             },
+            SemanticConfiguration = "default", //qSpecializationIndex.SemanticConfiguration,
+            QueryType = new DataSourceQueryType(qSpecializationIndex.QueryType),
+            InScope = specialization.RestrictResultScope,
+            TopNDocuments = specialization.DocumentCount,
+            Authentication = DataSourceAuthentication.FromApiKey(aiSearchDeploymentConnection.APIKey),
+            VectorizationSource = DataSourceVectorizer.FromEndpoint(
+                embeddingEndpoint,
+                DataSourceAuthentication.FromApiKey(apiKey)
+            ),
         };
     }
+#pragma warning restore AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
     public Uri? GenerateEmbeddingEndpoint(Uri connectionEndpoint, SpecializationIndex qSpecializationIndex)
     {

@@ -67,3 +67,10 @@ export interface IChatMessage {
     userFeedback?: UserFeedback;
     tokenUsage?: TokenUsage;
 }
+
+export enum CopilotChatMessageSortOption {
+    dateDesc = 'dateDesc',
+    dateAsc = 'dateAsc',
+    feedbackPos = 'feedbackPos',
+    feedbackNeg = 'feedbackNeg',
+}

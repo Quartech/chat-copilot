@@ -126,7 +126,7 @@ public class QSpecializationBase
     /// Max Response Token Limit of the specialization
     /// </summary>>
     [JsonPropertyName("maxResponseTokenLimit")]
-    [Range(1, 4096, ErrorMessage = "Max response token limit must be between 1 and 4096.")]
+    [Range(1, 16384, ErrorMessage = "Max response token limit must be between 1 and 16384.")]
     public int? MaxResponseTokenLimit { get; set; }
 
     /// <summary>
@@ -134,4 +134,10 @@ public class QSpecializationBase
     /// </summary>>
     [JsonPropertyName("order")]
     public int? Order { get; set; }
+
+    /// <summary>
+    /// Suggestions we should display to the user on chat start.
+    /// </summary>>
+    [JsonPropertyName("suggestions")]
+    public IList<string>? Suggestions { get; set; }
 }

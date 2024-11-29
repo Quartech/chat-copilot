@@ -131,7 +131,7 @@ export const ChatRoom: React.FC = () => {
     }, []);
 
     React.useEffect(() => {
-        if (Object.keys(messages).length <= 1) {
+        if (Object.keys(messages).length <= 1 && !conversations[selectedId].loadingMessages) {
             setShowSuggestions(true);
         } else {
             setShowSuggestions(false);

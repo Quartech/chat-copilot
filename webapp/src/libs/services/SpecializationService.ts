@@ -1,5 +1,14 @@
+<<<<<<< HEAD
 import { IOpenAIDeployment } from '../models/OpenAIDeployment';
 import { ISpecialization, ISpecializationRequest, ISpecializationToggleRequest } from '../models/Specialization';
+=======
+import {
+    IChatCompletionDeployment,
+    ISpecialization,
+    ISpecializationRequest,
+    ISpecializationToggleRequest,
+} from '../models/Specialization';
+>>>>>>> main
 import { BaseService } from './BaseService';
 
 export class SpecializationService extends BaseService {
@@ -25,8 +34,13 @@ export class SpecializationService extends BaseService {
         return result;
     };
 
+<<<<<<< HEAD
     public getAllChatCompletionDeploymentsAsync = async (accessToken: string): Promise<IOpenAIDeployment[]> => {
         const result = await this.getResponseAsync<IOpenAIDeployment[]>(
+=======
+    public getAllChatCompletionDeploymentsAsync = async (accessToken: string): Promise<IChatCompletionDeployment[]> => {
+        const result = await this.getResponseAsync<IChatCompletionDeployment[]>(
+>>>>>>> main
             {
                 commandPath: 'openAIDeployments',
                 method: 'GET',
@@ -64,6 +78,7 @@ export class SpecializationService extends BaseService {
         formData.append('groupMemberships', body.groupMemberships.join(','));
         formData.append('order', body.order.toString());
         formData.append('isDefault', body.isDefault.toString());
+        formData.append('suggestions', JSON.stringify(body.suggestions));
         formData.append('canGenImages', body.canGenImages.toString());
         if (body.restrictResultScope) {
             formData.append('restrictResultScope', body.restrictResultScope.toString());
@@ -128,8 +143,9 @@ export class SpecializationService extends BaseService {
         formData.append('groupMemberships', body.groupMemberships.join(','));
         formData.append('order', body.order.toString());
         formData.append('isDefault', body.isDefault.toString());
+        formData.append('suggestions', JSON.stringify(body.suggestions));
         formData.append('canGenImages', body.canGenImages.toString());
-        if (body.restrictResultScope) {
+        if (body.restrictResultScope != null) {
             formData.append('restrictResultScope', body.restrictResultScope.toString());
         }
         if (body.strictness) {

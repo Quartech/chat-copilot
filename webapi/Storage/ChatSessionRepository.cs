@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using CopilotChat.WebApi.Models.Storage;
 
@@ -27,5 +29,10 @@ public class ChatSessionRepository : Repository<ChatSession>
     {
         var chatSet = new HashSet<string>(chatIds);
         return base.StorageContext.QueryEntitiesAsync(e => chatSet.Contains(e.Partition));
+    }
+
+    public Task<IEnumerable<ChatSession>> QueryEntitiesAsync(Expression<Func<ChatSession, bool>> predicate)
+    {
+        return base.StorageContext.QueryEntitiesAsync(predicate);
     }
 }

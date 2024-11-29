@@ -7,4 +7,5 @@ export interface IOpenAIDeployment {
 export interface IChatCompletionDeployment {
     name: string;
     completionTokenLimit: number;
+    outputTokens: number;
 }

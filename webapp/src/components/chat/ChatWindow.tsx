@@ -12,23 +12,23 @@ import {
 } from '@fluentui/react-components';
 import { Map16Regular } from '@fluentui/react-icons';
 import React from 'react';
-import { useAppDispatch, useAppSelector } from '../../redux/app/hooks';
 import { useChat } from '../../libs/hooks';
+import { useAppDispatch, useAppSelector } from '../../redux/app/hooks';
 import { RootState } from '../../redux/app/store';
+import { setChatSpecialization } from '../../redux/features/admin/adminSlice';
 import { FeatureKeys } from '../../redux/features/app/AppState';
+import {
+    editConversationSpecialization,
+    editConversationSystemDescription,
+    updateConversationGeneratedSuggestions,
+} from '../../redux/features/conversations/conversationsSlice';
 import { ChatRoom } from './ChatRoom';
+import { ChatMenu } from './controls/ChatMenu';
 import { ParticipantsList } from './controls/ParticipantsList';
 import { ShareBotMenu } from './controls/ShareBotMenu';
 import { DocumentsTab } from './tabs/DocumentsTab';
 import { PersonaTab } from './tabs/PersonaTab';
 import { PlansTab } from './tabs/PlansTab';
-import { setChatSpecialization } from '../../redux/features/admin/adminSlice';
-import {
-    editConversationSpecialization,
-    editConversationSystemDescription,
-    updateSuggestions,
-} from '../../redux/features/conversations/conversationsSlice';
-import { ChatMenu } from './controls/ChatMenu';
 
 // Enum for chat window tabs
 enum ChatWindowTabEnum {
@@ -120,14 +120,17 @@ export const ChatWindow: React.FC = () => {
                     }),
                 );
             });
-            void chat
-                .getSuggestions({ chatId: newChatId, specializationId: chatSpecialization.id })
-                .then((response) => {
-                    dispatch(updateSuggestions({ id: newChatId, chatSuggestionMessage: response }));
-                })
-                .catch((reason) => {
-                    console.error(`Failed to retrieve suggestions: ${reason}`);
-                });
+            if (chatSpecialization.suggestions.length < 1) {
+                chat.getSuggestions({ chatId: newChatId, specializationId: chatSpecialization.id })
+                    .then((response) => {
+                        dispatch(
+                            updateConversationGeneratedSuggestions({ id: newChatId, chatSuggestionMessage: response }),
+                        );
+                    })
+                    .catch((reason) => {
+                        console.error(`Failed to retrieve suggestions: ${reason}`);
+                    });
+            }
         }
     };
 

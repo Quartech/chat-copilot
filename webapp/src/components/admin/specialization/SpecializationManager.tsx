@@ -25,6 +25,7 @@ import { RootState } from '../../../redux/app/store';
 import { addAlert } from '../../../redux/features/app/appSlice';
 import { ImageUploaderPreview } from '../../files/ImageUploaderPreview';
 import { ConfirmationDialog } from '../../shared/ConfirmationDialog';
+import FieldArray from '../../shared/FieldArray';
 import { Row } from '../../shared/Row';
 
 interface ISpecializationFile {
@@ -141,6 +142,7 @@ export const SpecializationManager: React.FC = () => {
     const [indexId, setIndexId] = useState('');
     const [deploymentId, setDeploymentId] = useState('');
     const [completionDeploymentName, setCompletionDeploymentName] = useState('');
+    const [deploymentOutputTokens, setDeploymentOutputTokens] = useState(0);
     const [membershipId, setMembershipId] = useState<string[]>([]);
     const [imageFile, setImageFile] = useState<ISpecializationFile>({ file: null, src: null });
     const [iconFile, setIconFile] = useState<ISpecializationFile>({ file: null, src: null });
@@ -152,6 +154,7 @@ export const SpecializationManager: React.FC = () => {
     const [pastMessagesIncludedCount, setPastMessagesIncludedCount] = useState<number | null>(0);
     const [maxResponseTokenLimit, setMaxResponseTokenLimit] = useState<number | null>(0);
     const [order, setOrder] = useState(0);
+    const [suggestions, setSuggestions] = useState<string[]>([]);
     const [canGenImages, setCanGenImages] = useState(false);
 
     const [isValid, setIsValid] = useState(false);
@@ -190,6 +193,7 @@ export const SpecializationManager: React.FC = () => {
                 pastMessagesIncludedCount,
                 maxResponseTokenLimit,
                 order,
+                suggestions,
                 canGenImages,
             });
         } else {
@@ -212,6 +216,7 @@ export const SpecializationManager: React.FC = () => {
                 pastMessagesIncludedCount,
                 maxResponseTokenLimit,
                 order: specializations.length,
+                suggestions,
                 canGenImages,
             });
         }
@@ -229,6 +234,7 @@ export const SpecializationManager: React.FC = () => {
         setIndexId('');
         setDeploymentId('');
         setCompletionDeploymentName('');
+        setDeploymentOutputTokens(4096);
         setInitialChatMessage('');
         setIsDefault(false);
         setRestrictResultScope(false);
@@ -236,6 +242,7 @@ export const SpecializationManager: React.FC = () => {
         setDocumentCount(5);
         setPastMessagesIncludedCount(10);
         setMaxResponseTokenLimit(1024);
+        setSuggestions([]);
     };
 
     useEffect(() => {
@@ -251,6 +258,12 @@ export const SpecializationManager: React.FC = () => {
                 setMembershipId(specializationObj.groupMemberships);
                 setDeploymentId(specializationObj.openAIDeploymentId);
                 setCompletionDeploymentName(specializationObj.completionDeploymentName);
+                setDeploymentOutputTokens(
+                    chatCompletionDeployments
+                        .find((d) => d.id === specializationObj.openAIDeploymentId)
+                        ?.chatCompletionDeployments.find((a) => a.name === specializationObj.completionDeploymentName)
+                        ?.outputTokens ?? 4096,
+                );
                 setInitialChatMessage(specializationObj.initialChatMessage);
                 setIndexId(specializationObj.indexId);
                 setIsDefault(specializationObj.isDefault);
@@ -266,13 +279,14 @@ export const SpecializationManager: React.FC = () => {
                 setImageFile({ file: null, src: specializationObj.imageFilePath });
                 setIconFile({ file: null, src: specializationObj.iconFilePath });
                 setOrder(specializationObj.order);
+                setSuggestions(specializationObj.suggestions);
                 setCanGenImages(specializationObj.canGenImages);
             }
         } else {
             setEditMode(false);
             resetSpecialization();
         }
-    }, [editMode, selectedId, specializations]);
+    }, [editMode, selectedId, specializations, chatCompletionDeployments]);
 
     useEffect(() => {
         const isValid =
@@ -442,6 +456,22 @@ export const SpecializationManager: React.FC = () => {
         setMaxResponseTokenLimit(intValue);
     };
 
+    /**
+     * Callback function for handling changes to the "Deployment" dropdown.
+     */
+    const onDeploymentChange = (_event: SelectionEvents, data: OptionOnSelectData) => {
+        const obj = JSON.parse(data.optionValue ?? '{}') as unknown as FormattedOpenAIDeployment;
+        setDeploymentId(obj.id);
+        setCompletionDeploymentName(obj.deploymentName);
+        const outputTokens = chatCompletionDeployments
+            .find((d) => d.id === obj.id)
+            ?.chatCompletionDeployments.find((a) => a.name === obj.deploymentName)?.outputTokens;
+        setDeploymentOutputTokens(outputTokens ?? 4096);
+        if (maxResponseTokenLimit && outputTokens && maxResponseTokenLimit > outputTokens) {
+            setMaxResponseTokenLimit(outputTokens);
+        }
+    };
+
     return (
         <div className={classes.scrollableContainer}>
             <div className={classes.root}>
@@ -475,11 +505,7 @@ export const SpecializationManager: React.FC = () => {
                     clearable
                     id="deployment"
                     aria-labelledby={dropdownId}
-                    onOptionSelect={(_control, data) => {
-                        const obj = JSON.parse(data.optionValue ?? '{}') as unknown as FormattedOpenAIDeployment;
-                        setDeploymentId(obj.id);
-                        setCompletionDeploymentName(obj.deploymentName);
-                    }}
+                    onOptionSelect={onDeploymentChange}
                     value={`${completionDeploymentName} (${chatCompletionDeployments.find((a) => a.id === deploymentId)?.name})`}
                 >
                     {completionDeploymentsFormatted.map((deployment) => (
@@ -620,11 +646,11 @@ export const SpecializationManager: React.FC = () => {
                                     <Button icon={<Info20Regular />} appearance="transparent" />
                                 </Tooltip>
                             </div>
-                            <label htmlFor="maxResponse">Max Response (1-4096)</label>
+                            <label htmlFor="maxResponse">Max Response (1-{deploymentOutputTokens})</label>
                             <div id="maxResponse" className={classes.slider}>
                                 <Slider
                                     min={1}
-                                    max={4096}
+                                    max={deploymentOutputTokens}
                                     value={maxResponseTokenLimit ?? 1024}
                                     onChange={onChangeMaxResponseTokenLimit}
                                 />
@@ -633,7 +659,7 @@ export const SpecializationManager: React.FC = () => {
                                     onChange={onInputChangeMaxResponseTokenLimit}
                                     type="number"
                                     min={1}
-                                    max={4096}
+                                    max={deploymentOutputTokens}
                                     className={classes.input}
                                 ></Input>
                                 <Tooltip
@@ -685,6 +711,26 @@ export const SpecializationManager: React.FC = () => {
                     rows={2}
                     onChange={(_event, data) => {
                         setInitialChatMessage(data.value);
+                    }}
+                />
+                <label htmlFor="initialMessage">
+                    Initial Chat Suggestions<span className={classes.required}>*</span>
+                </label>
+                <FieldArray
+                    values={suggestions}
+                    maxItems={4}
+                    onFieldChanged={(index, newValue) => {
+                        const values = suggestions.slice(0);
+                        values[index] = newValue;
+                        setSuggestions(values);
+                    }}
+                    onFieldAdded={() => {
+                        const values = suggestions.slice(0);
+                        values.push('');
+                        setSuggestions(values);
+                    }}
+                    onFieldRemoved={(index) => {
+                        setSuggestions(suggestions.slice(0, index).concat(suggestions.slice(index + 1)));
                     }}
                 />
                 <label htmlFor="membership">

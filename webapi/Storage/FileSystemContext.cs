@@ -8,6 +8,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Text.Json;
 using System.Threading.Tasks;
+using CopilotChat.WebApi.Models.Request;
 using CopilotChat.WebApi.Models.Storage;
 
 namespace CopilotChat.WebApi.Storage;
@@ -190,6 +191,7 @@ public class FileSystemCopilotChatMessageContext
     /// <inheritdoc/>
     public Task<IEnumerable<CopilotChatMessage>> QueryEntitiesAsync(
         Expression<Func<CopilotChatMessage, bool>> predicate,
+        CopilotChatMessageSortOption? sortOption,
         int skip,
         int count
     )

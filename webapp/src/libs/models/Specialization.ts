@@ -19,6 +19,7 @@ export interface ISpecialization {
     maxResponseTokenLimit: number | null;
     initialChatMessage: string;
     order: number;
+    suggestions: string[];
     canGenImages: boolean;
 }
 
@@ -47,9 +48,16 @@ export interface ISpecializationRequest {
     pastMessagesIncludedCount: number | null;
     maxResponseTokenLimit: number | null;
     order: number;
+    suggestions: string[];
     canGenImages: boolean;
 }
 
 export interface ISpecializationToggleRequest {
     isActive: boolean;
+}
+
+export interface IChatCompletionDeployment {
+    name: string;
+    completionTokenLimit: number;
+    outputTokens: number;
 }
