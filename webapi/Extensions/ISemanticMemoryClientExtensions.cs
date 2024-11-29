@@ -27,10 +27,7 @@ internal static class ISemanticMemoryClientExtensions
     /// <summary>
     /// Inject <see cref="IKernelMemory"/>.
     /// </summary>
-    public static void AddSemanticMemoryServices(
-        this WebApplicationBuilder appBuilder,
-        DefaultConfiguration defaultConfig
-    )
+    public static void AddSemanticMemoryServices(this WebApplicationBuilder appBuilder)
     {
         var serviceProvider = appBuilder.Services.BuildServiceProvider();
 
@@ -63,11 +60,16 @@ internal static class ISemanticMemoryClientExtensions
             }
         }
 
-        IKernelMemory memory = memoryBuilder
-            .FromMemoryConfiguration(memoryConfig, appBuilder.Configuration, defaultConfig)
-            .Build();
+        appBuilder.Services.AddSingleton(sp =>
+        {
+            var configurationFactory = sp.GetRequiredService<DefaultConfigurationFactory>();
+            var defaultConfig = configurationFactory.GetDefaultConfiguration();
 
-        appBuilder.Services.AddSingleton(memory);
+            IKernelMemory memory = memoryBuilder
+                .FromMemoryConfiguration(memoryConfig, appBuilder.Configuration, defaultConfig)
+                .Build();
+            return memory;
+        });
     }
 
     public static Task<SearchResult> SearchMemoryAsync(

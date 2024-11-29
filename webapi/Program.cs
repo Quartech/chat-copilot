@@ -57,35 +57,11 @@ public sealed class Program
 
         // Add SignalR as the real time relay service
         builder.Services.AddSignalR();
-        var qAzureOpenAIChatOptions =
-            builder.Configuration.GetSection(QAzureOpenAIChatOptions.PropertyName).Get<QAzureOpenAIChatOptions>()
-            ?? new QAzureOpenAIChatOptions { Enabled = false };
+        builder.Services.AddSingleton<SecretClientAccessor>();
 
-        var serviceProvider = builder.Services.BuildServiceProvider();
-        var deploymentService = new QOpenAIDeploymentService(
-            serviceProvider.GetRequiredService<OpenAIDeploymentRepository>()
-        );
-        var deploymentConnections = await deploymentService.GetAllDeployments();
-        var defaultConnection = deploymentConnections.FirstOrDefault(conn =>
-            conn.Name.Equals(qAzureOpenAIChatOptions.DefaultConnection, StringComparison.OrdinalIgnoreCase)
-        );
-        var secret = new SecretClient(
-            vaultUri: new Uri("https://kvt-copilot-cnc-app-dev.vault.azure.net/"),
-            credential: new DefaultAzureCredential()
-        );
-        if (defaultConnection == null)
-        {
-            throw new InvalidOperationException("Default connection not found. Please check the configuration.");
-        }
-        var apiKey = await secret.GetSecretAsync(defaultConnection.SecretName);
-        var defaultConfig = new DefaultConfiguration(
-            qAzureOpenAIChatOptions.DefaultModel,
-            qAzureOpenAIChatOptions.DefaultEmbeddingModel,
-            apiKey.Value.Value,
-            new Uri(defaultConnection.Endpoint)
-        );
+        builder.Services.AddSingleton<DefaultConfigurationAccessor>().AddSingleton<DefaultConfigurationFactory>();
         // Configure and add semantic services
-        builder.AddBotConfig().AddSemanticKernelServices().AddSemanticMemoryServices(defaultConfig);
+        builder.AddBotConfig().AddSemanticKernelServices().AddSemanticMemoryServices();
 
         // Add AppInsights telemetry
         builder
