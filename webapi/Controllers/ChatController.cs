@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections;
 using System;
 using System.Collections.Generic;
 using System.IO;
