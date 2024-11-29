@@ -88,6 +88,30 @@ public class CosmosDbContext<T> : IStorageContext<T>, IDisposable
     }
 
     /// <inheritdoc/>
+    public async Task DeleteAllFromPartitionAsync(string partitionKey)
+    {
+        throw new NotImplementedException();
+        if (string.IsNullOrWhiteSpace(partitionKey))
+        {
+            throw new ArgumentException("Partition key cannot be null, empty, or whitespace.", nameof(partitionKey));
+        }
+
+        try
+        {
+            // Delete all items in the partition
+            await this._container.DeleteAllItemsByPartitionKeyStreamAsync(
+                new PartitionKey(partitionKey),
+                requestOptions: null,
+                cancellationToken: default
+            );
+        }
+        catch (CosmosException ex)
+        {
+            throw new KeyNotFoundException($"Partition with key {partitionKey} not found.");
+        }
+    }
+
+    /// <inheritdoc/>
     public async Task<T> ReadAsync(string entityId, string partitionKey)
     {
         if (string.IsNullOrWhiteSpace(entityId))

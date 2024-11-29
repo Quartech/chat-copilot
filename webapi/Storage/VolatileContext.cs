@@ -68,6 +68,22 @@ public class VolatileContext<T> : IStorageContext<T>
     }
 
     /// <inheritdoc/>
+    public Task DeleteAllFromPartitionAsync(string partitionKey)
+    {
+        if (string.IsNullOrWhiteSpace(partitionKey))
+        {
+            throw new ArgumentOutOfRangeException(nameof(partitionKey), "Partition key cannot be null or empty.");
+        }
+
+        foreach (var entity in this._entities.Values.Where(e => e.Partition == partitionKey))
+        {
+            this._entities.TryRemove(entity.Id, out _);
+        }
+
+        return Task.CompletedTask;
+    }
+
+    /// <inheritdoc/>
     public Task<T> ReadAsync(string entityId, string partitionKey)
     {
         if (string.IsNullOrWhiteSpace(entityId))

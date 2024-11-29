@@ -70,6 +70,25 @@ public class FileSystemContext<T> : IStorageContext<T>
     }
 
     /// <inheritdoc/>
+    public Task DeleteAllFromPartitionAsync(string partitionKey)
+    {
+        if (string.IsNullOrWhiteSpace(partitionKey))
+        {
+            throw new ArgumentOutOfRangeException(nameof(partitionKey), "Partition key cannot be null or empty.");
+        }
+
+        var entitiesToRemove = this._entities.Values.Where(e => e.Partition == partitionKey).ToList();
+        foreach (var entity in entitiesToRemove)
+        {
+            this._entities.TryRemove(entity.Id, out _);
+        }
+
+        this.Save(this._entities, this._fileStorage);
+
+        return Task.CompletedTask;
+    }
+
+    /// <inheritdoc/>
     public Task<T> ReadAsync(string entityId, string partitionKey)
     {
         if (string.IsNullOrWhiteSpace(entityId))

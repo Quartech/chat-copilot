@@ -46,6 +46,12 @@ public class Repository<T> : IRepository<T>
     }
 
     /// <inheritdoc/>
+    public Task DeleteAllFromPartitionAsync(string partitionKey)
+    {
+        return this.StorageContext.DeleteAllFromPartitionAsync(partitionKey);
+    }
+
+    /// <inheritdoc/>
     public Task<T> FindByIdAsync(string id, string? partition = null)
     {
         return this.StorageContext.ReadAsync(id, partition ?? id);

@@ -38,6 +38,7 @@ public class ChatHistoryController : ControllerBase
 {
     private const string ChatEditedClientCall = "ChatEdited";
     private const string ChatDeletedClientCall = "ChatDeleted";
+    private const string AllUserChatsDeletedClientCall = "AllUserChatsDeleted";
     private const string ChatHistoryDeletedClientCall = "ChatHistoryDeleted";
     private const string GetChatRoute = "GetChatRoute";
 
@@ -368,29 +369,27 @@ public class ChatHistoryController : ControllerBase
     {
         IEnumerable<ChatSession> sessions = await this._sessionRepository.FindByUserIdAsync(this._authInfo.UserId);
 
-        var tasks = sessions.Select(async session =>
+        var deleteTasks = sessions.Select(async session =>
         {
             try
             {
-                this._logger.LogInformation("Deleting chat session {0}", session.Id);
-                await this.DeleteChatResourcesAsync(session.Id, cancellationToken);
-                await this._sessionRepository.DeleteAsync(session);
+                await Task.WhenAll(
+                    this._messageRepository.DeleteAllFromPartitionAsync(session.Id),
+                    this._participantRepository.DeleteAllFromPartitionAsync(session.Id),
+                    this._sourceRepository.DeleteAllFromPartitionAsync(session.Id),
+                    this._sessionRepository.DeleteAsync(session)
+                );
             }
-            catch (InvalidOperationException ex)
+            catch (AggregateException ex)
             {
-                throw new InvalidOperationException($"Failed to delete chat session {session.Id}", ex);
+                Console.WriteLine($"Failed to delete session {session.Id}: {ex}");
             }
         });
 
-        try
-        {
-            // run tasks in parallel
-            await Task.WhenAll(tasks);
-        }
-        catch (InvalidOperationException ex)
-        {
-            return this.StatusCode(500, ex.Message);
-        }
+        await Task.WhenAll(deleteTasks);
+        await messageRelayHubContext
+            .Clients.User(this._authInfo.UserId)
+            .SendAsync(AllUserChatsDeletedClientCall, cancellationToken: cancellationToken);
 
         return this.NoContent();
     }

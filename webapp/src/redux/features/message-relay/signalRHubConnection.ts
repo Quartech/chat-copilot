@@ -30,6 +30,7 @@ const enum SignalRCallbackMethods {
     DocumentDeleted = 'DocumentDeleted',
     ChatEdited = 'ChatEdited',
     ChatDeleted = 'ChatDeleted',
+    AllUserChatsDeleted = 'AllUserChatsDeleted',
     ChatHistoryDeleted = 'ChatHistoryDeleted',
     GlobalSiteMaintenance = 'GlobalSiteMaintenance',
     PluginStateChanged = 'PluginStateChanged',
@@ -214,6 +215,10 @@ const registerSignalREvents = (hubConnection: signalR.HubConnection, store: Stor
 
     hubConnection.on(SignalRCallbackMethods.DocumentDeleted, (fileName: string, userName: string) => {
         store.dispatch(addAlert({ message: `${userName} deleted ${fileName}`, type: AlertType.Info }));
+    });
+
+    hubConnection.on(SignalRCallbackMethods.AllUserChatsDeleted, (userName: string) => {
+        store.dispatch(addAlert({ message: `All chats deleted for ${userName}`, type: AlertType.Info }));
     });
 
     hubConnection.on(SignalRCallbackMethods.ChatEdited, (chat: ChatState) => {

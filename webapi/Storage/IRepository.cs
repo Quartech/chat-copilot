@@ -23,6 +23,8 @@ public interface IRepository<T>
     /// <param name="entity">The entity to delete.</param>
     Task DeleteAsync(T entity);
 
+    Task DeleteAllFromPartitionAsync(string partitionKey);
+
     /// <summary>
     /// Upserts an entity in the repository.
     /// </summary>
