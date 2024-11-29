@@ -184,6 +184,7 @@ public static class CopilotChatServiceExtensions
     public static IServiceCollection AddContextAccessors(this IServiceCollection services)
     {
         services.AddTransient<IContextValueAccessor, ContextValueAccessor>();
+        services.AddTransient<IContextBodyAccessor, ContextBodyAccessor>();
 
         return services;
     }
