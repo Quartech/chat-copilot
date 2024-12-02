@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using CopilotChat.WebApi.Auth.Specializations.Models;
+using CopilotChat.WebApi.Context;
 using CopilotChat.WebApi.Storage;
 using Microsoft.AspNetCore.Authorization;
 
@@ -10,7 +12,8 @@ namespace CopilotChat.WebApi.Auth.Specializations;
 /// Class implementing "authorization" that validates the user has access to a specialization.
 /// </summary>
 public class AuthorizationHandler(
-    SpecializationRepository specializationRepository
+    SpecializationRepository specializationRepository,
+    IContextBodyAccessor contextBodyAccessor
 ) : AuthorizationHandler<SpecializationRequirement>
 {
     private const string GROUP_CLAIM_TYPE = "groups";
@@ -20,8 +23,14 @@ public class AuthorizationHandler(
         SpecializationRequirement requirement
     )
     {
-        var specializationId = ""; //contextBodyAccessor.ReadBody<>();
-        var specialization = await specializationRepository.GetSpecializationAsync(specializationId);
+        var specializationBody = await contextBodyAccessor.ReadBody<SpecializationBody>();
+
+        if (specializationBody == null || string.IsNullOrEmpty(specializationBody.SpecializationId))
+        {
+            return;
+        }
+
+        var specialization = await specializationRepository.GetSpecializationAsync(specializationBody.SpecializationId);
 
         if (specialization == null)
         {
