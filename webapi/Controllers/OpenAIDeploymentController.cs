@@ -26,7 +26,10 @@ public class OpenAIDeploymentController : ControllerBase
     {
         this._logger = logger;
         this._openAIDeploymentRepository = openAIDeploymentRepository;
-        this._qOpenAIDeploymentService = new QOpenAIDeploymentService(openAIDeploymentRepository, secretClientAccessor.GetSecretClient());
+        this._qOpenAIDeploymentService = new QOpenAIDeploymentService(
+            openAIDeploymentRepository,
+            secretClientAccessor.GetSecretClient()
+        );
     }
 
     [HttpGet]

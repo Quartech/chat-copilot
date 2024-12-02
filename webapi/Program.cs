@@ -55,10 +55,14 @@ public sealed class Program
         builder.Services.AddSignalR();
         builder.Services.AddSingleton<ISecretClientAccessor, SecretClientAccessor>();
 
-        builder.Services
-            .AddSingleton<IDefaultConfigurationAccessor, DefaultConfigurationAccessor>(sp =>
+        builder
+            .Services.AddSingleton<IDefaultConfigurationAccessor, DefaultConfigurationAccessor>(sp =>
             {
-                return new DefaultConfigurationAccessor(builder.Configuration, sp.GetRequiredService<ISecretClientAccessor>(), sp.GetRequiredService<OpenAIDeploymentRepository>());
+                return new DefaultConfigurationAccessor(
+                    builder.Configuration,
+                    sp.GetRequiredService<ISecretClientAccessor>(),
+                    sp.GetRequiredService<OpenAIDeploymentRepository>()
+                );
             })
             .AddSingleton<IDefaultConfigurationFactory, DefaultConfigurationFactory>();
         // Configure and add semantic services

@@ -133,7 +133,10 @@ internal static class SemanticKernelExtensions
         builder.Services.AddSingleton(sp =>
         {
             var openAiRepo = sp.GetRequiredService<OpenAIDeploymentRepository>();
-            var openAiService = new QOpenAIDeploymentService(openAiRepo, sp.GetRequiredService<ISecretClientAccessor>().GetSecretClient());
+            var openAiService = new QOpenAIDeploymentService(
+                openAiRepo,
+                sp.GetRequiredService<ISecretClientAccessor>().GetSecretClient()
+            );
             var openAiDeploymentsTask = openAiService.GetAllDeployments();
             openAiDeploymentsTask.Wait();
             var openAiDeployments = openAiDeploymentsTask.Result;
