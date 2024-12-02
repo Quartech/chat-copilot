@@ -1,7 +1,6 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Azure.Security.KeyVault.Secrets;
 using CopilotChat.Shared;
 using CopilotChat.WebApi.Plugins.Chat.Ext;
 using CopilotChat.WebApi.Storage;
@@ -9,15 +8,15 @@ using Microsoft.Extensions.Configuration;
 
 namespace CopilotChat.WebApi.Extensions;
 
-public class DefaultConfigurationAccessor
+public class DefaultConfigurationAccessor : IDefaultConfigurationAccessor
 {
     private readonly IConfiguration _configuration;
-    private readonly SecretClientAccessor _secretClient;
+    private readonly ISecretClientAccessor _secretClient;
     private readonly OpenAIDeploymentRepository _deploymentRepository;
 
     public DefaultConfigurationAccessor(
         IConfiguration configuration,
-        SecretClientAccessor secretClient,
+        ISecretClientAccessor secretClient,
         OpenAIDeploymentRepository deploymentRepository
     )
     {

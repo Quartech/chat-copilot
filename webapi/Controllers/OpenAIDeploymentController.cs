@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using CopilotChat.WebApi.Extensions;
 using CopilotChat.WebApi.Models.Request;
 using CopilotChat.WebApi.Models.Response;
 using CopilotChat.WebApi.Services;
@@ -19,12 +20,13 @@ public class OpenAIDeploymentController : ControllerBase
 
     public OpenAIDeploymentController(
         ILogger<OpenAIDeploymentController> logger,
-        OpenAIDeploymentRepository openAIDeploymentRepository
+        OpenAIDeploymentRepository openAIDeploymentRepository,
+        ISecretClientAccessor secretClientAccessor
     )
     {
         this._logger = logger;
         this._openAIDeploymentRepository = openAIDeploymentRepository;
-        this._qOpenAIDeploymentService = new QOpenAIDeploymentService(openAIDeploymentRepository);
+        this._qOpenAIDeploymentService = new QOpenAIDeploymentService(openAIDeploymentRepository, secretClientAccessor.GetSecretClient());
     }
 
     [HttpGet]

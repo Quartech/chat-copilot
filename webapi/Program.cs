@@ -6,12 +6,8 @@ using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
-using Azure.Identity;
-using Azure.Security.KeyVault.Secrets;
-using CopilotChat.Shared;
 using CopilotChat.WebApi.Extensions;
 using CopilotChat.WebApi.Hubs;
-using CopilotChat.WebApi.Plugins.Chat.Ext;
 using CopilotChat.WebApi.Services;
 using CopilotChat.WebApi.Storage;
 using Microsoft.ApplicationInsights.Extensibility;
@@ -57,9 +53,14 @@ public sealed class Program
 
         // Add SignalR as the real time relay service
         builder.Services.AddSignalR();
-        builder.Services.AddSingleton<SecretClientAccessor>();
+        builder.Services.AddSingleton<ISecretClientAccessor, SecretClientAccessor>();
 
-        builder.Services.AddSingleton<DefaultConfigurationAccessor>().AddSingleton<DefaultConfigurationFactory>();
+        builder.Services
+            .AddSingleton<IDefaultConfigurationAccessor, DefaultConfigurationAccessor>(sp =>
+            {
+                return new DefaultConfigurationAccessor(builder.Configuration, sp.GetRequiredService<ISecretClientAccessor>(), sp.GetRequiredService<OpenAIDeploymentRepository>());
+            })
+            .AddSingleton<IDefaultConfigurationFactory, DefaultConfigurationFactory>();
         // Configure and add semantic services
         builder.AddBotConfig().AddSemanticKernelServices().AddSemanticMemoryServices();
 

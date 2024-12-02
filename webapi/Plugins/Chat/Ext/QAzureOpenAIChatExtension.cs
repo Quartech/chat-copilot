@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Azure.AI.OpenAI.Chat;
+using Azure.Security.KeyVault.Secrets;
 using CopilotChat.WebApi.Models.Storage;
 using CopilotChat.WebApi.Services;
 using CopilotChat.WebApi.Storage;
@@ -44,7 +45,8 @@ public class QAzureOpenAIChatExtension
         QAzureOpenAIChatOptions qAzureOpenAIChatOptions,
         SpecializationRepository specializationSourceRepository,
         SpecializationIndexRepository indexRepository,
-        OpenAIDeploymentRepository openAIDeploymentRepository
+        OpenAIDeploymentRepository openAIDeploymentRepository,
+        SecretClient secretClient
     )
     {
         this._qAzureOpenAIChatOptions = qAzureOpenAIChatOptions;
@@ -53,7 +55,7 @@ public class QAzureOpenAIChatExtension
             qAzureOpenAIChatOptions
         );
         this._qSpecializationIndexService = new QSpecializationIndexService(indexRepository);
-        this._qOpenAIDeploymentService = new QOpenAIDeploymentService(openAIDeploymentRepository);
+        this._qOpenAIDeploymentService = new QOpenAIDeploymentService(openAIDeploymentRepository, secretClient);
     }
 
     public bool isEnabled(string? specializationId)

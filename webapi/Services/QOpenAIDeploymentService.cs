@@ -16,14 +16,10 @@ public class QOpenAIDeploymentService : IQOpenAIDeploymentService
     private OpenAIDeploymentRepository _openAIDeploymentRepository;
     private SecretClient _secretClient;
 
-    public QOpenAIDeploymentService(OpenAIDeploymentRepository deploymentRepository)
+    public QOpenAIDeploymentService(OpenAIDeploymentRepository deploymentRepository, SecretClient secretClient)
     {
         this._openAIDeploymentRepository = deploymentRepository;
-        //TODO: Don't leave the vault uri hardcoded.
-        this._secretClient = new SecretClient(
-            vaultUri: new Uri("https://kvt-copilot-cnc-app-dev.vault.azure.net/"),
-            credential: new DefaultAzureCredential()
-        );
+        this._secretClient = secretClient;
     }
 
     public async Task<OpenAIDeployment?> DeleteDeployment(Guid indexId)

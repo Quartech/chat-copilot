@@ -6,7 +6,7 @@ using Microsoft.Extensions.Configuration;
 
 namespace CopilotChat.WebApi.Extensions;
 
-public class SecretClientAccessor
+public class SecretClientAccessor : ISecretClientAccessor
 {
     private readonly IConfiguration _configuration;
     private SecretClient? _secretClient;

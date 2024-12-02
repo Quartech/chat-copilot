@@ -60,16 +60,14 @@ internal static class ISemanticMemoryClientExtensions
             }
         }
 
-        appBuilder.Services.AddSingleton(sp =>
-        {
-            var configurationFactory = sp.GetRequiredService<DefaultConfigurationFactory>();
-            var defaultConfig = configurationFactory.GetDefaultConfiguration();
+        // var defaultConfig = new DefaultConfiguration("gpt-4o", "text-embedding-ada-002", "727c04e966894813aebfc4d02caf0bca", new Uri("https://ncus-qsl-openai-poc.openai.azure.com/"));
+        var defaultConfig = serviceProvider.GetRequiredService<IDefaultConfigurationFactory>().GetDefaultConfiguration();
 
-            IKernelMemory memory = memoryBuilder
-                .FromMemoryConfiguration(memoryConfig, appBuilder.Configuration, defaultConfig)
-                .Build();
-            return memory;
-        });
+        IKernelMemory memory = memoryBuilder
+            .FromMemoryConfiguration(memoryConfig, appBuilder.Configuration, defaultConfig)
+            .Build();
+
+        appBuilder.Services.AddSingleton(memory);
     }
 
     public static Task<SearchResult> SearchMemoryAsync(

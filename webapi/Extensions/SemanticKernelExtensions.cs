@@ -114,6 +114,7 @@ internal static class SemanticKernelExtensions
                 specializationSourceRepository: sp.GetRequiredService<SpecializationRepository>(),
                 specializationIndexRepository: sp.GetRequiredService<SpecializationIndexRepository>(),
                 messageRelayHubContext: sp.GetRequiredService<IHubContext<MessageRelayHub>>(),
+                secretClient: sp.GetRequiredService<ISecretClientAccessor>().GetSecretClient(),
                 promptOptions: sp.GetRequiredService<IOptions<PromptsOptions>>(),
                 documentImportOptions: sp.GetRequiredService<IOptions<DocumentMemoryOptions>>(),
                 qAzureOpenAIChatOptions: sp.GetRequiredService<IOptions<QAzureOpenAIChatOptions>>(),
@@ -132,15 +133,12 @@ internal static class SemanticKernelExtensions
         builder.Services.AddSingleton(sp =>
         {
             var openAiRepo = sp.GetRequiredService<OpenAIDeploymentRepository>();
-            var openAiService = new QOpenAIDeploymentService(openAiRepo);
+            var openAiService = new QOpenAIDeploymentService(openAiRepo, sp.GetRequiredService<ISecretClientAccessor>().GetSecretClient());
             var openAiDeploymentsTask = openAiService.GetAllDeployments();
             openAiDeploymentsTask.Wait();
             var openAiDeployments = openAiDeploymentsTask.Result;
             var keyMap = new Dictionary<string, string>();
-            var secretClient = new SecretClient(
-                vaultUri: new Uri("https://kvt-copilot-cnc-app-dev.vault.azure.net/"),
-                credential: new DefaultAzureCredential()
-            );
+            var secretClient = sp.GetRequiredService<ISecretClientAccessor>().GetSecretClient();
 
             async Task InsertAPIKeyIntoDict(string secretName)
             {

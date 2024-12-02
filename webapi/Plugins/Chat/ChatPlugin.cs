@@ -12,6 +12,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure.AI.OpenAI.Chat;
+using Azure.Security.KeyVault.Secrets;
 using CopilotChat.WebApi.Hubs;
 using CopilotChat.WebApi.Models.Response;
 using CopilotChat.WebApi.Models.Storage;
@@ -123,6 +124,7 @@ public class ChatPlugin
         IOptions<PromptsOptions> promptOptions,
         IOptions<DocumentMemoryOptions> documentImportOptions,
         IOptions<QAzureOpenAIChatOptions> qAzureOpenAIChatOptions,
+        SecretClient secretClient,
         ILogger logger,
         AzureContentSafety? contentSafety = null,
         bool isUserIntentExtractionEnabled = true
@@ -140,7 +142,7 @@ public class ChatPlugin
             specializationSourceRepository,
             qAzureOpenAIChatOptions.Value
         );
-        this._qOpenAIDeploymentService = new QOpenAIDeploymentService(openAIDeploymentRepository);
+        this._qOpenAIDeploymentService = new QOpenAIDeploymentService(openAIDeploymentRepository, secretClient);
         this._semanticMemoryRetriever = new SemanticMemoryRetriever(
             promptOptions,
             chatSessionRepository,
@@ -151,7 +153,8 @@ public class ChatPlugin
             qAzureOpenAIChatOptions.Value,
             specializationSourceRepository,
             specializationIndexRepository,
-            openAIDeploymentRepository
+            openAIDeploymentRepository,
+            secretClient
         );
         this._contentSafety = contentSafety;
         this._isUserIntentExtractionEnabled = isUserIntentExtractionEnabled; // Initialize feature flag

@@ -4,6 +4,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using CopilotChat.WebApi.Auth;
+using CopilotChat.WebApi.Extensions;
 using CopilotChat.WebApi.Models.Request;
 using CopilotChat.WebApi.Models.Response;
 using CopilotChat.WebApi.Models.Storage;
@@ -40,7 +41,8 @@ public class SpecializationController : ControllerBase
         SpecializationRepository specializationSourceRepository,
         SpecializationIndexRepository indexRepository,
         OpenAIDeploymentRepository openAIDeploymentRepository,
-        IOptions<PromptsOptions> promptsOptions
+        IOptions<PromptsOptions> promptsOptions,
+        ISecretClientAccessor secretClientAccessor
     )
     {
         this._logger = logger;
@@ -49,7 +51,8 @@ public class SpecializationController : ControllerBase
             specializationOptions.Value,
             specializationSourceRepository,
             indexRepository,
-            openAIDeploymentRepository
+            openAIDeploymentRepository,
+            secretClientAccessor.GetSecretClient()
         );
         this._qspecializationService = new QSpecializationService(
             specializationSourceRepository,
