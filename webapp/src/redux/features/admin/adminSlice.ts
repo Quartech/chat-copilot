@@ -1,7 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { IChatCompletionDeployment, ISpecialization } from '../../../libs/models/Specialization';
 import { ISpecializationIndex } from '../../../libs/models/SpecializationIndex';
-import { AdminState, initialState } from './AdminState';
+import { AdminScreen, AdminState, initialState } from './AdminState';
 
 export const adminSlice = createSlice({
     name: 'admin',
@@ -12,9 +12,6 @@ export const adminSlice = createSlice({
             state.chatSpecialization = action.payload;
         },
         setSpecializations: (state: AdminState, action: PayloadAction<ISpecialization[]>) => {
-            // const updatedSpecializations = action.payload.filter(
-            //     (specialization: ISpecialization) => specialization.isActive,
-            // );
             state.specializations = action.payload;
         },
         setSpecializationIndexes: (state: AdminState, action: PayloadAction<ISpecializationIndex[]>) => {
@@ -23,20 +20,17 @@ export const adminSlice = createSlice({
         setChatCompletionDeployments: (state: AdminState, action: PayloadAction<IChatCompletionDeployment[]>) => {
             state.chatCompletionDeployments = action.payload;
         },
-        setAdminSelected: (state: AdminState, action: PayloadAction<boolean>) => {
-            state.isAdminSelected = action.payload;
-        },
-        setIndexSelected: (state: AdminState, action: PayloadAction<boolean>) => {
-            state.isIndexSelected = action.payload;
-        },
-        setUserFeedbackSelected: (state: AdminState, action: PayloadAction<boolean>) => {
-            state.isUserFeedbackSelected = action.payload;
+        setAdminSelected: (state: AdminState, action: PayloadAction<AdminScreen>) => {
+            state.selectedAdminScreen = action.payload;
         },
         setSelectedKey: (state: AdminState, action: PayloadAction<string>) => {
             state.selectedId = action.payload;
         },
         setSelectedIndexKey: (state: AdminState, action: PayloadAction<string>) => {
             state.selectedIndexId = action.payload;
+        },
+        setSelectedOpenAIDeploymentKey: (state: AdminState, action: PayloadAction<string>) => {
+            state.selectedOpenAIDeploymentId = action.payload;
         },
         addSpecialization: (state: AdminState, action: PayloadAction<ISpecialization>) => {
             state.specializations.push(action.payload);
@@ -81,8 +75,6 @@ export const {
     setSpecializationIndexes,
     setChatCompletionDeployments,
     setAdminSelected,
-    setIndexSelected,
-    setUserFeedbackSelected,
     setSelectedKey,
     setSelectedIndexKey,
     addSpecialization,
@@ -91,6 +83,7 @@ export const {
     editSpecializationIndex,
     removeSpecialization,
     removeSpecializationIndex,
+    setSelectedOpenAIDeploymentKey,
 } = adminSlice.actions;
 
 export default adminSlice.reducer;

@@ -10,7 +10,8 @@ import {
 import React, { FC, useEffect, useState } from 'react';
 import { useAppDispatch, useAppSelector } from '../../../redux/app/hooks';
 import { RootState } from '../../../redux/app/store';
-import { setAdminSelected, setIndexSelected, setUserFeedbackSelected } from '../../../redux/features/admin/adminSlice';
+import { setAdminSelected } from '../../../redux/features/admin/adminSlice';
+import { AdminScreen } from '../../../redux/features/admin/AdminState';
 import { setSearchSelected } from '../../../redux/features/search/searchSlice';
 import { Breakpoints } from '../../../styles';
 import { SearchList } from '../../search/search-list/SearchList';
@@ -61,29 +62,21 @@ export const ChatType: FC = () => {
             } else {
                 dispatch(setSearchSelected({ selected: true, specializationId: '' }));
             }
-            dispatch(setAdminSelected(false));
-            dispatch(setIndexSelected(false));
-            dispatch(setUserFeedbackSelected(false));
+            dispatch(setAdminSelected(AdminScreen.NONE));
         } else if (selectedTab === 'admin') {
             dispatch(setSearchSelected({ selected: false, specializationId: '' }));
             if (selectedAdminSubTab === 'specializations') {
-                dispatch(setAdminSelected(true));
-                dispatch(setIndexSelected(false));
-                dispatch(setUserFeedbackSelected(false));
+                dispatch(setAdminSelected(AdminScreen.SPECIALIZATION));
             } else if (selectedAdminSubTab === 'indexes') {
-                dispatch(setAdminSelected(false));
-                dispatch(setIndexSelected(true));
-                dispatch(setUserFeedbackSelected(false));
+                dispatch(setAdminSelected(AdminScreen.INDEX));
             } else if (selectedAdminSubTab === 'userFeedback') {
-                dispatch(setAdminSelected(false));
-                dispatch(setIndexSelected(false));
-                dispatch(setUserFeedbackSelected(true));
+                dispatch(setAdminSelected(AdminScreen.FEEDBACK));
+            } else if (selectedAdminSubTab === 'openAIDeployments') {
+                dispatch(setAdminSelected(AdminScreen.OPENAIDEPLOYMENT));
             }
         } else {
             dispatch(setSearchSelected({ selected: false, specializationId: '' }));
-            dispatch(setAdminSelected(false));
-            dispatch(setIndexSelected(false));
-            dispatch(setUserFeedbackSelected(false));
+            setAdminSelected(AdminScreen.NONE);
         }
     }, [selectedTab, selectedAdminSubTab, conversations, selectedId, dispatch]);
 
@@ -126,6 +119,9 @@ export const ChatType: FC = () => {
                         </Tab>
                         <Tab id="userFeedback" value={'userFeedback'}>
                             User Feedback
+                        </Tab>
+                        <Tab id="openAIDeployments" value={'openAIDeployments'}>
+                            Open AI Deployments
                         </Tab>
                     </TabList>
                 </div>

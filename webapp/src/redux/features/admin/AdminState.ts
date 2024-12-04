@@ -3,16 +3,24 @@ import { ISpecializationIndex } from '../../../libs/models/SpecializationIndex';
 
 export type Specializations = Record<string, AdminState>;
 
+export enum AdminScreen {
+    NONE,
+    SPECIALIZATION,
+    INDEX,
+    FEEDBACK,
+    OPENAIDEPLOYMENT,
+}
+
 export interface AdminState {
-    isAdminSelected: boolean;
-    isIndexSelected: boolean;
-    isUserFeedbackSelected: boolean;
+    selectedAdminScreen: AdminScreen;
     chatSpecialization: ISpecialization | undefined;
     specializations: ISpecialization[];
     specializationIndexes: ISpecializationIndex[];
     chatCompletionDeployments: IChatCompletionDeployment[];
+    openAIDeployments: Array<Record<string, any>>;
     selectedId: string;
     selectedIndexId: string;
+    selectedOpenAIDeploymentId: string;
 }
 export const Specializations = [
     {
@@ -41,13 +49,13 @@ export const Specializations = [
     },
 ];
 export const initialState: AdminState = {
-    isAdminSelected: false,
-    isIndexSelected: false,
-    isUserFeedbackSelected: false,
+    selectedAdminScreen: AdminScreen.NONE,
     chatSpecialization: undefined,
     specializations: Specializations,
     specializationIndexes: [],
     chatCompletionDeployments: [],
     selectedId: '',
     selectedIndexId: '',
+    selectedOpenAIDeploymentId: '',
+    openAIDeployments: [],
 };
