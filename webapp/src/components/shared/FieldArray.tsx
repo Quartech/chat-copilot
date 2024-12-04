@@ -7,6 +7,7 @@ interface IFieldArray<T> {
     onFieldChanged: (index: number, newValue: string) => void;
     onFieldAdded: () => void;
     onFieldRemoved: (index: number) => void;
+    className?: string;
 }
 
 const useClasses = makeStyles({
@@ -37,7 +38,7 @@ const FieldArray = <T,>(props: IFieldArray<T>) => {
             {values.map((value, idx) => (
                 <div key={`fieldArray-inner-${idx}`} className={classes.fieldElement}>
                     <Input
-                        className={classes.inputElement}
+                        className={props.className}
                         value={String(value)}
                         onChange={(_, data) => {
                             onFieldChanged(idx, data.value);
