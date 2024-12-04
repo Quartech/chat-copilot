@@ -38,7 +38,7 @@ const FieldArray = <T,>(props: IFieldArray<T>) => {
             {values.map((value, idx) => (
                 <div key={`fieldArray-inner-${idx}`} className={classes.fieldElement}>
                     <Input
-                        className={props.className}
+                        className={`${props.className} ${classes.inputElement}`}
                         value={String(value)}
                         onChange={(_, data) => {
                             onFieldChanged(idx, data.value);

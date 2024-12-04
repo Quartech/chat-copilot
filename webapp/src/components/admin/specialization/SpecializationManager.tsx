@@ -96,7 +96,6 @@ const useClasses = makeStyles({
     },
     needsAttention: {
         backgroundColor: '#FFCCCB',
-        flexGrow: 1,
     },
 });
 
