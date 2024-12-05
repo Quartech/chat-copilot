@@ -72,7 +72,9 @@ const useClasses = makeStyles({
 export const SpecializationIndexManager: React.FC = () => {
     const classes = useClasses();
     const indexes = useSpecializationIndex();
-    const { selectedIndexId, specializationIndexes } = useAppSelector((state: RootState) => state.admin);
+    const { selectedIndexId, specializationIndexes, openAIDeployments } = useAppSelector(
+        (state: RootState) => state.admin,
+    );
     const [id, setId] = useState('');
     const [name, setName] = useState('');
     const [queryType, setQueryType] = useState('');
@@ -207,14 +209,21 @@ export const SpecializationIndexManager: React.FC = () => {
                 <label htmlFor="openAIDeploymentConnection">
                     Open AI Deployment Connection<span className={classes.required}>*</span>
                 </label>
-                <Input
+                <Dropdown
+                    clearable
                     id="openAIDeploymentConnection"
-                    required
-                    value={openAIDeploymentConnection}
-                    onChange={(_event, data) => {
-                        setOpenAIDeploymentConnection(data.value);
+                    aria-labelledby={openAIDeploymentConnection}
+                    onOptionSelect={(_control, data) => {
+                        setOpenAIDeploymentConnection(data.optionValue ?? '');
                     }}
-                />
+                    value={openAIDeploymentConnection}
+                >
+                    {openAIDeployments.map((deployment) => (
+                        <Option key={deployment.name} value={deployment.name}>
+                            {deployment.name}
+                        </Option>
+                    ))}
+                </Dropdown>
                 <label htmlFor="embeddingDeployment">
                     Embedding Deployment<span className={classes.required}>*</span>
                 </label>
