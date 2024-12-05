@@ -27,10 +27,7 @@ internal static class ISemanticMemoryClientExtensions
     /// <summary>
     /// Inject <see cref="IKernelMemory"/>.
     /// </summary>
-    public static void AddSemanticMemoryServices(
-        this WebApplicationBuilder appBuilder,
-        DefaultConfiguration defaultConfig
-    )
+    public static void AddSemanticMemoryServices(this WebApplicationBuilder appBuilder)
     {
         var serviceProvider = appBuilder.Services.BuildServiceProvider();
 
@@ -62,6 +59,11 @@ internal static class ISemanticMemoryClientExtensions
                 memoryBuilder.WithCustomOcr(appBuilder.Configuration);
             }
         }
+
+        // var defaultConfig = new DefaultConfiguration("gpt-4o", "text-embedding-ada-002", "727c04e966894813aebfc4d02caf0bca", new Uri("https://ncus-qsl-openai-poc.openai.azure.com/"));
+        var defaultConfig = serviceProvider
+            .GetRequiredService<IDefaultConfigurationFactory>()
+            .GetDefaultConfiguration();
 
         IKernelMemory memory = memoryBuilder
             .FromMemoryConfiguration(memoryConfig, appBuilder.Configuration, defaultConfig)

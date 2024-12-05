@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Quartech. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Azure.AI.OpenAI.Chat;
+using Azure.Security.KeyVault.Secrets;
 using CopilotChat.WebApi.Models.Storage;
 using CopilotChat.WebApi.Services;
 using CopilotChat.WebApi.Storage;
@@ -38,10 +38,14 @@ public class QAzureOpenAIChatExtension
 
     private readonly QSpecializationIndexService _qSpecializationIndexService;
 
+    private readonly QOpenAIDeploymentService _qOpenAIDeploymentService;
+
     public QAzureOpenAIChatExtension(
         QAzureOpenAIChatOptions qAzureOpenAIChatOptions,
         SpecializationRepository specializationSourceRepository,
-        SpecializationIndexRepository indexRepository
+        SpecializationIndexRepository indexRepository,
+        OpenAIDeploymentRepository openAIDeploymentRepository,
+        SecretClient secretClient
     )
     {
         this._qAzureOpenAIChatOptions = qAzureOpenAIChatOptions;
@@ -50,6 +54,7 @@ public class QAzureOpenAIChatExtension
             qAzureOpenAIChatOptions
         );
         this._qSpecializationIndexService = new QSpecializationIndexService(indexRepository);
+        this._qOpenAIDeploymentService = new QOpenAIDeploymentService(openAIDeploymentRepository, secretClient);
     }
 
     public bool isEnabled(string? specializationId)
@@ -83,20 +88,17 @@ public class QAzureOpenAIChatExtension
             throw new InvalidOperationException("Configuration error: AI Search Deployment Connection is missing.");
         }
 
-        var openAIDeploymentConnection = this._qAzureOpenAIChatOptions.OpenAIDeploymentConnections.FirstOrDefault(c =>
-            c.Name == qSpecializationIndex.OpenAIDeploymentConnection
+        var openAIDeploymentConnection = await this._qOpenAIDeploymentService.GetDeployment(
+            specialization?.OpenAIDeploymentId ?? ""
         );
-        if (
-            openAIDeploymentConnection == null
-            || openAIDeploymentConnection.Endpoint == null
-            || openAIDeploymentConnection.APIKey == null
-        )
+        var apiKey = await this._qOpenAIDeploymentService.GetAPIKeyFromVaultForDeployment(openAIDeploymentConnection);
+        if (openAIDeploymentConnection == null || openAIDeploymentConnection.Endpoint == null || apiKey == null)
         {
             throw new InvalidOperationException("Configuration error: OpenAI Deployment Connection is missing.");
         }
 
         var embeddingEndpoint = this.GenerateEmbeddingEndpoint(
-            openAIDeploymentConnection.Endpoint,
+            new Uri(openAIDeploymentConnection.Endpoint),
             qSpecializationIndex
         );
         return new AzureSearchChatDataSource
@@ -117,7 +119,7 @@ public class QAzureOpenAIChatExtension
             Authentication = DataSourceAuthentication.FromApiKey(aiSearchDeploymentConnection.APIKey),
             VectorizationSource = DataSourceVectorizer.FromEndpoint(
                 embeddingEndpoint,
-                DataSourceAuthentication.FromApiKey(openAIDeploymentConnection.APIKey)
+                DataSourceAuthentication.FromApiKey(apiKey)
             ),
         };
     }
@@ -154,26 +156,25 @@ public class QAzureOpenAIChatExtension
     /// <summary>
     /// Retrieve all chat completion deployments from the available OpenAI deployment connections.
     /// </summary>
-    public List<QAzureOpenAIChatOptions.ChatCompletionDeployment> GetAllChatCompletionDeployments()
-    {
-        var chatCompletionDeployments = new List<QAzureOpenAIChatOptions.ChatCompletionDeployment>();
-        foreach (
-            QAzureOpenAIChatOptions.OpenAIDeploymentConnection connection in this._qAzureOpenAIChatOptions.OpenAIDeploymentConnections
-        )
-        {
-            foreach (var deployment in connection.ChatCompletionDeployments)
-            {
-                var deploymentWithConnection = new QAzureOpenAIChatOptions.ChatCompletionDeployment
-                {
-                    Name = $"{deployment.Name} ({connection.Name})",
-                    CompletionTokenLimit = deployment.CompletionTokenLimit,
-                    OutputTokens = deployment.OutputTokens,
-                };
-                chatCompletionDeployments.Add(deploymentWithConnection);
-            }
-        }
-        return chatCompletionDeployments;
-    }
+    // public List<QAzureOpenAIChatOptions.ChatCompletionDeployment> GetAllChatCompletionDeployments()
+    // {
+    //     var chatCompletionDeployments = new List<QAzureOpenAIChatOptions.ChatCompletionDeployment>();
+    //     foreach (
+    //         QAzureOpenAIChatOptions.OpenAIDeploymentConnection connection in this._qAzureOpenAIChatOptions.OpenAIDeploymentConnections
+    //     )
+    //     {
+    //         foreach (var deployment in connection.ChatCompletionDeployments)
+    //         {
+    //             var deploymentWithConnection = new QAzureOpenAIChatOptions.ChatCompletionDeployment
+    //             {
+    //                 Name = $"{deployment.Name} ({connection.Name})",
+    //                 CompletionTokenLimit = deployment.CompletionTokenLimit,
+    //             };
+    //             chatCompletionDeployments.Add(deploymentWithConnection);
+    //         }
+    //     }
+    //     return chatCompletionDeployments;
+    // }
 
     /// <summary>
     /// Get the default chat completion deployment.

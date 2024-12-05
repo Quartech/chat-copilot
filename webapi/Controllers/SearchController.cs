@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Quartech. All rights reserved.
 
 using System.Threading.Tasks;
+using CopilotChat.WebApi.Extensions;
 using CopilotChat.WebApi.Models.Request;
 using CopilotChat.WebApi.Plugins.Chat.Ext;
 using CopilotChat.WebApi.Services;
@@ -26,14 +27,18 @@ public class SearchController : ControllerBase
         ILogger<SearchController> logger,
         SpecializationRepository specializationSourceRepository,
         SpecializationIndexRepository specializationIndexRepository,
-        IOptions<QAzureOpenAIChatOptions> specializationOptions
+        OpenAIDeploymentRepository openAIDeploymentRepository,
+        IOptions<QAzureOpenAIChatOptions> specializationOptions,
+        ISecretClientAccessor secretClientAccessor
     )
     {
         this._logger = logger;
         this._qSearchService = new QSearchService(
             specializationOptions.Value,
             specializationSourceRepository,
-            specializationIndexRepository
+            specializationIndexRepository,
+            openAIDeploymentRepository,
+            secretClientAccessor.GetSecretClient()
         );
     }
 

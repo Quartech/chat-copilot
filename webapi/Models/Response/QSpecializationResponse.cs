@@ -56,8 +56,14 @@ public class QSpecializationResponse
     /// <summary>
     /// Deployment of the specialization
     /// </summary>
-    [JsonPropertyName("deployment")]
-    public string? Deployment { get; set; } = string.Empty;
+    [JsonPropertyName("openAIDeploymentId")]
+    public string? OpenAIDeploymentId { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Name of the completion deployment under this open ai deployment.
+    /// </summary>
+    [JsonPropertyName("completionDeploymentName")]
+    public string? CompletionDeploymentName { get; set; } = string.Empty;
 
     /// <summary>
     /// Image FilePath of the specialization.
@@ -164,9 +170,13 @@ public class QSpecializationResponse
         {
             this.IndexId = specializationSource.IndexId;
         }
-        if (specializationSource.Deployment != null)
+        if (specializationSource.OpenAIDeploymentId != null)
         {
-            this.Deployment = specializationSource.Deployment;
+            this.OpenAIDeploymentId = specializationSource.OpenAIDeploymentId;
+        }
+        if (specializationSource.CompletionDeploymentName != null)
+        {
+            this.CompletionDeploymentName = specializationSource.CompletionDeploymentName;
         }
     }
 }

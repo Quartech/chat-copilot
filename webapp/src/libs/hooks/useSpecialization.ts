@@ -12,12 +12,8 @@ import {
 import { addAlert, hideSpinner, showSpinner } from '../../redux/features/app/appSlice';
 import { AuthHelper } from '../auth/AuthHelper';
 import { AlertType } from '../models/AlertType';
-import {
-    IChatCompletionDeployment,
-    ISpecialization,
-    ISpecializationRequest,
-    ISpecializationToggleRequest,
-} from '../models/Specialization';
+import { IOpenAIDeployment } from '../models/OpenAIDeployment';
+import { ISpecialization, ISpecializationRequest, ISpecializationToggleRequest } from '../models/Specialization';
 import { SpecializationService } from '../services/SpecializationService';
 
 export const useSpecialization = () => {
@@ -56,7 +52,7 @@ export const useSpecialization = () => {
             const accessToken = await AuthHelper.getSKaaSAccessToken(instance, inProgress);
             await specializationService
                 .getAllChatCompletionDeploymentsAsync(accessToken)
-                .then((result: IChatCompletionDeployment[]) => {
+                .then((result: IOpenAIDeployment[]) => {
                     dispatch(setChatCompletionDeployments(result));
                 });
         } catch (e: any) {
