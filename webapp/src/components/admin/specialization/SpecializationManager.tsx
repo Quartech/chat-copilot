@@ -107,9 +107,12 @@ export const SpecializationManager: React.FC = () => {
     const classes = useClasses();
     const specialization = useSpecialization();
     const dispatch = useAppDispatch();
-    const { specializations, specializationIndexes, chatCompletionDeployments, selectedId } = useAppSelector(
-        (state: RootState) => state.admin,
-    );
+    const {
+        specializations,
+        specializationIndexes,
+        openAIDeployments: chatCompletionDeployments,
+        selectedId,
+    } = useAppSelector((state: RootState) => state.admin);
 
     interface FormattedOpenAIDeployment {
         id: string;

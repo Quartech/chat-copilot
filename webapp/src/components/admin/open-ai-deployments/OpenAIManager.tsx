@@ -1,11 +1,11 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import { Button, Input, makeStyles, shorthands, tokens } from '@fluentui/react-components';
+import { Button, Field, Input, makeStyles, shorthands, tokens } from '@fluentui/react-components';
 import React, { useEffect, useState } from 'react';
-import { useSpecializationIndex } from '../../../libs/hooks/useSpecializationIndex';
-import { ISpecializationIndex } from '../../../libs/models/SpecializationIndex';
+import { useOpenAIDeployments } from '../../../libs/hooks/useOpenAIDeployment';
+import { IChatCompletionDeployment, IOpenAIDeployment } from '../../../libs/models/OpenAIDeployment';
 import { useAppSelector } from '../../../redux/app/hooks';
 import { RootState } from '../../../redux/app/store';
+import { setSelectedOpenAIDeploymentKey } from '../../../redux/features/admin/adminSlice';
+import { Add20, Dismiss20 } from '../../shared/BundledIcons';
 import { ConfirmationDialog } from '../../shared/ConfirmationDialog';
 import FieldArray from '../../shared/FieldArray';
 
@@ -70,17 +70,37 @@ const useClasses = makeStyles({
     input: {
         width: '80px',
     },
+    tripleFieldArrayRoot: {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '1rem',
+    },
+    tripleFieldElement: {
+        display: 'flex',
+        flexDirection: 'row',
+        gap: '1rem',
+    },
+    tripleFieldInputElement: {
+        flexGrow: 1,
+    },
+    tripleFieldAddButton: {
+        width: '110px',
+    },
+    tripleFieldRemoveButton: {
+        height: '32px',
+        alignSelf: 'end',
+    },
 });
 
 export const OpenAIManager: React.FC = () => {
     const classes = useClasses();
-    const indexes = useSpecializationIndex();
-    const { selectedIndexId, specializationIndexes } = useAppSelector((state: RootState) => state.admin);
+    const deploymentServices = useOpenAIDeployments();
+    const { selectedOpenAIDeploymentId, openAIDeployments } = useAppSelector((state: RootState) => state.admin);
     const [id, setId] = useState('');
     const [name, setName] = useState('');
     const [endpoint, setEndpoint] = useState('');
     const [secretName, setSecretName] = useState('');
-    const [chatCompletionDeployments, setChatCompletionDeployments] = useState<Array<Record<string, any>>>([]);
+    const [chatCompletionDeployments, setChatCompletionDeployments] = useState<IChatCompletionDeployment[]>([]);
     const [embeddingDeployments, setEmbeddingDeployments] = useState<string[]>([]);
     const [imageGenerationDeployments, setImageGenerationDeployments] = useState<string[]>([]);
     const [editMode, setEditMode] = useState(false);
@@ -97,71 +117,82 @@ export const OpenAIManager: React.FC = () => {
         !!imageGenerationDeployments;
 
     const onSaveOpenAIDeployment = (editMode: boolean): void => {
-        // const index: ISpecializationIndex = {
-        //     id: '',
-        //     name,
-        //     queryType,
-        //     aiSearchDeploymentConnection,
-        //     openAIDeploymentConnection,
-        //     embeddingDeployment,
-        //     order: editMode ? order : specializationIndexes.length,
-        // };
+        const deployment: IOpenAIDeployment = {
+            id: '',
+            name,
+            endpoint,
+            secretName,
+            chatCompletionDeployments,
+            embeddingDeployments,
+            imageGenerationDeployments,
+            order: editMode ? order : openAIDeployments.length,
+        };
 
         if (editMode) {
-            //void indexes.updateSpecializationIndex(selectedIndexId, index);
+            void deploymentServices.updateOpenAIDeployment(selectedOpenAIDeploymentId, deployment);
         } else {
-            //void indexes.saveSpecializationIndex(index);
+            void deploymentServices.saveOpenAIDeployment(deployment);
         }
     };
 
     const confirmDelete = () => {
-        void indexes.deleteSpecializationIndex(id);
+        void deploymentServices.deleteOpenAIDeployment(id);
+        setSelectedOpenAIDeploymentKey('');
         fillState({
             name: '',
             id: '',
-            queryType: '',
-            aiSearchDeploymentConnection: '',
-            openAIDeploymentConnection: '',
-            embeddingDeployment: '',
+            endpoint: '',
+            secretName: '',
+            chatCompletionDeployments: [],
+            embeddingDeployments: [],
+            imageGenerationDeployments: [],
             order: 0,
         });
         setIsDeleteDialogOpen(false);
     };
 
-    const onDeleteSpecializationIndex = (): void => {
+    const onDeleteOpenAIDeployment = (): void => {
         setIsDeleteDialogOpen(true);
     };
 
-    const fillState = (index: ISpecializationIndex) => {
-        // setId(index.id);
-        // setName(index.name);
-        // setQueryType(index.queryType);
-        // setAiSearchDeploymentConnection(index.aiSearchDeploymentConnection);
-        // setOpenAIDeploymentConnection(index.openAIDeploymentConnection);
-        // setEmbeddingDeployment(index.embeddingDeployment);
-        // setOrder(index.order);
+    const fillState = (deployment: IOpenAIDeployment) => {
+        setId(deployment.id);
+        setName(deployment.name);
+        setEndpoint(deployment.endpoint);
+        setSecretName(deployment.secretName);
+        setChatCompletionDeployments(deployment.chatCompletionDeployments);
+        setImageGenerationDeployments(deployment.imageGenerationDeployments);
+        setEmbeddingDeployments(deployment.embeddingDeployments);
+        setOrder(deployment.order);
     };
 
     useEffect(() => {
-        if (selectedIndexId != '') {
+        if (selectedOpenAIDeploymentId != '') {
             setEditMode(true);
-            const specializationIndex = specializationIndexes.find((a) => a.id === selectedIndexId);
-            if (specializationIndex) {
-                fillState(specializationIndex);
+            const deployment = openAIDeployments.find((a) => a.id === selectedOpenAIDeploymentId);
+            if (deployment) {
+                fillState(deployment);
             }
         } else {
             setEditMode(false);
             fillState({
                 name: '',
                 id: '',
-                queryType: '',
-                aiSearchDeploymentConnection: '',
-                openAIDeploymentConnection: '',
-                embeddingDeployment: '',
+                endpoint: '',
+                secretName: '',
+                chatCompletionDeployments: [],
+                embeddingDeployments: [],
+                imageGenerationDeployments: [],
                 order: 0,
             });
         }
-    }, [editMode, selectedIndexId, specializationIndexes]);
+    }, [editMode, selectedOpenAIDeploymentId, openAIDeployments]);
+
+    const onTripleFieldAdded = () => {
+        const items = chatCompletionDeployments.slice();
+        items.push({ name: '', completionTokenLimit: 0, outputTokens: 0 });
+        setChatCompletionDeployments(items);
+    };
 
     return (
         <div className={classes.scrollableContainer}>
@@ -184,7 +215,7 @@ export const OpenAIManager: React.FC = () => {
                 <Input
                     id="endpoint"
                     required
-                    value={name}
+                    value={endpoint}
                     onChange={(_event, data) => {
                         setEndpoint(data.value);
                     }}
@@ -203,39 +234,101 @@ export const OpenAIManager: React.FC = () => {
                 <label htmlFor="openAIDeploymentConnection">
                     Open AI Deployment Connection<span className={classes.required}>*</span>
                 </label>
-                {chatCompletionDeployments.map((deployment, idx) => {
-                    return (
-                        <div key={`deployment-completion-${idx}`}>
-                            <Input
-                                value={deployment.name}
-                                onChange={(_, data) => {
-                                    console.log(data);
-                                }}
-                            />
-                            <Input
-                                value={deployment.completionTokenLimit}
-                                onChange={(_, data) => {
-                                    console.log(data);
-                                }}
-                            />
-                            <Button>Remove</Button>
-                        </div>
-                    );
-                })}
+                <div className={classes.tripleFieldArrayRoot}>
+                    {chatCompletionDeployments.map((deployment, idx) => {
+                        return (
+                            <div key={`deployment-completion-${idx}`} className={classes.tripleFieldElement}>
+                                <Field label="Deployment Name" className={classes.tripleFieldInputElement}>
+                                    <Input
+                                        value={deployment.name}
+                                        onChange={(_, data) => {
+                                            const arrayClone = chatCompletionDeployments.slice();
+                                            arrayClone[idx] = { ...arrayClone[idx], name: data.value };
+                                            setChatCompletionDeployments(arrayClone);
+                                        }}
+                                    />
+                                </Field>
+                                <Field label="Completion Token Limit" className={classes.tripleFieldInputElement}>
+                                    <Input
+                                        value={String(deployment.completionTokenLimit)}
+                                        onChange={(_, data) => {
+                                            const arrayClone = chatCompletionDeployments.slice();
+                                            const numericRepresentation = parseInt(data.value);
+                                            if (isNaN(numericRepresentation)) {
+                                                return;
+                                            }
+                                            arrayClone[idx] = {
+                                                ...arrayClone[idx],
+                                                completionTokenLimit: numericRepresentation,
+                                            };
+                                            setChatCompletionDeployments(arrayClone);
+                                        }}
+                                    />
+                                </Field>
+                                <Field label="Ouput Tokens" className={classes.tripleFieldInputElement}>
+                                    <Input
+                                        placeholder="Output Tokens"
+                                        value={String(deployment.outputTokens)}
+                                        onChange={(_, data) => {
+                                            const arrayClone = chatCompletionDeployments.slice();
+                                            const numericRepresentation = parseInt(data.value);
+                                            if (isNaN(numericRepresentation)) {
+                                                return;
+                                            }
+                                            arrayClone[idx] = {
+                                                ...arrayClone[idx],
+                                                outputTokens: numericRepresentation,
+                                            };
+                                            setChatCompletionDeployments(arrayClone);
+                                        }}
+                                    />
+                                </Field>
+                                <Button
+                                    className={classes.tripleFieldRemoveButton}
+                                    icon={<Dismiss20 />}
+                                    onClick={() => {
+                                        setChatCompletionDeployments([
+                                            ...chatCompletionDeployments.slice(0, idx),
+                                            ...chatCompletionDeployments.slice(idx + 1),
+                                        ]);
+                                    }}
+                                >
+                                    Remove
+                                </Button>
+                            </div>
+                        );
+                    })}
+                    <Button
+                        disabled={false}
+                        className={classes.tripleFieldAddButton}
+                        onClick={() => {
+                            onTripleFieldAdded();
+                        }}
+                        icon={<Add20 />}
+                    >
+                        Add
+                    </Button>
+                </div>
                 <label htmlFor="embeddingDeployment">
                     Embedding Deployments<span className={classes.required}>*</span>
                 </label>
                 <FieldArray
                     values={embeddingDeployments}
                     maxItems={4}
-                    onFieldChanged={function (index: number, newValue: string): void {
-                        throw new Error('Function not implemented.');
+                    onFieldChanged={(index: number, newValue: string) => {
+                        const items = embeddingDeployments.slice();
+                        items[index] = newValue;
+                        setEmbeddingDeployments(items);
                     }}
-                    onFieldAdded={function (): void {
-                        throw new Error('Function not implemented.');
+                    onFieldAdded={() => {
+                        const items = embeddingDeployments.concat(['']);
+                        setEmbeddingDeployments(items);
                     }}
-                    onFieldRemoved={function (index: number): void {
-                        throw new Error('Function not implemented.');
+                    onFieldRemoved={(index: number) => {
+                        setEmbeddingDeployments([
+                            ...embeddingDeployments.slice(0, index),
+                            ...embeddingDeployments.slice(index + 1),
+                        ]);
                     }}
                 />
                 <label htmlFor="imageGenerationDeployments">
@@ -244,20 +337,26 @@ export const OpenAIManager: React.FC = () => {
                 <FieldArray
                     values={imageGenerationDeployments}
                     maxItems={4}
-                    onFieldChanged={function (index: number, newValue: string): void {
-                        throw new Error('Function not implemented.');
+                    onFieldChanged={(index: number, newValue: string) => {
+                        const items = imageGenerationDeployments.slice();
+                        items[index] = newValue;
+                        setImageGenerationDeployments(items);
                     }}
-                    onFieldAdded={function (): void {
-                        throw new Error('Function not implemented.');
+                    onFieldAdded={() => {
+                        const items = imageGenerationDeployments.concat(['']);
+                        setImageGenerationDeployments(items);
                     }}
-                    onFieldRemoved={function (index: number): void {
-                        throw new Error('Function not implemented.');
+                    onFieldRemoved={(index: number) => {
+                        setImageGenerationDeployments([
+                            ...imageGenerationDeployments.slice(0, index),
+                            ...imageGenerationDeployments.slice(index + 1),
+                        ]);
                     }}
                 />
                 <ConfirmationDialog
                     open={isDeleteDialogOpen}
-                    title="Delete Index"
-                    content={`Are you sure you want to delete the ${name} index?`}
+                    title="Delete Open AI Deployment"
+                    content={`Are you sure you want to delete the ${name} Open AI Deployment?`}
                     confirmLabel="Delete"
                     cancelLabel="Cancel"
                     onConfirm={confirmDelete}
@@ -266,7 +365,7 @@ export const OpenAIManager: React.FC = () => {
                     }}
                 />
                 <div className={classes.controls}>
-                    <Button appearance="secondary" disabled={!id} onClick={onDeleteSpecializationIndex}>
+                    <Button appearance="secondary" disabled={!id} onClick={onDeleteOpenAIDeployment}>
                         Delete
                     </Button>
 

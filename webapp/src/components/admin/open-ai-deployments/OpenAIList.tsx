@@ -2,7 +2,7 @@ import { Button, makeStyles, shorthands, tokens } from '@fluentui/react-componen
 import { FC } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import { getUUID } from '../../../libs/utils/HelperMethods';
+import { useOpenAIDeployments } from '../../../libs/hooks/useOpenAIDeployment';
 import { useAppDispatch, useAppSelector } from '../../../redux/app/hooks';
 import { RootState } from '../../../redux/app/store';
 import { setSelectedOpenAIDeploymentKey } from '../../../redux/features/admin/adminSlice';
@@ -54,7 +54,7 @@ const useClasses = makeStyles({
 export const OpenAIList: FC = () => {
     const classes = useClasses();
     const dispatch = useAppDispatch();
-    //const indexes = useSpecializationIndex();
+    const deploymentServices = useOpenAIDeployments();
     const { openAIDeployments, selectedOpenAIDeploymentId } = useAppSelector((state: RootState) => state.admin);
     const onAddOpenAIClick = () => {
         dispatch(setSelectedOpenAIDeploymentKey(''));
@@ -73,14 +73,16 @@ export const OpenAIList: FC = () => {
                                 onAddOpenAIClick();
                             }}
                         >
-                            New Index
+                            New Deployment
                         </Button>
                     </div>
                     <div aria-label={'open ai index list'} className={classes.list}>
                         <AdminItemListSection
                             header="All"
-                            items={openAIDeployments.map((a) => ({ ...a, name: 'a', id: getUUID(), order: 0 }))}
-                            onItemCollectionReorder={() => {}}
+                            items={openAIDeployments}
+                            onItemCollectionReorder={(deployments) => {
+                                void deploymentServices.setOpenAIDeploymentOrder(deployments);
+                            }}
                             onItemSelected={(id: string) => {
                                 dispatch(setSelectedOpenAIDeploymentKey(id));
                             }}

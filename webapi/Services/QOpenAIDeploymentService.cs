@@ -74,7 +74,7 @@ public class QOpenAIDeploymentService : IQOpenAIDeploymentService
             deployment.ChatCompletionDeployments
         );
         var deserializeEmbeddings = JsonConvert.DeserializeObject<List<string>>(deployment.EmbeddingDeployments);
-        var deserializeImageGeneration = JsonConvert.DeserializeObject<List<string>>(deployment.EmbeddingDeployments);
+        var deserializeImageGeneration = JsonConvert.DeserializeObject<List<string>>(deployment.ImageGenerationDeployments);
 
         var deploymentInsert = new OpenAIDeployment(
             deployment.Name,

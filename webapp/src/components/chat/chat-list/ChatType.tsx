@@ -54,6 +54,9 @@ export const ChatType: FC = () => {
     }, [activeUserInfo]);
 
     useEffect(() => {
+        if (selectedTab === 'chat') {
+            dispatch(setAdminSelected(AdminScreen.NONE));
+        }
         if (selectedTab === 'search') {
             const selectedConversation = conversations[selectedId];
             if (selectedConversation.specializationId) {

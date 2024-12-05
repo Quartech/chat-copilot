@@ -17,7 +17,7 @@ export interface AdminState {
     chatSpecialization: ISpecialization | undefined;
     specializations: ISpecialization[];
     specializationIndexes: ISpecializationIndex[];
-    chatCompletionDeployments: IOpenAIDeployment[];
+    openAIDeployments: IOpenAIDeployment[];
     selectedId: string;
     selectedIndexId: string;
     selectedOpenAIDeploymentId: string;
@@ -54,9 +54,8 @@ export const initialState: AdminState = {
     chatSpecialization: undefined,
     specializations: Specializations,
     specializationIndexes: [],
-    chatCompletionDeployments: [],
+    openAIDeployments: [],
     selectedId: '',
     selectedIndexId: '',
     selectedOpenAIDeploymentId: '',
-    openAIDeployments: [],
 };
