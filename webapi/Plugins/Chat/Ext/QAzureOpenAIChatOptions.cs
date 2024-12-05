@@ -26,9 +26,9 @@ public class QAzureOpenAIChatOptions
     public int DefaultPastMessagesIncludedCount { get; set; } = 0;
     public int DefaultMaxResponseTokenLimit { get; set; } = 0;
 
-    [Required]
-    public IList<OpenAIDeploymentConnection> OpenAIDeploymentConnections { get; set; } =
-        new List<OpenAIDeploymentConnection>();
+    // [Required]
+    // public IList<OpenAIDeploymentConnection> OpenAIDeploymentConnections { get; set; } =
+    //     new List<OpenAIDeploymentConnection>();
 
     [Required]
     public IList<AISearchDeploymentConnection> AISearchDeploymentConnections { get; set; } =

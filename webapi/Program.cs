@@ -6,11 +6,10 @@ using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
-using CopilotChat.Shared;
 using CopilotChat.WebApi.Extensions;
 using CopilotChat.WebApi.Hubs;
-using CopilotChat.WebApi.Plugins.Chat.Ext;
 using CopilotChat.WebApi.Services;
+using CopilotChat.WebApi.Storage;
 using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.ApplicationInsights.Extensibility.Implementation;
 using Microsoft.AspNetCore.Builder;
@@ -54,25 +53,20 @@ public sealed class Program
 
         // Add SignalR as the real time relay service
         builder.Services.AddSignalR();
-        var qAzureOpenAIChatOptions =
-            builder.Configuration.GetSection(QAzureOpenAIChatOptions.PropertyName).Get<QAzureOpenAIChatOptions>()
-            ?? new QAzureOpenAIChatOptions { Enabled = false };
+        builder.Services.AddSingleton<ISecretClientAccessor, SecretClientAccessor>();
 
-        var defaultConnection = qAzureOpenAIChatOptions.OpenAIDeploymentConnections.FirstOrDefault(conn =>
-            conn.Name.Equals(qAzureOpenAIChatOptions.DefaultConnection, StringComparison.OrdinalIgnoreCase)
-        );
-        if (defaultConnection == null)
-        {
-            throw new InvalidOperationException("Default connection not found. Please check the configuration.");
-        }
-        var defaultConfig = new DefaultConfiguration(
-            qAzureOpenAIChatOptions.DefaultModel,
-            qAzureOpenAIChatOptions.DefaultEmbeddingModel,
-            defaultConnection.APIKey,
-            defaultConnection.Endpoint
-        );
+        builder
+            .Services.AddSingleton<IDefaultConfigurationAccessor, DefaultConfigurationAccessor>(sp =>
+            {
+                return new DefaultConfigurationAccessor(
+                    builder.Configuration,
+                    sp.GetRequiredService<ISecretClientAccessor>(),
+                    sp.GetRequiredService<OpenAIDeploymentRepository>()
+                );
+            })
+            .AddSingleton<IDefaultConfigurationFactory, DefaultConfigurationFactory>();
         // Configure and add semantic services
-        builder.AddBotConfig().AddSemanticKernelServices().AddSemanticMemoryServices(defaultConfig);
+        builder.AddBotConfig().AddSemanticKernelServices().AddSemanticMemoryServices();
 
         // Add AppInsights telemetry
         builder

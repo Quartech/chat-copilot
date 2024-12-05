@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Azure.Security.KeyVault.Secrets;
 using CopilotChat.WebApi.Models.Request;
 using CopilotChat.WebApi.Models.Response;
 using CopilotChat.WebApi.Plugins.Chat.Ext;
@@ -26,13 +27,17 @@ public class QSearchService : IQSearchService
     public QSearchService(
         QAzureOpenAIChatOptions qAzureOpenAIChatOptions,
         SpecializationRepository specializationSourceRepository,
-        SpecializationIndexRepository indexRepository
+        SpecializationIndexRepository indexRepository,
+        OpenAIDeploymentRepository openAIDeploymentRepository,
+        SecretClient secretClient
     )
     {
         this._qAzureOpenAIChatExtension = new QAzureOpenAIChatExtension(
             qAzureOpenAIChatOptions,
             specializationSourceRepository,
-            indexRepository
+            indexRepository,
+            openAIDeploymentRepository,
+            secretClient
         );
         this._httpClientHandler = new() { CheckCertificateRevocationList = true };
         this._httpClient = new(this._httpClientHandler);

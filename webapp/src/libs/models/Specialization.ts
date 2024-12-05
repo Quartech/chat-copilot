@@ -5,7 +5,8 @@ export interface ISpecialization {
     description: string;
     roleInformation: string;
     indexId: string;
-    deployment: string;
+    openAIDeploymentId: string;
+    completionDeploymentName: string;
     imageFilePath: string;
     iconFilePath: string;
     isActive: boolean;
@@ -32,7 +33,8 @@ export interface ISpecializationRequest {
     description: string;
     roleInformation: string;
     indexId: string;
-    deployment: string;
+    openAIDeploymentId: string;
+    completionDeploymentName: string;
     imageFile: File | null;
     iconFile: File | null;
     deleteImage?: boolean; // Flag to delete the image

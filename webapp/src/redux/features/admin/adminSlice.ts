@@ -1,5 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { IChatCompletionDeployment, ISpecialization } from '../../../libs/models/Specialization';
+import { IOpenAIDeployment } from '../../../libs/models/OpenAIDeployment';
+import { ISpecialization } from '../../../libs/models/Specialization';
 import { ISpecializationIndex } from '../../../libs/models/SpecializationIndex';
 import { AdminScreen, AdminState, initialState } from './AdminState';
 
@@ -17,7 +18,7 @@ export const adminSlice = createSlice({
         setSpecializationIndexes: (state: AdminState, action: PayloadAction<ISpecializationIndex[]>) => {
             state.specializationIndexes = action.payload;
         },
-        setChatCompletionDeployments: (state: AdminState, action: PayloadAction<IChatCompletionDeployment[]>) => {
+        setChatCompletionDeployments: (state: AdminState, action: PayloadAction<IOpenAIDeployment[]>) => {
             state.chatCompletionDeployments = action.payload;
         },
         setAdminSelected: (state: AdminState, action: PayloadAction<AdminScreen>) => {

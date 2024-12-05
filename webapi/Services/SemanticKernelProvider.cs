@@ -1,7 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Net.Http;
+using CopilotChat.WebApi.Models.Storage;
 using CopilotChat.WebApi.Plugins.Chat.Ext;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -22,14 +24,18 @@ public sealed class SemanticKernelProvider
         IServiceProvider serviceProvider,
         IConfiguration configuration,
         IHttpClientFactory httpClientFactory,
-        QAzureOpenAIChatOptions qAzureOpenAIChatOptions
+        QAzureOpenAIChatOptions qAzureOpenAIChatOptions,
+        IEnumerable<OpenAIDeployment> openAIDeployments,
+        IDictionary<string, string> secretNameKeyMap
     )
     {
         this._kernel = InitializeSemanticKernel(
             serviceProvider,
             configuration,
             httpClientFactory,
-            qAzureOpenAIChatOptions
+            qAzureOpenAIChatOptions,
+            openAIDeployments,
+            secretNameKeyMap
         );
     }
 
@@ -42,7 +48,9 @@ public sealed class SemanticKernelProvider
         IServiceProvider serviceProvider,
         IConfiguration configuration,
         IHttpClientFactory httpClientFactory,
-        QAzureOpenAIChatOptions qAzureOpenAIChatOptions
+        QAzureOpenAIChatOptions qAzureOpenAIChatOptions,
+        IEnumerable<OpenAIDeployment> openAIDeployments,
+        IDictionary<string, string> secretNameKeyMap
     )
     {
         var builder = Kernel.CreateBuilder();
@@ -50,35 +58,32 @@ public sealed class SemanticKernelProvider
         builder.Services.AddLogging();
 
         var memoryOptions = serviceProvider.GetRequiredService<IOptions<KernelMemoryConfig>>().Value;
-
         switch (memoryOptions.TextGeneratorType)
         {
             case string x when x.Equals("AzureOpenAI", StringComparison.OrdinalIgnoreCase):
             case string y when y.Equals("AzureOpenAIText", StringComparison.OrdinalIgnoreCase):
-                foreach (
-                    QAzureOpenAIChatOptions.OpenAIDeploymentConnection connection in qAzureOpenAIChatOptions.OpenAIDeploymentConnections
-                )
+                foreach (var openAIDeployment in openAIDeployments)
                 {
-                    foreach (var deployment in connection.ChatCompletionDeployments)
+                    foreach (var deployment in openAIDeployment.ChatCompletionDeployments)
                     {
 #pragma warning disable CA2000 // No need to dispose of HttpClient instances from IHttpClientFactory
                         builder.AddAzureOpenAIChatCompletion(
                             deployment.Name,
-                            connection.Endpoint?.ToString(),
-                            connection.APIKey,
+                            openAIDeployment.Endpoint?.ToString(),
+                            secretNameKeyMap[openAIDeployment.SecretName],
                             httpClient: httpClientFactory.CreateClient(),
-                            serviceId: $"{deployment.Name} ({connection.Name})"
+                            serviceId: $"{deployment.Name} ({openAIDeployment.Name})"
                         );
                     }
-                    foreach (var deployment in connection.ImageGenerationDeployments)
+                    foreach (var deployment in openAIDeployment.ImageGenerationDeployments)
                     {
 #pragma warning disable SKEXP0010 // Experimental method AddAzureOpenAITextToImage, suppressed instability warning
                         builder.AddAzureOpenAITextToImage(
-                            deployment.Name,
-                            connection.Endpoint?.ToString(),
-                            connection.APIKey,
+                            deployment,
+                            openAIDeployment.Endpoint?.ToString(),
+                            secretNameKeyMap[openAIDeployment.SecretName],
                             httpClient: httpClientFactory.CreateClient(),
-                            serviceId: deployment.Name
+                            serviceId: deployment
                         );
                     }
                 }

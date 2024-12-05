@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Quartech. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using CopilotChat.WebApi.Auth;
+using CopilotChat.WebApi.Extensions;
 using CopilotChat.WebApi.Models.Request;
 using CopilotChat.WebApi.Models.Response;
 using CopilotChat.WebApi.Models.Storage;
@@ -16,7 +16,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using static CopilotChat.WebApi.Plugins.Chat.Ext.QAzureOpenAIChatOptions;
 
 namespace CopilotChat.WebApi.Controllers;
 
@@ -41,7 +40,9 @@ public class SpecializationController : ControllerBase
         IOptions<QAzureOpenAIChatOptions> specializationOptions,
         SpecializationRepository specializationSourceRepository,
         SpecializationIndexRepository indexRepository,
-        IOptions<PromptsOptions> promptsOptions
+        OpenAIDeploymentRepository openAIDeploymentRepository,
+        IOptions<PromptsOptions> promptsOptions,
+        ISecretClientAccessor secretClientAccessor
     )
     {
         this._logger = logger;
@@ -49,7 +50,9 @@ public class SpecializationController : ControllerBase
         this._qAzureOpenAIChatExtension = new QAzureOpenAIChatExtension(
             specializationOptions.Value,
             specializationSourceRepository,
-            indexRepository
+            indexRepository,
+            openAIDeploymentRepository,
+            secretClientAccessor.GetSecretClient()
         );
         this._qspecializationService = new QSpecializationService(
             specializationSourceRepository,
@@ -100,16 +103,16 @@ public class SpecializationController : ControllerBase
     /// Get all chat completion deployments.
     /// </summary>
     /// <returns>A list of chat completion deployments.</returns>
-    [HttpGet]
-    [Route("specialization/deployments")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public List<ChatCompletionDeployment> GetAllChatCompletionDeployments()
-    {
-        return this._qAzureOpenAIChatExtension.GetAllChatCompletionDeployments().ToList();
-    }
+    // [HttpGet]
+    // [Route("specialization/deployments")]
+    // [ProducesResponseType(StatusCodes.Status200OK)]
+    // [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    // [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    // [ProducesResponseType(StatusCodes.Status404NotFound)]
+    // public List<string> GetAllChatCompletionDeployments()
+    // {
+    //     return this._qAzureOpenAIChatExtension.GetAllChatCompletionDeployments().Select(deploy => deploy.Name).ToList();
+    // }
 
     /// <summary>
     /// Creates a new specialization.

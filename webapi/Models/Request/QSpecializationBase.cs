@@ -74,8 +74,14 @@ public class QSpecializationBase
     /// <summary>
     /// Deployment of the specialization
     /// </summary>
-    [JsonPropertyName("deployment")]
-    public string? Deployment { get; set; }
+    [JsonPropertyName("openAIDeploymentId")]
+    public string? OpenAIDeploymentId { get; set; }
+
+    /// <summary>
+    /// Completion deployment name for this open ai deployment
+    /// </summary>
+    [JsonPropertyName("completionDeploymentName")]
+    public string? CompletionDeploymentName { get; set; }
 
     /// <summary>
     /// Initial chat message that should be displayed to the client for this specialization.

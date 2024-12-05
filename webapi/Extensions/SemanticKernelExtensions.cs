@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -111,11 +112,13 @@ internal static class SemanticKernelExtensions
                 specializationSourceRepository: sp.GetRequiredService<SpecializationRepository>(),
                 specializationIndexRepository: sp.GetRequiredService<SpecializationIndexRepository>(),
                 messageRelayHubContext: sp.GetRequiredService<IHubContext<MessageRelayHub>>(),
+                secretClient: sp.GetRequiredService<ISecretClientAccessor>().GetSecretClient(),
                 promptOptions: sp.GetRequiredService<IOptions<PromptsOptions>>(),
                 documentImportOptions: sp.GetRequiredService<IOptions<DocumentMemoryOptions>>(),
                 qAzureOpenAIChatOptions: sp.GetRequiredService<IOptions<QAzureOpenAIChatOptions>>(),
                 contentSafety: sp.GetService<AzureContentSafety>(),
-                logger: sp.GetRequiredService<ILogger<ChatPlugin>>()
+                logger: sp.GetRequiredService<ILogger<ChatPlugin>>(),
+                openAIDeploymentRepository: sp.GetRequiredService<OpenAIDeploymentRepository>()
             ),
             nameof(ChatPlugin)
         );
@@ -125,12 +128,35 @@ internal static class SemanticKernelExtensions
 
     private static void InitializeKernelProvider(this WebApplicationBuilder builder)
     {
-        builder.Services.AddSingleton(sp => new SemanticKernelProvider(
-            sp,
-            builder.Configuration,
-            sp.GetRequiredService<IHttpClientFactory>(),
-            builder.Configuration.GetSection(QAzureOpenAIChatOptions.PropertyName).Get<QAzureOpenAIChatOptions>()
-        ));
+        builder.Services.AddSingleton(sp =>
+        {
+            var openAiRepo = sp.GetRequiredService<OpenAIDeploymentRepository>();
+            var openAiService = new QOpenAIDeploymentService(
+                openAiRepo,
+                sp.GetRequiredService<ISecretClientAccessor>().GetSecretClient()
+            );
+            var openAiDeploymentsTask = openAiService.GetAllDeployments();
+            openAiDeploymentsTask.Wait();
+            var openAiDeployments = openAiDeploymentsTask.Result;
+            var keyMap = new Dictionary<string, string>();
+            var secretClient = sp.GetRequiredService<ISecretClientAccessor>().GetSecretClient();
+
+            async Task InsertAPIKeyIntoDict(string secretName)
+            {
+                var secretValue = await secretClient.GetSecretAsync(secretName);
+                keyMap.Add(secretName, secretValue.Value.Value ?? "");
+            }
+            var tasks = openAiDeployments.Select(a => InsertAPIKeyIntoDict(a.SecretName));
+            Task.WaitAll(tasks.ToArray());
+            return new SemanticKernelProvider(
+                sp,
+                builder.Configuration,
+                sp.GetRequiredService<IHttpClientFactory>(),
+                builder.Configuration.GetSection(QAzureOpenAIChatOptions.PropertyName).Get<QAzureOpenAIChatOptions>(),
+                openAiDeployments,
+                keyMap
+            );
+        });
     }
 
     /// <summary>

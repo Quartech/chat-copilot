@@ -1,4 +1,5 @@
-import { IChatCompletionDeployment, ISpecialization } from '../../../libs/models/Specialization';
+import { IOpenAIDeployment } from '../../../libs/models/OpenAIDeployment';
+import { ISpecialization } from '../../../libs/models/Specialization';
 import { ISpecializationIndex } from '../../../libs/models/SpecializationIndex';
 
 export type Specializations = Record<string, AdminState>;
@@ -16,8 +17,7 @@ export interface AdminState {
     chatSpecialization: ISpecialization | undefined;
     specializations: ISpecialization[];
     specializationIndexes: ISpecializationIndex[];
-    chatCompletionDeployments: IChatCompletionDeployment[];
-    openAIDeployments: Array<Record<string, any>>;
+    chatCompletionDeployments: IOpenAIDeployment[];
     selectedId: string;
     selectedIndexId: string;
     selectedOpenAIDeploymentId: string;
@@ -31,7 +31,8 @@ export const Specializations = [
         description: 'General',
         roleInformation: '',
         indexId: '',
-        deployment: '',
+        openAIDeploymentId: '',
+        completionDeploymentName: '',
         imageFilePath: '',
         iconFilePath: '',
         isActive: true,

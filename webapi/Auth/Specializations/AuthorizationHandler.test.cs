@@ -1,5 +1,6 @@
 ﻿using System.Security.Claims;
 using System.Threading.Tasks;
+using CopilotChat.WebApi.Auth.Specializations.Models;
 using CopilotChat.WebApi.Context;
 using CopilotChat.WebApi.Models.Storage;
 using CopilotChat.WebApi.Storage;
@@ -10,38 +11,32 @@ using Moq;
 namespace CopilotChat.WebApi.Auth.Specializations;
 
 [TestClass]
-public class LinkedToChatAuthorizationHandlerTest
+public class AuthorizationHandlerTest
 {
-    private const string CHAT_ID = "9845c881-0d77-4cf2-8211-85556de26c15";
-    private const string SPECIALIZATION_ID = "b10723df-8312-41b6-be80-703f0af2e192";
-    private const string GROUP_ID = "e67ecc45-b456-4109-9546-c177800d0186";
-    private LinkedToChatAuthorizationHandler? handler;
+    private const string SPECIALIZATION_ID = "ce2a1f91-09a2-41c0-9017-f0fc88c588a2";
+    private const string GROUP_ID = "7d5a7972-9d8f-48b1-9248-fdb38967a427";
+    private AuthorizationHandler? handler;
     private AuthorizationHandlerContext? context;
-    private ChatSession? chatSession;
-    private Mock<IContextValueAccessor>? httpContextAccessor;
-    private Mock<IStorageContext<ChatSession>>? chatSessionContext;
     private Mock<IStorageContext<Specialization>>? specializationContext;
+    private Mock<IContextBodyAccessor>? contextBodyAccessor;
 
     [TestInitialize]
     public void Setup()
     {
-        this.chatSession = new ChatSession("title", "description", SPECIALIZATION_ID, CHAT_ID);
+        var specializationBody = new SpecializationBody() { SpecializationId = SPECIALIZATION_ID };
         var specialization = new Specialization() { GroupMemberships = new[] { GROUP_ID } };
 
         this.specializationContext = new();
-        this.specializationContext.Setup(s => s.ReadAsync(SPECIALIZATION_ID, SPECIALIZATION_ID))
+        this.specializationContext.Setup(m => m.ReadAsync(SPECIALIZATION_ID, SPECIALIZATION_ID))
             .Returns(Task.FromResult(specialization));
 
-        this.chatSessionContext = new();
-        this.chatSessionContext.Setup(c => c.ReadAsync(CHAT_ID, CHAT_ID)).Returns(Task.FromResult(this.chatSession));
-
-        this.httpContextAccessor = new();
-        this.httpContextAccessor.Setup(r => r.GetRouteValue("chatId")).Returns(CHAT_ID);
+        this.contextBodyAccessor = new();
+        this.contextBodyAccessor.Setup(m => m.ReadBody<SpecializationBody>())
+            .Returns(Task.FromResult<SpecializationBody?>(specializationBody));
 
         this.handler = new(
             new Mock<SpecializationRepository>(this.specializationContext.Object).Object,
-            new Mock<ChatSessionRepository>(this.chatSessionContext.Object).Object,
-            this.httpContextAccessor.Object
+            this.contextBodyAccessor.Object
         );
 
         this.context = AuthorizationTestContext.BuildAuthorizationContext(new[] { new Claim("groups", GROUP_ID) });
@@ -66,19 +61,10 @@ public class LinkedToChatAuthorizationHandlerTest
     }
 
     [TestMethod]
-    public async Task ChatSessionWithoutSpecialization_Should_Succeed()
+    public async Task NullContextBody_Should_NotSucceed()
     {
-        this.chatSession!.specializationId = string.Empty;
-
-        await this.handler!.HandleAsync(this.context!);
-
-        Assert.IsTrue(this.context!.HasSucceeded);
-    }
-
-    [TestMethod]
-    public async Task RequestWithoutChatId_Should_NotSucceed()
-    {
-        this.httpContextAccessor!.Setup(r => r.GetRouteValue("chatId")).Returns(string.Empty);
+        this.contextBodyAccessor!.Setup(m => m.ReadBody<SpecializationBody>())
+            .Returns(Task.FromResult<SpecializationBody?>(null));
 
         await this.handler!.HandleAsync(this.context!);
 
@@ -86,9 +72,13 @@ public class LinkedToChatAuthorizationHandlerTest
     }
 
     [TestMethod]
-    public async Task NullChatSession_Should_NotSucceed()
+    [DataRow(null)]
+    [DataRow("")]
+    public async Task NullSpecializationId_Should_NotSucceed(string? specializationId)
     {
-        this.chatSessionContext!.Setup(c => c.ReadAsync(CHAT_ID, CHAT_ID)).Returns(Task.FromResult<ChatSession>(null));
+        var specializationBody = new SpecializationBody() { SpecializationId = specializationId };
+        this.contextBodyAccessor!.Setup(m => m.ReadBody<SpecializationBody>())
+            .Returns(Task.FromResult<SpecializationBody?>(specializationBody));
 
         await this.handler!.HandleAsync(this.context!);
 
@@ -98,8 +88,20 @@ public class LinkedToChatAuthorizationHandlerTest
     [TestMethod]
     public async Task NullSpecialization_Should_NotSucceed()
     {
-        this.specializationContext!.Setup(c => c.ReadAsync(SPECIALIZATION_ID, SPECIALIZATION_ID))
-            .Returns(Task.FromResult<Specialization>(null));
+        this.specializationContext!.Setup(m => m.ReadAsync(SPECIALIZATION_ID, SPECIALIZATION_ID))
+            .Returns(Task.FromResult((Specialization?)null));
+
+        await this.handler!.HandleAsync(this.context!);
+
+        Assert.IsFalse(this.context!.HasSucceeded);
+    }
+
+    [TestMethod]
+    public async Task SpecializationWithoutGroupMembership_Should_NotSucceed()
+    {
+        var specialization = new Specialization();
+        this.specializationContext!.Setup(m => m.ReadAsync(SPECIALIZATION_ID, SPECIALIZATION_ID))
+            .Returns(Task.FromResult(specialization));
 
         await this.handler!.HandleAsync(this.context!);
 

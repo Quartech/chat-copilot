@@ -12,6 +12,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure.AI.OpenAI.Chat;
+using Azure.Security.KeyVault.Secrets;
 using CopilotChat.WebApi.Hubs;
 using CopilotChat.WebApi.Models.Response;
 using CopilotChat.WebApi.Models.Storage;
@@ -78,6 +79,8 @@ public class ChatPlugin
     /// </summary>
     private readonly QSpecializationService _qSpecializationService;
 
+    private readonly QOpenAIDeploymentService _qOpenAIDeploymentService;
+
     /// <summary>
     /// The current specialization in use, may be null if not yet set or if no specialization applies.
     /// </summary>
@@ -116,10 +119,12 @@ public class ChatPlugin
         ChatSessionRepository chatSessionRepository,
         SpecializationRepository specializationSourceRepository,
         SpecializationIndexRepository specializationIndexRepository,
+        OpenAIDeploymentRepository openAIDeploymentRepository,
         IHubContext<MessageRelayHub> messageRelayHubContext,
         IOptions<PromptsOptions> promptOptions,
         IOptions<DocumentMemoryOptions> documentImportOptions,
         IOptions<QAzureOpenAIChatOptions> qAzureOpenAIChatOptions,
+        SecretClient secretClient,
         ILogger logger,
         AzureContentSafety? contentSafety = null,
         bool isUserIntentExtractionEnabled = true
@@ -137,6 +142,7 @@ public class ChatPlugin
             specializationSourceRepository,
             qAzureOpenAIChatOptions.Value
         );
+        this._qOpenAIDeploymentService = new QOpenAIDeploymentService(openAIDeploymentRepository, secretClient);
         this._semanticMemoryRetriever = new SemanticMemoryRetriever(
             promptOptions,
             chatSessionRepository,
@@ -146,7 +152,9 @@ public class ChatPlugin
         this._qAzureOpenAIChatExtension = new QAzureOpenAIChatExtension(
             qAzureOpenAIChatOptions.Value,
             specializationSourceRepository,
-            specializationIndexRepository
+            specializationIndexRepository,
+            openAIDeploymentRepository,
+            secretClient
         );
         this._contentSafety = contentSafety;
         this._isUserIntentExtractionEnabled = isUserIntentExtractionEnabled; // Initialize feature flag
@@ -264,7 +272,7 @@ public class ChatPlugin
         }
 
         // Calculate tokens used for memories
-        int maxRequestTokenBudget = this.GetMaxRequestTokenBudget();
+        int maxRequestTokenBudget = await this.GetMaxRequestTokenBudget();
         // Calculate tokens used so far: system instructions, audience extraction and user intent
         int tokensUsed = TokenUtils.GetContextMessagesTokenCount(metaPrompt);
         int chatMemoryTokenBudget =
@@ -525,7 +533,7 @@ public class ChatPlugin
         // Clone the context to avoid modifying the original context variables
         KernelArguments audienceContext = new(context);
         int historyTokenBudget =
-            this.GetCompletionTokenLimit()
+            await this.GetCompletionTokenLimit()
             - this.GetResponseTokenLimit()
             - TokenUtils.TokenCount(
                 string.Join(
@@ -570,7 +578,7 @@ public class ChatPlugin
         KernelArguments intentContext = new(context);
 
         int tokenBudget =
-            this.GetCompletionTokenLimit()
+            await this.GetCompletionTokenLimit()
             - this.GetResponseTokenLimit()
             - TokenUtils.TokenCount(
                 string.Join(
@@ -842,26 +850,29 @@ public class ChatPlugin
     /// <summary>
     /// Calculate the maximum number of tokens usable to generate the response.
     /// </summary>
-    private int GetCompletionTokenLimit()
+    private async Task<int> GetCompletionTokenLimit()
     {
-        var deploymentConnection = this
-            ._qAzureOpenAIChatExtension.GetAllChatCompletionDeployments()
-            .FirstOrDefault(w => w.Name == this._qSpecialization?.Deployment);
-        return deploymentConnection == null
+        var deploymentConnection = await this._qOpenAIDeploymentService.GetDeployment(
+            this._qSpecialization?.OpenAIDeploymentId ?? ""
+        );
+        var completionConnection = deploymentConnection.ChatCompletionDeployments.FirstOrDefault(c =>
+            c.Name == this._qSpecialization?.CompletionDeploymentName
+        );
+        return completionConnection == null
             ? this._promptOptions.CompletionTokenLimit
-            : deploymentConnection.CompletionTokenLimit;
+            : (int)completionConnection.CompletionTokenLimit;
     }
 
     /// <summary>
     /// Calculate the maximum number of tokens that can be sent in a request
     /// </summary>
-    private int GetMaxRequestTokenBudget()
+    private async Task<int> GetMaxRequestTokenBudget()
     {
         // OpenAI inserts a message under the hood:
         // "content": "Assistant is a large language model.","role": "system"
         // This burns just under 20 tokens which need to be accounted for.
         const int ExtraOpenAiMessageTokens = 20;
-        return this.GetCompletionTokenLimit() // Total token limit
+        return await this.GetCompletionTokenLimit() // Total token limit
             - ExtraOpenAiMessageTokens
             // Token count reserved for model to generate a response
             - this.GetResponseTokenLimit()
@@ -947,7 +958,10 @@ public class ChatPlugin
     {
         // Create the stream
         var provider = this._kernel.GetRequiredService<IServiceProvider>();
-        var chatCompletion = provider.GetKeyedService<IChatCompletionService>(this._qSpecialization?.Deployment);
+        var deployment = await this._qOpenAIDeploymentService.GetDeployment(this._qSpecialization.OpenAIDeploymentId);
+        var chatCompletion = provider.GetKeyedService<IChatCompletionService>(
+            $"{this._qSpecialization.CompletionDeploymentName} ({deployment.Name})"
+        );
 
 #pragma warning disable SKEXP0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         // TODO: Next PR when I add the ability for specializations to add/remove image gen capabilities, I will get this from this._qSpecialization.ImageDeployment
@@ -956,7 +970,7 @@ public class ChatPlugin
         if (chatCompletion == null)
         {
             throw new InvalidOperationException(
-                $"ChatCompletionService for deployment '{this._qSpecialization?.Deployment}' not found."
+                $"ChatCompletionService for deployment '{this._qSpecialization?.OpenAIDeploymentId}' not found."
             );
         }
 
