@@ -265,7 +265,7 @@ export const OpenAIManager: React.FC = () => {
                                         }}
                                     />
                                 </Field>
-                                <Field label="Ouput Tokens" className={classes.tripleFieldInputElement}>
+                                <Field label="Output Tokens" className={classes.tripleFieldInputElement}>
                                     <Input
                                         placeholder="Output Tokens"
                                         value={String(deployment.outputTokens)}
