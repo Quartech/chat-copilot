@@ -138,32 +138,20 @@ export const SpecializationManager: React.FC = () => {
     const [editMode, setEditMode] = useState(false);
     const defaultSpecializationId = specializations.find((spec) => spec.isDefault)?.id;
     const [id, setId] = useState('');
-    const [label, setLabel] = useState('');
-    const [name, setName] = useState('');
-    const [description, setDescription] = useState('');
-    const [roleInformation, setRoleInformation] = useState('');
-    const [initialChatMessage, setInitialChatMessage] = useState('');
     const [indexId, setIndexId] = useState('');
     const [deploymentId, setDeploymentId] = useState('');
     const [completionDeploymentName, setCompletionDeploymentName] = useState('');
     const [deploymentOutputTokens, setDeploymentOutputTokens] = useState(0);
-    // TODO: Use formik to make easier to manage form state
-    const [editMode, setEditMode] = useState(false);
-    const defaultSpecializationId = specializations.find((spec) => spec.isDefault)?.id;
 
     // Required fields
     const [name, setName] = useState<string>('');
     const [label, setLabel] = useState<string>('');
-    const [deployment, setDeployment] = useState<string>('');
     const [description, setDescription] = useState<string>('');
     const [roleInformation, setRoleInformation] = useState<string>('');
     const [initialChatMessage, setInitialChatMessage] = useState<string>('');
     const [membershipId, setMembershipId] = useState<string[]>([]);
     const [suggestions, setSuggestions] = useState<string[]>(['']);
 
-    const [id, setId] = useState('');
-    const [indexId, setIndexId] = useState('');
-    const [deploymentOutputTokens, setDeploymentOutputTokens] = useState(0);
     const [imageFile, setImageFile] = useState<ISpecializationFile>({ file: null, src: null });
     const [iconFile, setIconFile] = useState<ISpecializationFile>({ file: null, src: null });
     const [restrictResultScope, setRestrictResultScope] = useState<boolean | null>(false);
@@ -549,7 +537,7 @@ export const SpecializationManager: React.FC = () => {
                 <Dropdown
                     clearable
                     id="deployment"
-                    className={determineIfNeedsAttention(deployment)}
+                    className={determineIfNeedsAttention(deploymentId)}
                     aria-labelledby={dropdownId}
                     onOptionSelect={onDeploymentChange}
                     value={`${completionDeploymentName} (${chatCompletionDeployments.find((a) => a.id === deploymentId)?.name})`}
