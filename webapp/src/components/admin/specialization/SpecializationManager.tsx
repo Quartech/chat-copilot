@@ -94,6 +94,10 @@ const useClasses = makeStyles({
     input: {
         width: '80px',
     },
+    needsAttention: {
+        backgroundColor: '#FFCCCB',
+        flexGrow: 1,
+    },
 });
 
 const Rows = 8;
@@ -134,16 +138,20 @@ export const SpecializationManager: React.FC = () => {
     const [editMode, setEditMode] = useState(false);
     const defaultSpecializationId = specializations.find((spec) => spec.isDefault)?.id;
     const [id, setId] = useState('');
-    const [label, setLabel] = useState('');
-    const [name, setName] = useState('');
-    const [description, setDescription] = useState('');
-    const [roleInformation, setRoleInformation] = useState('');
-    const [initialChatMessage, setInitialChatMessage] = useState('');
     const [indexId, setIndexId] = useState('');
     const [deploymentId, setDeploymentId] = useState('');
     const [completionDeploymentName, setCompletionDeploymentName] = useState('');
     const [deploymentOutputTokens, setDeploymentOutputTokens] = useState(0);
+
+    // Required fields
+    const [name, setName] = useState<string>('');
+    const [label, setLabel] = useState<string>('');
+    const [description, setDescription] = useState<string>('');
+    const [roleInformation, setRoleInformation] = useState<string>('');
+    const [initialChatMessage, setInitialChatMessage] = useState<string>('');
     const [membershipId, setMembershipId] = useState<string[]>([]);
+    const [suggestions, setSuggestions] = useState<string[]>(['']);
+
     const [imageFile, setImageFile] = useState<ISpecializationFile>({ file: null, src: null });
     const [iconFile, setIconFile] = useState<ISpecializationFile>({ file: null, src: null });
     const [restrictResultScope, setRestrictResultScope] = useState<boolean | null>(false);
@@ -154,10 +162,10 @@ export const SpecializationManager: React.FC = () => {
     const [pastMessagesIncludedCount, setPastMessagesIncludedCount] = useState<number | null>(0);
     const [maxResponseTokenLimit, setMaxResponseTokenLimit] = useState<number | null>(0);
     const [order, setOrder] = useState(0);
-    const [suggestions, setSuggestions] = useState<string[]>([]);
     const [canGenImages, setCanGenImages] = useState(false);
 
     const [isValid, setIsValid] = useState(false);
+    const [saveAttempted, setSaveAttempted] = useState(false);
     const dropdownId = useId();
 
     const hasEnrichmentIndex = !!indexId;
@@ -171,6 +179,17 @@ export const SpecializationManager: React.FC = () => {
      * @returns {void}
      */
     const onSaveSpecialization = () => {
+        if (!isValid) {
+            setSaveAttempted(true);
+            dispatch(
+                addAlert({
+                    message: 'Please fill in all required fields.',
+                    type: AlertType.Warning,
+                }),
+            );
+            return;
+        }
+        setSaveAttempted(false);
         if (editMode) {
             void specialization.updateSpecialization(id, {
                 label,
@@ -242,7 +261,7 @@ export const SpecializationManager: React.FC = () => {
         setDocumentCount(5);
         setPastMessagesIncludedCount(10);
         setMaxResponseTokenLimit(1024);
-        setSuggestions([]);
+        setSuggestions(['']);
     };
 
     useEffect(() => {
@@ -335,7 +354,6 @@ export const SpecializationManager: React.FC = () => {
      * Callback function for handling changes to the "Enrichment Index" dropdown.
      */
     const onChangeIndexName = (_event?: SelectionEvents, data?: OptionOnSelectData) => {
-        console.log(JSON.stringify(data));
         setIndexId(data?.optionValue ?? '');
     };
 
@@ -472,6 +490,19 @@ export const SpecializationManager: React.FC = () => {
         }
     };
 
+    const determineIfNeedsAttention = React.useCallback(
+        (value: string | string[]) => {
+            // friendly reminder that !![] === true
+            let needsAttention = false;
+            if (typeof value === 'string') needsAttention = !value && saveAttempted;
+            if (Array.isArray(value))
+                needsAttention = (!value.length && saveAttempted) || (value.length === 1 && !value[0] && saveAttempted);
+
+            return needsAttention ? classes.needsAttention : '';
+        },
+        [saveAttempted],
+    );
+
     return (
         <div className={classes.scrollableContainer}>
             <div className={classes.root}>
@@ -483,6 +514,7 @@ export const SpecializationManager: React.FC = () => {
                     id="name"
                     required
                     value={name}
+                    className={determineIfNeedsAttention(name)}
                     onChange={(_event, data) => {
                         setName(data.value);
                     }}
@@ -493,6 +525,7 @@ export const SpecializationManager: React.FC = () => {
                 <Input
                     id="label"
                     required
+                    className={determineIfNeedsAttention(label)}
                     value={label}
                     onChange={(_event, data) => {
                         setLabel(data.value);
@@ -504,6 +537,7 @@ export const SpecializationManager: React.FC = () => {
                 <Dropdown
                     clearable
                     id="deployment"
+                    className={determineIfNeedsAttention(deploymentId)}
                     aria-labelledby={dropdownId}
                     onOptionSelect={onDeploymentChange}
                     value={`${completionDeploymentName} (${chatCompletionDeployments.find((a) => a.id === deploymentId)?.name})`}
@@ -682,6 +716,7 @@ export const SpecializationManager: React.FC = () => {
                     required
                     resize="vertical"
                     value={description}
+                    className={determineIfNeedsAttention(description)}
                     rows={2}
                     onChange={(_event, data) => {
                         setDescription(data.value);
@@ -694,6 +729,7 @@ export const SpecializationManager: React.FC = () => {
                     id="context"
                     required
                     resize="vertical"
+                    className={determineIfNeedsAttention(roleInformation)}
                     value={roleInformation}
                     rows={Rows}
                     onChange={(_event, data) => {
@@ -708,6 +744,7 @@ export const SpecializationManager: React.FC = () => {
                     required
                     resize="vertical"
                     value={initialChatMessage}
+                    className={determineIfNeedsAttention(initialChatMessage)}
                     rows={2}
                     onChange={(_event, data) => {
                         setInitialChatMessage(data.value);
@@ -719,6 +756,7 @@ export const SpecializationManager: React.FC = () => {
                 <FieldArray
                     values={suggestions}
                     maxItems={4}
+                    className={determineIfNeedsAttention(suggestions)}
                     onFieldChanged={(index, newValue) => {
                         const values = suggestions.slice(0);
                         values[index] = newValue;
@@ -738,6 +776,7 @@ export const SpecializationManager: React.FC = () => {
                 </label>
                 <Input
                     id="membership"
+                    className={determineIfNeedsAttention(membershipId)}
                     required
                     value={membershipId.join(', ')}
                     onChange={(_event, data) => {
@@ -776,7 +815,7 @@ export const SpecializationManager: React.FC = () => {
                         Delete
                     </Button>
 
-                    <Button appearance="primary" disabled={!isValid} onClick={onSaveSpecialization}>
+                    <Button appearance="primary" onClick={onSaveSpecialization}>
                         Save
                     </Button>
                 </div>
