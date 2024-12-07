@@ -6,6 +6,9 @@ namespace CopilotChat.WebApi.Models.Response;
 
 public class QOpenAIDeploymentResponse
 {
+    [JsonPropertyName("id")]
+    public string Id { get; set; }
+
     [JsonPropertyName("name")]
     public string Name { get; set; } = string.Empty;
 
@@ -30,6 +33,7 @@ public class QOpenAIDeploymentResponse
 
     public QOpenAIDeploymentResponse(OpenAIDeployment deployment)
     {
+        this.Id = deployment.Id;
         this.Name = deployment.Name;
         this.Endpoint = deployment.Endpoint;
         this.SecretName = deployment.SecretName;
