@@ -13,6 +13,7 @@ import { GraphService } from '../services/GraphService';
 import { maxBy } from '../utils/HelperMethods';
 import { useChat } from './useChat';
 import { useFile } from './useFile';
+import { useOpenAIDeployments } from './useOpenAIDeployment';
 import { useSettings } from './useSettings';
 import { useSpecialization } from './useSpecialization';
 import { useSpecializationIndex } from './useSpecializationIndex';
@@ -31,6 +32,7 @@ export const useAppLoader = (): [AppState, Dispatch<SetStateAction<AppState>>] =
     const isAuthenticated = useIsAuthenticated();
     const specialization = useSpecialization();
     const specializationIndexes = useSpecializationIndex();
+    const deployments = useOpenAIDeployments();
     const settings = useSettings();
     const chat = useChat();
     const file = useFile();
@@ -131,7 +133,7 @@ export const useAppLoader = (): [AppState, Dispatch<SetStateAction<AppState>>] =
                 specialization.loadSpecializations(),
                 chat.getServiceInfo(),
                 specializationIndexes.loadSpecializationIndexes(),
-                specialization.loadChatCompletionDeployments(),
+                deployments.loadOpenAIDeployments(),
                 file.getContentSafetyStatus(),
             ]);
 

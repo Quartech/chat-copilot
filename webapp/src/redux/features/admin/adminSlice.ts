@@ -2,7 +2,7 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { IOpenAIDeployment } from '../../../libs/models/OpenAIDeployment';
 import { ISpecialization } from '../../../libs/models/Specialization';
 import { ISpecializationIndex } from '../../../libs/models/SpecializationIndex';
-import { AdminState, initialState } from './AdminState';
+import { AdminScreen, AdminState, initialState } from './AdminState';
 
 export const adminSlice = createSlice({
     name: 'admin',
@@ -13,25 +13,16 @@ export const adminSlice = createSlice({
             state.chatSpecialization = action.payload;
         },
         setSpecializations: (state: AdminState, action: PayloadAction<ISpecialization[]>) => {
-            // const updatedSpecializations = action.payload.filter(
-            //     (specialization: ISpecialization) => specialization.isActive,
-            // );
             state.specializations = action.payload;
         },
         setSpecializationIndexes: (state: AdminState, action: PayloadAction<ISpecializationIndex[]>) => {
             state.specializationIndexes = action.payload;
         },
-        setChatCompletionDeployments: (state: AdminState, action: PayloadAction<IOpenAIDeployment[]>) => {
-            state.chatCompletionDeployments = action.payload;
+        setOpenAIDeployments: (state: AdminState, action: PayloadAction<IOpenAIDeployment[]>) => {
+            state.openAIDeployments = action.payload;
         },
-        setAdminSelected: (state: AdminState, action: PayloadAction<boolean>) => {
-            state.isAdminSelected = action.payload;
-        },
-        setIndexSelected: (state: AdminState, action: PayloadAction<boolean>) => {
-            state.isIndexSelected = action.payload;
-        },
-        setUserFeedbackSelected: (state: AdminState, action: PayloadAction<boolean>) => {
-            state.isUserFeedbackSelected = action.payload;
+        setAdminSelected: (state: AdminState, action: PayloadAction<AdminScreen>) => {
+            state.selectedAdminScreen = action.payload;
         },
         setSelectedKey: (state: AdminState, action: PayloadAction<string>) => {
             state.selectedId = action.payload;
@@ -39,11 +30,17 @@ export const adminSlice = createSlice({
         setSelectedIndexKey: (state: AdminState, action: PayloadAction<string>) => {
             state.selectedIndexId = action.payload;
         },
+        setSelectedOpenAIDeploymentKey: (state: AdminState, action: PayloadAction<string>) => {
+            state.selectedOpenAIDeploymentId = action.payload;
+        },
         addSpecialization: (state: AdminState, action: PayloadAction<ISpecialization>) => {
             state.specializations.push(action.payload);
         },
         addSpecializationIndex: (state: AdminState, action: PayloadAction<ISpecializationIndex>) => {
             state.specializationIndexes.push(action.payload);
+        },
+        addOpenAIDeployment: (state: AdminState, action: PayloadAction<IOpenAIDeployment>) => {
+            state.openAIDeployments.push(action.payload);
         },
         editSpecialization: (state: AdminState, action: PayloadAction<ISpecialization>) => {
             const specializations = state.specializations;
@@ -59,6 +56,14 @@ export const adminSlice = createSlice({
             state.specializationIndexes = updatedIndexes;
             state.specializationIndexes.push(action.payload);
         },
+        editOpenAIDeployment: (state: AdminState, action: PayloadAction<IOpenAIDeployment>) => {
+            const openAIDeployments = state.openAIDeployments;
+            const updatedDeployments = openAIDeployments.filter(
+                (index: IOpenAIDeployment) => index.id !== action.payload.id,
+            );
+            state.openAIDeployments = updatedDeployments;
+            state.openAIDeployments.push(action.payload);
+        },
         removeSpecialization: (state: AdminState, action: PayloadAction<string>) => {
             const specializations = state.specializations;
             const selectedKey = action.payload;
@@ -73,6 +78,12 @@ export const adminSlice = createSlice({
             const updatedSpecializations = indexes.filter((index: ISpecializationIndex) => index.id !== selectedKey);
             state.specializationIndexes = updatedSpecializations;
         },
+        removeOpenAIDeployment: (state: AdminState, action: PayloadAction<string>) => {
+            const deployments = state.openAIDeployments;
+            const selectedKey = action.payload;
+            const updatedDeployments = deployments.filter((index: IOpenAIDeployment) => index.id !== selectedKey);
+            state.openAIDeployments = updatedDeployments;
+        },
     },
 });
 
@@ -80,18 +91,20 @@ export const {
     setSpecializations,
     setChatSpecialization,
     setSpecializationIndexes,
-    setChatCompletionDeployments,
+    setOpenAIDeployments,
     setAdminSelected,
-    setIndexSelected,
-    setUserFeedbackSelected,
     setSelectedKey,
     setSelectedIndexKey,
     addSpecialization,
     addSpecializationIndex,
+    addOpenAIDeployment,
     editSpecialization,
     editSpecializationIndex,
+    editOpenAIDeployment,
     removeSpecialization,
     removeSpecializationIndex,
+    removeOpenAIDeployment,
+    setSelectedOpenAIDeploymentKey,
 } = adminSlice.actions;
 
 export default adminSlice.reducer;
