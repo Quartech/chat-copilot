@@ -1,8 +1,14 @@
 azure_subscription_id = "b2cba309-26dd-459c-a021-54cb56fe6c49"
 azure_tenant_id       = "898fdc18-1bd2-4a3b-84a7-2efb988e3b90"
 
-location    = "canadacentral"
-region_code = "cnc"
+location = {
+  name = "canadacentral",
+  region_code = "cnc"
+}
+location_openai = {
+  name = "canadaeast",
+  region_code = "cne"
+}
 
 project_code = "copilot"
 
@@ -21,7 +27,32 @@ cosmosdb_sql_containers = [
   { name = "chatparticipants", partition_key_path = "/chatId" },
   { name = "specialization", partition_key_path = "/id" },
   { name = "chatuser", partition_key_path = "/id" },
-  { name = "specializationindex", partition_key_path = "/id" }
+  { name = "specializationindex", partition_key_path = "/id" },
+  { name = "openaideployment", partition_key_path = "/id" }
+]
+
+openai_deployments = [
+  {
+    name = "gpt-4o-mini",
+    model_name = "gpt-4o-mini",
+    version = "2024-07-18",
+    sku_name = "GlobalStandard",
+    capacity = 24065
+  },
+  {
+    name = "gpt-4o",
+    model_name = "gpt-4o",
+    version = "2024-08-06",
+    sku_name = "GlobalStandard",
+    capacity = 30000
+  },
+  {
+    name = "text-embedding-ada-002",
+    model_name = "text-embedding-ada-002",
+    version = 2,
+    sku_name = "Standard",
+    capacity = 240
+  }
 ]
 
 container_names = ["specialization"]
