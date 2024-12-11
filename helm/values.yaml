@@ -37,7 +37,8 @@ readinessProbe: {}
 nodeSelector: {}
 podAnnotations:
   azure.workload.identity/client-id: f3c0b321-ecd4-4603-ad2b-6b8825f85fa4
-podLabels: {}
+podLabels:
+  azure.workload.identity/use: "true"
 podSecurityContext:
   {}
   # fsGroup: 2000
