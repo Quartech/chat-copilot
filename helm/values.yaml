@@ -391,6 +391,7 @@ webapi:
         QAzureOpenAIChatConfig-AISearchDeploymentConnections-1-ApiKey,
         KernelMemory-Services-AzureVision-Key,
         KernelMemory-Services-AzureVision-Endpoint,
+        q-pilot-client-secret
       ]
 
   ingress:
