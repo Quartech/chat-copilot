@@ -128,7 +128,7 @@ internal static class SemanticKernelExtensions
 
     private static void InitializeKernelProvider(this WebApplicationBuilder builder)
     {
-        builder.Services.AddSingleton(sp =>
+        builder.Services.AddScoped(sp =>
         {
             var openAiRepo = sp.GetRequiredService<OpenAIDeploymentRepository>();
             var openAiService = new QOpenAIDeploymentService(
