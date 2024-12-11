@@ -35,10 +35,8 @@ image:
 livenessProbe: {}
 readinessProbe: {}
 nodeSelector: {}
-podAnnotations:
-  azure.workload.identity/client-id: f3c0b321-ecd4-4603-ad2b-6b8825f85fa4
-podLabels:
-  azure.workload.identity/use: "true"
+podAnnotations: {}
+podLabels: {}
 podSecurityContext:
   {}
   # fsGroup: 2000
@@ -171,6 +169,10 @@ be:
       value: "http://+:8080"
     - name: "ASPNETCORE_ENVIRONMENT"
       value: "Development"
+    - name: "AZURE_TENANT_ID"
+      value: "898fdc18-1bd2-4a3b-84a7-2efb988e3b90"
+    - name: "AZURE_CLIENT_ID"
+      value: "69a849fa-1e3f-46c3-8616-1cbc060ece11"
 
   volumeMounts: []
 
@@ -327,7 +329,11 @@ webapi:
         secretKeyRef:
           name: q-pilot-webapi-secret
           key: KernelMemory-Services-AzureVision-Endpoint
-
+    - name: "AZURE_CLIENT_SECRET"
+      valueFrom:
+        secretKeyRef:
+          name: q-pilot-webapi-secret
+          key:  q-pilot-client-secret
     - name: "APP_NAME"
       value: "webapi"
 
@@ -385,6 +391,7 @@ webapi:
         QAzureOpenAIChatConfig-AISearchDeploymentConnections-1-ApiKey,
         KernelMemory-Services-AzureVision-Key,
         KernelMemory-Services-AzureVision-Endpoint,
+        q-pilot-client-secret
       ]
 
   ingress:
