@@ -9,6 +9,8 @@ public class ChatCompletionDeployment
     public string Name { get; set; } = string.Empty;
 
     public uint CompletionTokenLimit { get; set; } = 0;
+
+    public uint OutputTokens { get; set; } = 0;
 }
 
 public class OpenAIDeployment : IStorageEntity

@@ -111,9 +111,12 @@ export const SpecializationManager: React.FC = () => {
     const classes = useClasses();
     const specialization = useSpecialization();
     const dispatch = useAppDispatch();
-    const { specializations, specializationIndexes, chatCompletionDeployments, selectedId } = useAppSelector(
-        (state: RootState) => state.admin,
-    );
+    const {
+        specializations,
+        specializationIndexes,
+        openAIDeployments: chatCompletionDeployments,
+        selectedId,
+    } = useAppSelector((state: RootState) => state.admin);
 
     interface FormattedOpenAIDeployment {
         id: string;
@@ -480,7 +483,7 @@ export const SpecializationManager: React.FC = () => {
     const onDeploymentChange = (_event: SelectionEvents, data: OptionOnSelectData) => {
         const obj = JSON.parse(data.optionValue ?? '{}') as unknown as FormattedOpenAIDeployment;
         setDeploymentId(obj.id);
-        setCompletionDeploymentName(obj.deploymentName);
+        setCompletionDeploymentName(obj.completionName);
         const outputTokens = chatCompletionDeployments
             .find((d) => d.id === obj.id)
             ?.chatCompletionDeployments.find((a) => a.name === obj.deploymentName)?.outputTokens;
@@ -500,7 +503,7 @@ export const SpecializationManager: React.FC = () => {
 
             return needsAttention ? classes.needsAttention : '';
         },
-        [saveAttempted],
+        [classes.needsAttention, saveAttempted],
     );
 
     return (
