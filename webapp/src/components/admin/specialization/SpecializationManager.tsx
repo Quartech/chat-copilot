@@ -503,7 +503,7 @@ export const SpecializationManager: React.FC = () => {
 
             return needsAttention ? classes.needsAttention : '';
         },
-        [saveAttempted],
+        [classes.needsAttention, saveAttempted],
     );
 
     return (
