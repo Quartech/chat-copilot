@@ -1,18 +1,12 @@
-﻿using System.Runtime.Serialization;
+﻿using System.Text.Json.Serialization;
 
 namespace CopilotChat.WebApi.Models.Request;
 
+[JsonConverter(typeof(JsonStringEnumConverter))]
 public enum CopilotChatMessageSortOption
 {
-    [EnumMember(Value = "dateDesc")]
     DateDesc,
-
-    [EnumMember(Value = "dateAsc")]
     DateAsc,
-
-    [EnumMember(Value = "feedbackPos")]
     FeedbackPos,
-
-    [EnumMember(Value = "feedbackNeg")]
     FeedbackNeg,
 }
