@@ -140,14 +140,18 @@ internal static class SemanticKernelExtensions
             var openAiDeployments = openAiDeploymentsTask.Result;
             var keyMap = new Dictionary<string, string>();
             var secretClient = sp.GetRequiredService<ISecretClientAccessor>().GetSecretClient();
-
-            async Task InsertAPIKeyIntoDict(string secretName)
+            foreach (var deployment in openAiDeployments)
             {
-                var secretValue = await secretClient.GetSecretAsync(secretName);
-                keyMap.Add(secretName, secretValue.Value.Value ?? "");
+                var secretValue = secretClient.GetSecretAsync(deployment.SecretName).GetAwaiter().GetResult();
+                keyMap.Add(deployment.SecretName, secretValue.Value.Value ?? "");
             }
-            var tasks = openAiDeployments.Select(a => InsertAPIKeyIntoDict(a.SecretName));
-            Task.WaitAll(tasks.ToArray());
+            // async Task InsertAPIKeyIntoDict(string secretName)
+            // {
+            //     var secretValue = await secretClient.GetSecretAsync(secretName);
+            //     keyMap.Add(secretName, secretValue.Value.Value ?? "");
+            // }
+            // var tasks = openAiDeployments.Select(a => InsertAPIKeyIntoDict(a.SecretName));
+            // Task.WaitAll(tasks.ToArray());
             return new SemanticKernelProvider(
                 sp,
                 builder.Configuration,
