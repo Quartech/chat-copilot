@@ -55,7 +55,7 @@ const setupSignalRConnectionToChatHub = () => {
 
     // Note: to keep the connection open the serverTimeout should be
     // larger than the KeepAlive value that is set on the server
-    hubConnection.keepAliveIntervalInMilliseconds = 20000;
+    hubConnection.keepAliveIntervalInMilliseconds = 5000;
     hubConnection.serverTimeoutInMilliseconds = 120000;
 
     return hubConnection;
