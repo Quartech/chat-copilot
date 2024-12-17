@@ -51,7 +51,7 @@ public sealed class Program
             .AddChatCopilotAuthorization();
 
         // Add SignalR as the real time relay service
-        builder.Services.AddSignalR();
+        builder.Services.AddSignalR(hubOptions => hubOptions.KeepAliveInterval = TimeSpan.FromSeconds(5));
         builder.Services.AddSingleton<ISecretClientAccessor, SecretClientAccessor>();
 
         builder
