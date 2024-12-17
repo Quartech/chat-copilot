@@ -44,15 +44,6 @@ const useClasses = makeStyles({
     list: {
         overflowY: 'auto',
         overflowX: 'hidden',
-        '&:hover': {
-            '&::-webkit-scrollbar-thumb': {
-                backgroundColor: tokens.colorScrollbarOverlay,
-                visibility: 'visible',
-            },
-        },
-        '&::-webkit-scrollbar-track': {
-            backgroundColor: tokens.colorSubtleBackground,
-        },
         alignItems: 'stretch',
     },
     header: {
