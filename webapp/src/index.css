@@ -23,7 +23,7 @@ body,
 }
 ::-webkit-scrollbar-thumb {
     border-radius: 12px;
-    visibility: 'hidden';
+    background-color: var(--colorScrollbarOverlay);
 }
 
 .message-content table,

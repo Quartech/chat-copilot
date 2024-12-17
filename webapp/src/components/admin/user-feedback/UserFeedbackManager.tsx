@@ -21,12 +21,11 @@ import {
     shorthands,
     TableCellLayout,
     TableColumnDefinition,
-    tokens,
     useId,
 } from '@fluentui/react-components';
 import { DatePicker } from '@fluentui/react-datepicker-compat';
 import { OpenRegular, ThumbDislike20Regular, ThumbLike20Regular } from '@fluentui/react-icons';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { AuthHelper } from '../../../libs/auth/AuthHelper';
 import { AlertType } from '../../../libs/models/AlertType';
@@ -90,15 +89,6 @@ const useClasses = makeStyles({
     dialog: {
         overflowY: 'auto',
         maxHeight: '500px',
-        '&:hover': {
-            '&::-webkit-scrollbar-thumb': {
-                backgroundColor: tokens.colorScrollbarOverlay,
-                visibility: 'visible',
-            },
-        },
-        '&::-webkit-scrollbar-track': {
-            backgroundColor: tokens.colorSubtleBackground,
-        },
     },
 });
 
@@ -114,8 +104,12 @@ export const UserFeedbackManager: React.FC = () => {
     const userFeedbackService = new UserFeedbackService();
     const { specializations } = useAppSelector((state: RootState) => state.admin);
 
-    const thirtyDaysAgoDate = new Date(new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).setHours(0, 0, 0, 0));
-    const todayDate = new Date(new Date().setHours(0, 0, 0, 0));
+    const thirtyDaysAgoDate = useMemo(() => {
+        return new Date(new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).setHours(0, 0, 0, 0));
+    }, []);
+    const todayDate = useMemo(() => {
+        return new Date(new Date().setHours(0, 0, 0, 0));
+    }, []);
 
     const [isDialogOpen, setIsDialogOpen] = React.useState(false);
     const [selectedUserFeedbackItem, setSelectedUserFeedbackItem] = React.useState<IUserFeedbackItem | null>(null);
