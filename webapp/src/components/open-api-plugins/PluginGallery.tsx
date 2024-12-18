@@ -13,7 +13,6 @@ import {
     Subtitle2,
     makeStyles,
     shorthands,
-    tokens,
 } from '@fluentui/react-components';
 import { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
@@ -53,10 +52,6 @@ const useClasses = makeStyles({
         rowGap: '24px',
         columnGap: '24px',
         ...shorthands.padding('12px', '2px', '12px'),
-        '&::-webkit-scrollbar-thumb': {
-            backgroundColor: tokens.colorScrollbarOverlay,
-            visibility: 'visible',
-        },
     },
 });
 
