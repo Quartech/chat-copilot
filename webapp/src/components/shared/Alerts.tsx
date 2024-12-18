@@ -2,6 +2,7 @@
 
 import {
     Link,
+    makeStyles,
     Toast,
     Toaster,
     ToastIntent,
@@ -18,6 +19,27 @@ import { useAppDispatch, useAppSelector } from '../../redux/app/hooks';
 import { RootState } from '../../redux/app/store';
 import { removeAlert } from '../../redux/features/app/appSlice';
 
+const useClasses = makeStyles({
+    root: {
+        left: '0 !important',
+        right: '0 !important',
+        width: '100%',
+        boxSizing: 'border-box',
+        padding: '0 20px',
+    },
+    toastTitle: {
+        lineHeight: 1.5,
+        maxHeight: 'calc(5 * 1.5em)',
+        overflow: 'hidden',
+        display: '-webkit-box',
+        '-webkit-box-orient': 'vertical',
+        '-webkit-line-clamp': '5',
+        textOverflow: 'ellipsis',
+    },
+});
+
+const TOAST_TIMEOUT = 5000;
+
 /**
  * Renders and manages alert notifications for the application.
  * This component ensures that only unique alerts are displayed,
@@ -27,10 +49,10 @@ import { removeAlert } from '../../redux/features/app/appSlice';
  * @component
  */
 const Alerts = () => {
+    const classes = useClasses();
     const dispatch = useAppDispatch();
     const toasterId = useId('toaster');
     const { dispatchToast } = useToastController(toasterId);
-    const horizontalOffset = 20;
     const verticalOffset = 48;
 
     const { alerts } = useAppSelector((state: RootState) => state.app);
@@ -44,9 +66,17 @@ const Alerts = () => {
         );
 
         filteredAlerts.forEach((alert) => {
+            if (alert.type === AlertType.Error) {
+                // Log error alerts to the console
+                console.error(alert.message);
+            } else if (alert.type === AlertType.Warning) {
+                // Log warning alerts to the console
+                console.warn(alert.message);
+            }
             dispatchToast(
                 <Toast key={alert.id}>
                     <ToastTitle
+                        className={classes.toastTitle}
                         action={
                             <ToastTrigger>
                                 <Link>
@@ -59,7 +89,8 @@ const Alerts = () => {
                     </ToastTitle>
                 </Toast>,
                 {
-                    position: 'top-end',
+                    position: 'top-start',
+                    timeout: TOAST_TIMEOUT,
                     intent: alert.type as ToastIntent,
                     onStatusChange: (_e, { status: toastStatus }) => {
                         if (toastStatus === 'dismissed') {
@@ -78,9 +109,11 @@ const Alerts = () => {
             // Add this toast's ID to the active toasts set
             setActiveToasts((prev) => new Set([...prev, alert.id]));
         });
-    }, [alerts, dispatch, dispatchToast, activeToasts]);
+    }, [alerts, dispatch, dispatchToast, activeToasts, classes.toastTitle]);
 
-    return <Toaster toasterId={toasterId} offset={{ horizontal: horizontalOffset, vertical: verticalOffset }} />;
+    return (
+        <Toaster toasterId={toasterId} offset={{ horizontal: 0, vertical: verticalOffset }} className={classes.root} />
+    );
 };
 
 export default Alerts;
