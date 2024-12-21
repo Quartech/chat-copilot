@@ -1,5 +1,4 @@
 // Copyright (c) Microsoft. All rights reserved.
-import { Plugin } from '../../redux/features/plugins/PluginsState';
 import { IAsk } from '../semantic-kernel/model/Ask';
 import { IAskResult } from '../semantic-kernel/model/AskResult';
 import { BaseService } from './BaseService';
@@ -15,20 +14,16 @@ export class NoChatMessageService extends BaseService {
      * @param accessToken valid access token
      * @param enabledPlugins plugins, if any
      */
-    public getBotResponseNoChat = async (
-        ask: IAsk,
-        accessToken: string,
-        enabledPlugins?: Plugin[],
-    ): Promise<IAskResult> => {
+    public getBotResponseNoChat = async (ask: IAsk, accessToken: string): Promise<IAskResult> => {
         const result = await this.getResponseAsync<IAskResult>(
             {
-                commandPath: `chats/${'chatId'}/messages?silent=true`, // to be updated to a valid path when it is created.. removing chat id
+                commandPath: 'chats/chatId/messages?silent=true', // to be updated to a valid path when it is created.. removing chat id
                 method: 'POST',
                 body: ask,
             },
             accessToken,
-            enabledPlugins,
         );
         return result;
     };
+    static getBotResponseNoChat: (ask: IAsk, accessToken: string) => Promise<IAskResult>;
 }

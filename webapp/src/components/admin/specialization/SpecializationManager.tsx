@@ -27,6 +27,13 @@ import { ImageUploaderPreview } from '../../files/ImageUploaderPreview';
 import { ConfirmationDialog } from '../../shared/ConfirmationDialog';
 import FieldArray from '../../shared/FieldArray';
 import { Row } from '../../shared/Row';
+import { ChatMessageType } from '../../../libs/models/ChatMessage';
+import { IAsk } from '../../../libs/semantic-kernel/model/Ask';
+import { NoChatMessageService } from '../../../libs/services/OneOffChatService';
+import { AuthHelper } from '../../../libs/auth/AuthHelper';
+import { useMsal } from '@azure/msal-react';
+import { IAskResult } from '../../../libs/semantic-kernel/model/AskResult';
+//import { NoChatMessageService } from '../../../libs/services/OneOffChatService';
 
 interface ISpecializationFile {
     file: File | null;
@@ -163,6 +170,36 @@ export const SpecializationManager: React.FC = () => {
     const dropdownId = useId();
 
     const hasEnrichmentIndex = !!indexId;
+    const { instance, inProgress } = useMsal();
+
+    const getMarkdown = async (roleInformation: string): Promise<IAskResult> => {
+        const markDownPrompt = `
+            Take the provided text, which serves as instructions about the role behavior of a chat model,
+            and convert it into a well-structured Markdown document.
+            Use appropriate titles and paragraphs to organize the information in a way that is clear and easy
+            for the chatbot to interpret and apply. IMPORTANT: REPLY ONLY WITH THE UPDATED MARKDOWN DO NOT WRITE ANYTHING ELSE IN YOUR RESPONSE.
+            HERE IS THE INPUT TEXT for you to convert:
+ 
+            ${roleInformation}
+        `;
+
+        //Configure ask object for service function request
+        const ask: IAsk = {
+            input: markDownPrompt,
+            variables: [
+                {
+                    key: 'messageType',
+                    value: ChatMessageType.Message.toString(),
+                },
+            ],
+        };
+
+        //passing ask object, auth token, and plugins
+        return NoChatMessageService.getBotResponseNoChat(
+            ask,
+            await AuthHelper.getSKaaSAccessToken(instance, inProgress),
+        );
+    };
 
     /**
      * Save specialization by creating or updating.
@@ -184,6 +221,16 @@ export const SpecializationManager: React.FC = () => {
             return;
         }
         setSaveAttempted(false);
+
+        //temp
+        getMarkdown(roleInformation)
+            .then((roleInformation) => {
+                console.log(roleInformation);
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
+
         if (editMode) {
             void specialization.updateSpecialization(id, {
                 label,
