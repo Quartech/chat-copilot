@@ -181,7 +181,6 @@ public class ChatPlugin
         await this.SetSystemDescriptionAsync(chatId, cancellationToken);
 
         // Save this new message to memory such that subsequent chat responses can use it
-        //
         await this.UpdateBotResponseStatusOnClientAsync(chatId, "Generating bot response", cancellationToken);
 
         this._logger.LogInformation("Saving user message to chat history");

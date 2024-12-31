@@ -93,7 +93,19 @@ const registerCommonSignalConnectionEvents = (hubConnection: signalR.HubConnecti
 
     hubConnection.onreconnected((connectionId = '') => {
         console.warn(
-            `hubConnection.onreconnected() called for connectionId?: ${connectionId}. State: ${hubConnection.state}`,
+            `hubConnection.onreconnected() called for connectionId?: ${connectionId}. HubConnection: ${JSON.stringify(hubConnection)}`,
+        );
+    });
+
+    hubConnection.onreconnecting((error) => {
+        console.warn(
+            `hubConnection.onreconnecting() called with error?: ${error}. HubConnection: ${JSON.stringify(hubConnection)}`,
+        );
+    });
+
+    hubConnection.onclose((error) => {
+        console.warn(
+            `hubConnection.onclose() called with error?: ${error}. HubConnection: ${JSON.stringify(hubConnection)}`,
         );
     });
 
