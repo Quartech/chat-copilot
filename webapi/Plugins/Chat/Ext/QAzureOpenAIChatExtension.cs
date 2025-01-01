@@ -140,7 +140,9 @@ public class QAzureOpenAIChatExtension
         );
     }
 
-    public async Task<(string? indexName, string? ApiKey, string? Endpoint)> GetAISearchDeploymentConnectionDetails(string indexId)
+    public async Task<(string? indexName, string? ApiKey, string? Endpoint)> GetAISearchDeploymentConnectionDetails(
+        string indexId
+    )
     {
         var specializationIndex = await this._qSpecializationIndexService.GetIndexAsync(indexId);
         if (specializationIndex == null)
@@ -151,9 +153,10 @@ public class QAzureOpenAIChatExtension
             specializationIndex.AISearchDeploymentConnection
         );
         return (
-                specializationIndex.Name,
-                aiSearchDeploymentConnection?.APIKey,
-                aiSearchDeploymentConnection?.Endpoint?.ToString());
+            specializationIndex.Name,
+            aiSearchDeploymentConnection?.APIKey,
+            aiSearchDeploymentConnection?.Endpoint?.ToString()
+        );
     }
 
     /// <summary>
