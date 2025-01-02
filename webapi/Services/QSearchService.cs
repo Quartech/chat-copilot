@@ -56,15 +56,16 @@ public class QSearchService : IQSearchService
         {
             return null;
         }
-        var (apiKey, endpoint) = await this._qAzureOpenAIChatExtension.GetAISearchDeploymentConnectionDetails(indexId);
-        if (apiKey == null || endpoint == null)
+        var (indexName, apiKey, endpoint) =
+            await this._qAzureOpenAIChatExtension.GetAISearchDeploymentConnectionDetails(indexId);
+        if (indexName == null || apiKey == null || endpoint == null)
         {
             return null;
         }
         using var httpRequestMessage = new HttpRequestMessage()
         {
             Method = HttpMethod.Post,
-            RequestUri = new Uri($"{endpoint}indexes/{indexId}/docs/search?api-version=2020-06-30"),
+            RequestUri = new Uri($"{endpoint}indexes/{indexName}/docs/search?api-version=2020-06-30"),
             Content = new StringContent(JsonSerializer.Serialize(requestBody), Encoding.UTF8, "application/json"),
         };
         httpRequestMessage.Headers.Add("api-Key", apiKey);
