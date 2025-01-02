@@ -112,13 +112,13 @@ const registerCommonSignalConnectionEvents = (hubConnection: signalR.HubConnecti
     hubConnection.onreconnected((connectionId = '') => {
         if (hubConnection.state === signalR.HubConnectionState.Connected) {
             const message = 'Connection reestablished. Please refresh the page to ensure you have the latest data.';
-            // Temporary workaround to allow the app to function without forcing a refresh
 
-            // store.dispatch(
-            //     addReloadDialog({
-            //         text: message,
-            //     }),
-            // );
+            //TODO: remove this in favor of having the backend calculate the conversations that need to be updated via websocket
+            store.dispatch({
+                type: 'conversations/addConversationsToGroup',
+                payload: store.getState().conversations.conversations,
+            });
+
             console.log(message + ` Connected with connectionId ${connectionId}`);
         }
     });

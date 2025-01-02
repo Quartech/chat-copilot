@@ -48,6 +48,8 @@ export const signalRMiddleware: Middleware<any, RootState, Dispatch<SignalRActio
                     )
                     .catch((err) => store.dispatch(addAlert({ message: String(err), type: AlertType.Error })));
                 break;
+            //TODO: remove this in favor of having the backend calculate the conversations that need to be updated via websocket
+            case 'conversations/addConversationsToGroup':
             case 'conversations/setConversations':
                 Promise.all(
                     Object.keys(signalRAction.payload).map(async (id) => {
