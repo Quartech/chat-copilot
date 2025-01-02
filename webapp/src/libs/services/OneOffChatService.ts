@@ -25,5 +25,4 @@ export class NoChatMessageService extends BaseService {
         );
         return result;
     };
-    static getBotResponseNoChat: (ask: IAsk, accessToken: string) => Promise<IAskResult>;
 }

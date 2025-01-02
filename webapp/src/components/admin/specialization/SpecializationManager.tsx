@@ -195,7 +195,8 @@ export const SpecializationManager: React.FC = () => {
         };
 
         //passing ask object, auth token, and plugins
-        return NoChatMessageService.getBotResponseNoChat(
+        const noChatMessageService = new NoChatMessageService();
+        return noChatMessageService.getBotResponseNoChat(
             ask,
             await AuthHelper.getSKaaSAccessToken(instance, inProgress),
         );
