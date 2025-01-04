@@ -172,24 +172,24 @@ export const ChatList: FC = () => {
     );
 
     useEffect(() => {
-        const setConvesationIdInUrl = (conversationId: string) => {
+        const setConversationIdInUrl = (conversationId: string) => {
             const urlParams = new URLSearchParams(window.location.search);
             urlParams.set('conversation', conversationId);
             window.history.replaceState({}, '', `${window.location.pathname}?${urlParams}`);
         };
 
-        const removeConvesationIdInUrl = () => {
+        const removeConversationIdInUrl = () => {
             const urlParams = new URLSearchParams(window.location.search);
             urlParams.delete('conversation');
             window.history.replaceState({}, '', `${window.location.pathname}?${urlParams}`);
         };
 
         if (selectedId) {
-            setConvesationIdInUrl(selectedId);
+            setConversationIdInUrl(selectedId);
         }
 
         return () => {
-            removeConvesationIdInUrl();
+            removeConversationIdInUrl();
         };
     }, [selectedId]);
 
