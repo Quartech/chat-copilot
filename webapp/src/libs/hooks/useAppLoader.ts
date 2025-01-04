@@ -152,15 +152,31 @@ export const useAppLoader = (): [AppState, Dispatch<SetStateAction<AppState>>] =
     };
 
     const loadInitialChat = async () => {
-        const firstConvo = maxBy(Object.values(conversations), (chatState) => chatState.lastUpdatedTimestamp ?? 0);
-        if (firstConvo?.createdOnServer) {
-            dispatch(setSelectedConversation(firstConvo.id));
-            try {
-                await chat.loadChatMessagesByChatId(firstConvo.id);
-            } catch (err) {
-                console.log((err as Error).message);
-                setAppState(AppState.ErrorLoadingChats);
+        let chatIdToLoad: string | undefined = undefined;
+
+        // Check if the conversation is in the URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const conversationId = urlParams.get('conversation');
+
+        if (conversationId) {
+            chatIdToLoad = conversationId;
+        } else {
+            const firstConvo = maxBy(Object.values(conversations), (chatState) => chatState.lastUpdatedTimestamp ?? 0);
+            if (firstConvo?.createdOnServer) {
+                chatIdToLoad = firstConvo.id;
             }
+        }
+
+        if (!chatIdToLoad) {
+            return;
+        }
+
+        dispatch(setSelectedConversation(chatIdToLoad));
+        try {
+            await chat.loadChatMessagesByChatId(chatIdToLoad);
+        } catch (err) {
+            console.log((err as Error).message);
+            setAppState(AppState.ErrorLoadingChats);
         }
     };
 

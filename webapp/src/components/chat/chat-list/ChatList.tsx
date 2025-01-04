@@ -84,6 +84,7 @@ export const ChatList: FC = () => {
     const classes = useClasses();
     const { features } = useAppSelector((state: RootState) => state.app);
     const { conversations } = useAppSelector((state: RootState) => state.conversations);
+    const { selectedId } = useAppSelector((state: RootState) => state.conversations);
 
     const [isFiltering, setIsFiltering] = useState(false);
     const [filterText, setFilterText] = useState('');
@@ -169,6 +170,28 @@ export const ChatList: FC = () => {
         },
         [fileHandler, chat, dispatch],
     );
+
+    useEffect(() => {
+        const setConversationIdInUrl = (conversationId: string) => {
+            const urlParams = new URLSearchParams(window.location.search);
+            urlParams.set('conversation', conversationId);
+            window.history.replaceState({}, '', `${window.location.pathname}?${urlParams}`);
+        };
+
+        const removeConversationIdInUrl = () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            urlParams.delete('conversation');
+            window.history.replaceState({}, '', `${window.location.pathname}?${urlParams}`);
+        };
+
+        if (selectedId) {
+            setConversationIdInUrl(selectedId);
+        }
+
+        return () => {
+            removeConversationIdInUrl();
+        };
+    }, [selectedId]);
 
     return (
         <div className={classes.root}>
